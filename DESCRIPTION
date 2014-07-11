@@ -1,0 +1,10 @@
+Package: R2SPSS
+Type: Package
+Title: Format R output to look like SPSS
+Version: 0.1.0
+Date: 2014-07-11
+Description: Format R output to look like SPSS for use in teaching materials
+License: GPL (>= 2)
+LazyLoad: yes
+Authors@R: c(person("Andreas", "Alfons", email = "alfons@ese.eur.nl",
+    role = c("aut", "cre")), person("David", "Simcha", role = "ctb"))
