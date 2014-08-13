@@ -21,9 +21,13 @@ regression <- function(..., data, labels = NULL) {
 }
 
 #' @export
-print.regression <- function(x, digits = 3, ...) {
+print.regression <- function(x, digits = 3,
+                             statistics = c("summary", "anova", "estimates"),
+                             ...) {
 
   ## initializations
+  count <- 0
+  statistics <- match.arg(statistics, several.ok=TRUE)
   models <- x$models
   labels <- names(models)
 
@@ -72,9 +76,9 @@ print.regression <- function(x, digits = 3, ...) {
   rsq <- vapply(summaries, "[[", numeric(1), "r.squared")
   adjrsq <- vapply(summaries, "[[", numeric(1), "adj.r.squared")
   sigma <- vapply(summaries, "[[", numeric(1), "sigma")
-  rsquares <- data.frame("R"=sqrt(rsq), "R Sq"=rsq,
-                         "Adj. R Sq"=adjrsq, "Std. Error"=sigma,
-                         row.names=labels, check.names=FALSE)
+  fits <- data.frame("R"=sqrt(rsq), "R Sq"=rsq,
+                     "Adj. R Sq"=adjrsq, "Std. Error"=sigma,
+                     row.names=labels, check.names=FALSE)
 
   ## compute change statistics
   k <- length(models)
@@ -98,92 +102,106 @@ print.regression <- function(x, digits = 3, ...) {
                         row.names=labels, check.names=FALSE)
 
   ## print LaTeX table for model summaries
-  # initialize LaTeX table
-  cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|r|}\n")
-  # print table header
-  cat("\\multicolumn{10}{c}{\\textbf{Model Summary}} \\\\\n")
-  cat("\\noalign{\\smallskip}\\hline\n")
-  cat(" & & & & \\multicolumn{1}{|c|}{Std. Error} & \\multicolumn{5}{|c|}{Change Statistics} \\\\\n")
-  cat("\\cline{6-10}\n")
-  cat(" & & & \\multicolumn{1}{|c|}{Adjusted} & \\multicolumn{1}{|c|}{of the} & \\multicolumn{1}{|c|}{R Square} & & & & \\multicolumn{1}{|c|}{Sig. F} \\\\\n")
-  cat("\\multicolumn{1}{|c}{Model} & \\multicolumn{1}{|c|}{R} & \\multicolumn{1}{|c|}{R Square} & \\multicolumn{1}{|c|}{R Square} & \\multicolumn{1}{|c|}{Estimate} & \\multicolumn{1}{|c|}{Change} & \\multicolumn{1}{|c|}{F Change} & \\multicolumn{1}{|c|}{df1} & \\multicolumn{1}{|c|}{df2} & \\multicolumn{1}{|c|}{Change} \\\\\n")
-  cat("\\hline\n")
-  # format model summaries
-  formatted <- formatSPSS(cbind(rsquares, changes))
-  for (i in seq_along(models)) {
-    # print current model summary
-    superscript <- sprintf("$^\\text{%s}$", letters[i])
-    cat(labels[i], " & ", formatted[i, 1], superscript, " & ",
-        paste0(formatted[i, -1], collapse=" & "), " \\\\\n", sep="")
+  if ("summary" %in% statistics) {
+    # initialize LaTeX table
+    cat("\n")
+    cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|r|}\n")
+    # print table header
+    cat("\\multicolumn{10}{c}{\\textbf{Model Summary}} \\\\\n")
+    cat("\\noalign{\\smallskip}\\hline\n")
+    cat(" & & & & \\multicolumn{1}{|c|}{Std. Error} & \\multicolumn{5}{|c|}{Change Statistics} \\\\\n")
+    cat("\\cline{6-10}\n")
+    cat(" & & & \\multicolumn{1}{|c|}{Adjusted} & \\multicolumn{1}{|c|}{of the} & \\multicolumn{1}{|c|}{R Square} & & & & \\multicolumn{1}{|c|}{Sig. F} \\\\\n")
+    cat("\\multicolumn{1}{|c}{Model} & \\multicolumn{1}{|c|}{R} & \\multicolumn{1}{|c|}{R Square} & \\multicolumn{1}{|c|}{R Square} & \\multicolumn{1}{|c|}{Estimate} & \\multicolumn{1}{|c|}{Change} & \\multicolumn{1}{|c|}{F Change} & \\multicolumn{1}{|c|}{df1} & \\multicolumn{1}{|c|}{df2} & \\multicolumn{1}{|c|}{Change} \\\\\n")
+    cat("\\hline\n")
+    # format model summaries
+    formatted <- formatSPSS(cbind(fits, changes))
+    for (i in seq_along(models)) {
+      # print current model summary
+      superscript <- sprintf("$^\\text{%s}$", letters[i])
+      cat(labels[i], " & ", formatted[i, 1], superscript, " & ",
+          paste0(formatted[i, -1], collapse=" & "), " \\\\\n", sep="")
+    }
+    # finalize LaTeX table
+    cat("\\hline\n")
+    for (i in seq_along(predictors)) {
+      cat("\\multicolumn{10}{l}{", letters[i],". Predictors: ",
+          paste0(predictors[[i]], collapse=", "), "} \\\\\n", sep="")
+    }
+    cat("\\end{tabular}\n")
+    cat("\n")
+    count <- count + 1
   }
-  # finalize LaTeX table
-  cat("\\hline\n")
-  for (i in seq_along(predictors)) {
-    cat("\\multicolumn{10}{l}{", letters[i],". Predictors: ",
-        paste0(predictors[[i]], collapse=", "), "} \\\\\n", sep="")
-  }
-  cat("\\end{tabular}\n")
 
   ## print LaTeX table for ANOVA tables
-  # initialize LaTeX table
-  cat("\\begin{tabular}{|ll|r|r|r|r|r|}\n")
-  # print table header
-  cat("\\multicolumn{7}{c}{\\textbf{ANOVA}$^{\\text{a}}$} \\\\\n")
-  cat("\\noalign{\\smallskip}\\hline\n")
-  cat(" & & \\multicolumn{1}{|c|}{Sum of} & & & & \\\\\n")
-  cat("\\multicolumn{1}{|c}{Model} & & \\multicolumn{1}{|c|}{Squares} & \\multicolumn{1}{|c|}{df} & \\multicolumn{1}{|c|}{Mean Square} & \\multicolumn{1}{|c|}{F} & \\multicolumn{1}{|c|}{Sig.} \\\\\n")
-  cat("\\hline\n")
-  for (i in seq_along(anovas)) {
-    # extract current ANOVA table
-    formatted <- formatSPSS(anovas[[i]])
-    # print current ANOVA table
-    for (type in rownames(formatted)) {
-      if (type == "Regression") {
-        label <- labels[i]
-        superscript <- sprintf("$^\\text{%s}$", letters[i+1])
-      } else {
-        label <- NULL
-        superscript <- NULL
-      }
-      cat(label, " & ", type, " & ", paste0(formatted[type, ], collapse=" & "),
-          superscript, " \\\\\n", sep="")
-    }
-    # finalize current ANOVA table
+  if ("anova" %in% statistics) {
+    # initialize LaTeX table
+    if (count == 0) cat("\n")
+    cat("\\begin{tabular}{|ll|r|r|r|r|r|}\n")
+    # print table header
+    cat("\\multicolumn{7}{c}{\\textbf{ANOVA}$^{\\text{a}}$} \\\\\n")
+    cat("\\noalign{\\smallskip}\\hline\n")
+    cat(" & & \\multicolumn{1}{|c|}{Sum of} & & & & \\\\\n")
+    cat("\\multicolumn{1}{|c}{Model} & & \\multicolumn{1}{|c|}{Squares} & \\multicolumn{1}{|c|}{df} & \\multicolumn{1}{|c|}{Mean Square} & \\multicolumn{1}{|c|}{F} & \\multicolumn{1}{|c|}{Sig.} \\\\\n")
     cat("\\hline\n")
+    for (i in seq_along(anovas)) {
+      # extract current ANOVA table
+      formatted <- formatSPSS(anovas[[i]])
+      # print current ANOVA table
+      for (type in rownames(formatted)) {
+        if (type == "Regression") {
+          label <- labels[i]
+          superscript <- sprintf("$^\\text{%s}$", letters[i+1])
+        } else {
+          label <- NULL
+          superscript <- NULL
+        }
+        cat(label, " & ", type, " & ", paste0(formatted[type, ], collapse=" & "),
+            superscript, " \\\\\n", sep="")
+      }
+      # finalize current ANOVA table
+      cat("\\hline\n")
+    }
+    # finalize LaTeX table
+    cat("\\multicolumn{7}{l}{a. Dependent variable: ", x$response,
+        "} \\\\\n", sep="")
+    for (i in seq_along(predictors)) {
+      cat("\\multicolumn{7}{l}{", letters[i+1],". Predictors: ",
+          paste0(predictors[[i]], collapse=", "), "} \\\\\n", sep="")
+    }
+    cat("\\end{tabular}\n")
+    cat("\n")
+    count <- count + 1
   }
-  # finalize LaTeX table
-  cat("\\multicolumn{7}{l}{a. Dependent variable: ", x$response,
-      "} \\\\\n", sep="")
-  for (i in seq_along(predictors)) {
-    cat("\\multicolumn{7}{l}{", letters[i+1],". Predictors: ",
-        paste0(predictors[[i]], collapse=", "), "} \\\\\n", sep="")
-  }
-  cat("\\end{tabular}\n")
 
   ## print LaTeX table for coefficients
-  # initialize LaTeX table
-  cat("\\begin{tabular}{|ll|r|r|r|r|r|}\n")
-  # print table header
-  cat("\\multicolumn{7}{c}{\\textbf{Coefficients}$^{\\text{a}}$} \\\\\n")
-  cat("\\noalign{\\smallskip}\\hline\n")
-  cat(" & & \\multicolumn{2}{|c|}{Unstandardized} & \\multicolumn{1}{|c|}{Standardized} & & \\\\\n")
-  cat(" & & \\multicolumn{2}{|c|}{Coefficients} & \\multicolumn{1}{|c|}{Coefficients} & & \\\\\n")
-  cat("\\cline{3-5}\n")
-  cat("\\multicolumn{1}{|c}{Model} & & \\multicolumn{1}{|c|}{B} & \\multicolumn{1}{|c|}{Std. Error} & \\multicolumn{1}{|c|}{Beta} & \\multicolumn{1}{|c|}{t} & \\multicolumn{1}{|c|}{Sig.} \\\\\n")
-  cat("\\hline\n")
-  for (i in seq_along(coefficients)) {
-    # extract current coefficients
-    formatted <- formatSPSS(coefficients[[i]])
-    # print current coefficients
-    for (variable in rownames(formatted)) {
-      cat(if (variable == "(Constant)") labels[i], "&", variable, "&",
-          paste0(formatted[variable, ], collapse=" & "), "\\\\\n")
-    }
-    # finalize current model
+  if ("estimates" %in% statistics) {
+    # initialize LaTeX table
+    if (count == 0) cat("\n")
+    cat("\\begin{tabular}{|ll|r|r|r|r|r|}\n")
+    # print table header
+    cat("\\multicolumn{7}{c}{\\textbf{Coefficients}$^{\\text{a}}$} \\\\\n")
+    cat("\\noalign{\\smallskip}\\hline\n")
+    cat(" & & \\multicolumn{2}{|c|}{Unstandardized} & \\multicolumn{1}{|c|}{Standardized} & & \\\\\n")
+    cat(" & & \\multicolumn{2}{|c|}{Coefficients} & \\multicolumn{1}{|c|}{Coefficients} & & \\\\\n")
+    cat("\\cline{3-5}\n")
+    cat("\\multicolumn{1}{|c}{Model} & & \\multicolumn{1}{|c|}{B} & \\multicolumn{1}{|c|}{Std. Error} & \\multicolumn{1}{|c|}{Beta} & \\multicolumn{1}{|c|}{t} & \\multicolumn{1}{|c|}{Sig.} \\\\\n")
     cat("\\hline\n")
+    for (i in seq_along(coefficients)) {
+      # extract current coefficients
+      formatted <- formatSPSS(coefficients[[i]])
+      # print current coefficients
+      for (variable in rownames(formatted)) {
+        cat(if (variable == "(Constant)") labels[i], "&", variable, "&",
+            paste0(formatted[variable, ], collapse=" & "), "\\\\\n")
+      }
+      # finalize current model
+      cat("\\hline\n")
+    }
+    # finalize LaTeX table
+    cat("\\multicolumn{7}{l}{a. Dependent variable: ", x$response,
+        "} \\\\\n", sep="")
+    cat("\\end{tabular}\n")
+    cat("\n")
   }
-  # finalize LaTeX table
-  cat("\\multicolumn{7}{l}{a. Dependent variable: ", x$response,
-      "} \\\\\n", sep="")
-  cat("\\end{tabular}\n")
 }
