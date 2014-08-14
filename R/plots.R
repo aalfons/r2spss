@@ -86,8 +86,8 @@ boxplotSPSS <- function(data, variable, category = NULL,
 }
 
 #' @export
-histSPSS <- function(data, variable, xlab = variable, ylab = "Frequency",
-                     normal = FALSE, ...) {
+histSPSS <- function(data, variable, normal = FALSE, xlab = variable,
+                     ylab = "Frequency",...) {
   # initializations
   data <- as.data.frame(data)
   variable <- as.character(variable)
@@ -95,31 +95,47 @@ histSPSS <- function(data, variable, xlab = variable, ylab = "Frequency",
     stop("a variable to be summarized must be specified")
   }
   # create plot
-  h <- .hist(data[, variable], xlab=xlab, ylab=ylab, ...)
+  h <- .hist(data[, variable], normal=normal, xlab=xlab, ylab=ylab, ...)
   h$xname <- variable
   invisible(h)
 }
 
 # internal function with different defaults
-.hist <- function(x, ..., breaks = getBins, ylim = NULL, frame.plot = TRUE,
-                  mar = NULL, bg = "#F0F0F0", col = "#D3CE97", main = NULL,
+.hist <- function(x, ..., breaks = getBins, normal = FALSE, ylim = NULL,
+                  frame.plot = TRUE, mar = NULL, bg = "#F0F0F0",
+                  border = par("fg"), col = "#D3CE97", main = NULL,
                   xlab = NULL, ylab = NULL, cex.lab = 1.2,
                   # the following arguments are currently ignored
                   freq = TRUE, probability = !freq, plot = TRUE,
                   warn.unused = FALSE, add = FALSE) {
   # initializations
+  x <- x[is.finite(x)]
   if (is.null(mar)) {
     top <- if (is.null(main) || nchar(main) == 0) 0 else 2
     bottom <- if (is.null(xlab) || nchar(xlab) == 0) 2 else 4
     left <- if (is.null(ylab) || nchar(ylab) == 0) 2 else 4
-    mar <- c(bottom, left, top, 0) + 0.1
+    mar <- c(bottom, left, top, 8) + 0.1
   }
   # set graphical parameters
   op <- par(mar=mar, yaxs="i")
   on.exit(par(op))
-  # get histogram statistics and initialize plot
+  # get histogram statistics
   h <- hist(x, ..., breaks=breaks, plot=FALSE, warn.unused=FALSE)
-  if (is.null(ylim)) ylim <- c(0, max(h$counts))
+  # compute summary statistics
+  m <- mean(x)
+  s <- sd(x)
+  n <- length(x)
+  # compute normal density if requested
+  if (normal) {
+    nbreaks <- length(h$breaks)
+    rbreaks <- h$breaks[c(1, nbreaks)]
+    step <- diff(rbreaks) / (nbreaks-1)
+    grid <- seq(rbreaks[1]-3*step, rbreaks[2]+3*step, length.out=100)
+    whichMax <- which.max(h$counts)
+    density <- dnorm(grid, mean=m, sd=s)*h$counts[whichMax]/h$density[whichMax]
+  } else density <- NULL
+  # find y-axis limit and initialize plot
+  if (is.null(ylim)) ylim <- c(0, max(h$counts, density))
   if (op$yaxs == "r") {
     if (ylim[1] != 0) ylim[1] <- ylim[1] - 0.04 * diff(ylim)
     ylim[2] <- ylim[2] + 0.04 * diff(ylim)
@@ -131,7 +147,11 @@ histSPSS <- function(data, variable, xlab = variable, ylab = "Frequency",
   # add frame around plot
   if (frame.plot) box()
   # add histogram
-  plot(h, ..., col=col, add=TRUE)
+  plot(h, ..., border=border, col=col, add=TRUE)
+  mtext(sprintf("Mean = %.3f\nStd. Dev. = %.3f\nN = %d", m, s, n),
+        side=4, line=0.5, las=1)
+  # add normal density if requested
+  if (normal) lines(grid, density, col=border)
   # return histogram statistics
   invisible(h)
 }
