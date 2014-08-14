@@ -84,3 +84,68 @@ boxplotSPSS <- function(data, variable, category = NULL,
   # return boxplot statistics
   invisible(b)
 }
+
+#' @export
+histSPSS <- function(data, variable, xlab = variable, ylab = "Frequency",
+                     normal = FALSE, ...) {
+  # initializations
+  data <- as.data.frame(data)
+  variable <- as.character(variable)
+  if (length(variable) == 0) {
+    stop("a variable to be summarized must be specified")
+  }
+  # create plot
+  h <- .hist(data[, variable], xlab=xlab, ylab=ylab, ...)
+  h$xname <- variable
+  invisible(h)
+}
+
+# internal function with different defaults
+.hist <- function(x, ..., breaks = getBins, ylim = NULL, frame.plot = TRUE,
+                  mar = NULL, bg = "#F0F0F0", col = "#D3CE97", main = NULL,
+                  xlab = NULL, ylab = NULL, cex.lab = 1.2,
+                  # the following arguments are currently ignored
+                  freq = TRUE, probability = !freq, plot = TRUE,
+                  warn.unused = FALSE, add = FALSE) {
+  # initializations
+  if (is.null(mar)) {
+    top <- if (is.null(main) || nchar(main) == 0) 0 else 2
+    bottom <- if (is.null(xlab) || nchar(xlab) == 0) 2 else 4
+    left <- if (is.null(ylab) || nchar(ylab) == 0) 2 else 4
+    mar <- c(bottom, left, top, 0) + 0.1
+  }
+  # set graphical parameters
+  op <- par(mar=mar, yaxs="i")
+  on.exit(par(op))
+  # get histogram statistics and initialize plot
+  h <- hist(x, ..., breaks=breaks, plot=FALSE, warn.unused=FALSE)
+  if (is.null(ylim)) ylim <- c(0, max(h$counts))
+  if (op$yaxs == "r") {
+    if (ylim[1] != 0) ylim[1] <- ylim[1] - 0.04 * diff(ylim)
+    ylim[2] <- ylim[2] + 0.04 * diff(ylim)
+  }
+  plot(h, ..., ylim=ylim, main=main, xlab=xlab, ylab=ylab, cex.lab=cex.lab)
+  # plot background
+  usr <- par("usr")
+  rect(usr[1], usr[3], usr[2], usr[4], col=bg, border=NA)
+  # add frame around plot
+  if (frame.plot) box()
+  # add histogram
+  plot(h, ..., col=col, add=TRUE)
+  # return histogram statistics
+  invisible(h)
+}
+
+# compute number of bins or breakpoints
+getBins <- function(x) {
+  # maximum number of bins
+  m <- 35
+  # small range of integers: use a bin for each value and return break points
+  if (is.integer(x)) {
+    r <- range(x)
+    if (diff(r) + 1 <= m) return(seq(r[1]-0.5, r[2]+0.5))
+  }
+  # otherwise: square root of number of observations or maximum number of bins
+  n <- length(x)
+  min(ceiling(sqrt(n)), m)
+}
