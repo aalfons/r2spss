@@ -1,24 +1,24 @@
 #' @export
-boxplotSPSS <- function(data, variables, categories = NULL,
+boxplotSPSS <- function(data, variable, category = NULL,
                         xlab = NULL, ylab = NULL,
                         cut.names = NULL, ...) {
   # initializations
   data <- as.data.frame(data)
-  variables <- as.character(variables)
-  categories <- as.character(categories)
-  if (length(variables) == 0) {
+  variable <- as.character(variable)
+  category <- as.character(category)
+  if (length(variable) == 0) {
     stop("a variable to be summarized must be specified")
   }
   # create plot
-  if (length(categories) == 0) {
+  if (length(category) == 0) {
     if (is.null(cut.names)) cut.names <- FALSE
-    .boxplot(data[, variables, drop=FALSE], xlab=xlab, ylab=ylab,
+    .boxplot(data[, variable, drop=FALSE], xlab=xlab, ylab=ylab,
              cut.names=cut.names, ...)
   } else {
     if (is.null(cut.names)) cut.names <- TRUE
-    if (is.null(xlab)) xlab <- categories[1]
-    if (is.null(ylab)) ylab <- variables[1]
-    f <- as.formula(paste0(variables[1], "~", categories[1]))
+    if (is.null(xlab)) xlab <- category[1]
+    if (is.null(ylab)) ylab <- variable[1]
+    f <- as.formula(paste0(variable[1], "~", category[1]))
     .boxplot(f, data=data, xlab=xlab, ylab=ylab, cut.names=cut.names, ...)
   }
 }
@@ -27,21 +27,23 @@ boxplotSPSS <- function(data, variables, categories = NULL,
 .boxplot <- function(..., mar = NULL, bg = "#F0F0F0", boxwex = 0.5,
                      border = par("fg"), lty = 1, col = "#D3CE97",
                      outline = TRUE, pch = c(1, 42), cex = c(1, 1.5),
-                     xlab = NULL, ylab = NULL, cex.lab = 1.2, axes = TRUE,
-                     names = NULL, show.names = TRUE, cut.names = FALSE,
+                     main = NULL, xlab = NULL, ylab = NULL, cex.lab = 1.2,
+                     axes = TRUE, names = NULL, show.names = TRUE,
+                     cut.names = FALSE,
                      # the following arguments are currently ignored
                      plot = TRUE, range = 1.5, horizontal = FALSE,
                      add = FALSE, at = NULL, log = "") {
   # initializations
   if (is.null(mar)) {
+    top <- if (is.null(main) || nchar(main) == 0) 0 else 2
     bottom <- if (is.null(xlab) || nchar(xlab) == 0) 2 else 4
     left <- if (is.null(ylab) || nchar(ylab) == 0) 2 else 4
-    mar <- c(bottom, left, 0, 0) + 0.1
+    mar <- c(bottom, left, top, 0) + 0.1
   }
   # set plot margins
   op <- par(mar=mar)
   on.exit(par(op))
-  # get boxplot information and initialize plot
+  # get boxplot statistics and initialize plot
   b <- boxplot(..., boxwex=boxwex, outline=outline, axes = FALSE)
   # plot background
   usr <- par("usr")
@@ -51,7 +53,7 @@ boxplotSPSS <- function(data, variables, categories = NULL,
   if (cut.names) names <- substr(names, 1, 8)
   # add boxplot
   b <- boxplot(..., boxwex=boxwex, border=border, lty=lty, col=col,
-               outline=FALSE, xlab=xlab, ylab=ylab, cex.lab=cex.lab,
+               outline=FALSE, main=main, xlab=xlab, ylab=ylab, cex.lab=cex.lab,
                axes=axes, names=names, show.names=show.names, add=TRUE)
   # add outliers
   if (outline && length(b$out) > 0) {
