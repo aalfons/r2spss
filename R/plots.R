@@ -27,12 +27,12 @@ boxplotSPSS <- function(data, variables, category = NULL,
 .boxplot <- function(..., mar = NULL, bg = "#F0F0F0", boxwex = 0.5,
                      border = par("fg"), lty = 1, col = "#D3CE97",
                      outline = TRUE, pch = c(1, 42), cex = c(1, 1.5),
-                     main = NULL, xlab = NULL, ylab = NULL, cex.lab = 1.2,
-                     axes = TRUE, names = NULL, show.names = TRUE,
-                     cut.names = FALSE,
+                     main = NULL, xlab = NULL, ylab = NULL, font.lab = 2,
+                     cex.lab = 1.2, axes = TRUE, names = NULL,
+                     show.names = TRUE, cut.names = FALSE,
                      # the following arguments are currently ignored
                      plot = TRUE, range = 1.5, horizontal = FALSE,
-                     add = FALSE, at = NULL, log = "") {
+                     add = FALSE, at = NULL, log = "", sub = NULL) {
   # initializations
   if (is.null(mar)) {
     top <- if (is.null(main) || nchar(main) == 0) 0 else 2
@@ -41,7 +41,7 @@ boxplotSPSS <- function(data, variables, category = NULL,
     mar <- c(bottom, left, top, 0) + 0.1
   }
   # set plot margins
-  op <- par(mar=mar)
+  op <- par(font.lab=font.lab, mar=mar)
   on.exit(par(op))
   # get boxplot statistics and initialize plot
   b <- boxplot(..., boxwex=boxwex, outline=outline, axes = FALSE)
@@ -53,8 +53,9 @@ boxplotSPSS <- function(data, variables, category = NULL,
   if (cut.names) names <- substr(names, 1, 8)
   # add boxplot
   b <- boxplot(..., boxwex=boxwex, border=border, lty=lty, col=col,
-               outline=FALSE, main=main, xlab=xlab, ylab=ylab, cex.lab=cex.lab,
-               axes=axes, names=names, show.names=show.names, add=TRUE)
+               outline=FALSE, main=main, xlab=xlab, ylab=ylab,
+               font.lab=font.lab, cex.lab=cex.lab, axes=axes,
+               names=names, show.names=show.names, add=TRUE)
   # add outliers
   if (outline && length(b$out) > 0) {
     # recycle graphical parameters
@@ -86,14 +87,14 @@ boxplotSPSS <- function(data, variables, category = NULL,
 }
 
 #' @export
-histSPSS <- function(data, variable, normal = FALSE, xlab = variable,
-                     ylab = "Frequency",...) {
+histSPSS <- function(data, variable, normal = FALSE,
+                     xlab = NULL, ylab = NULL, ...) {
   # initializations
   data <- as.data.frame(data)
   variable <- as.character(variable)
-  if (length(variable) == 0) {
-    stop("a variable to be summarized must be specified")
-  }
+  if (length(variable) != 1) stop("exactly one variable must be specified")
+  if (is.null(xlab)) xlab <- variable
+  if (is.null(ylab)) ylab <- "Frequency"
   # create plot
   h <- .hist(data[, variable], normal=normal, xlab=xlab, ylab=ylab, ...)
   h$xname <- variable
@@ -104,10 +105,10 @@ histSPSS <- function(data, variable, normal = FALSE, xlab = variable,
 .hist <- function(x, ..., breaks = getBins, normal = FALSE, ylim = NULL,
                   frame.plot = TRUE, mar = NULL, bg = "#F0F0F0",
                   border = par("fg"), col = "#D3CE97", main = NULL,
-                  xlab = NULL, ylab = NULL, cex.lab = 1.2,
+                  xlab = NULL, ylab = NULL, font.lab = 2, cex.lab = 1.2,
                   # the following arguments are currently ignored
                   freq = TRUE, probability = !freq, plot = TRUE,
-                  warn.unused = FALSE, add = FALSE) {
+                  warn.unused = FALSE, add = FALSE, log = "", sub = NULL) {
   # initializations
   x <- x[is.finite(x)]
   if (is.null(mar)) {
@@ -140,7 +141,8 @@ histSPSS <- function(data, variable, normal = FALSE, xlab = variable,
     if (ylim[1] != 0) ylim[1] <- ylim[1] - 0.04 * diff(ylim)
     ylim[2] <- ylim[2] + 0.04 * diff(ylim)
   }
-  plot(h, ..., ylim=ylim, main=main, xlab=xlab, ylab=ylab, cex.lab=cex.lab)
+  plot(h, ..., ylim=ylim, main=main, xlab=xlab, ylab=ylab,
+       font.lab=font.lab, cex.lab=cex.lab)
   # plot background
   usr <- par("usr")
   rect(usr[1], usr[3], usr[2], usr[4], col=bg, border=NA)
