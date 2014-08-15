@@ -177,12 +177,14 @@ histSPSS <- function(data, variable, normal = FALSE,
   # initializations
   data <- as.data.frame(data)
   variable <- as.character(variable)
-  if (length(variable) != 1) stop("exactly one variable must be specified")
-  if (is.null(xlab)) xlab <- variable
+  if (length(variable) == 0) {
+    stop("a variable to be summarized must be specified")
+  }
+  if (is.null(xlab)) xlab <- variable[1]
   if (is.null(ylab)) ylab <- "Frequency"
   # create plot
-  h <- .hist(data[, variable], normal=normal, xlab=xlab, ylab=ylab, ...)
-  h$xname <- variable
+  h <- .hist(data[, variable[1]], normal=normal, xlab=xlab, ylab=ylab, ...)
+  h$xname <- variable[1]
   invisible(h)
 }
 
