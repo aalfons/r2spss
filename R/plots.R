@@ -6,9 +6,7 @@ boxplotSPSS <- function(data, variables, category = NULL,
   data <- as.data.frame(data)
   variables <- as.character(variables)
   category <- as.character(category)
-  if (length(variables) == 0) {
-    stop("a variable to be summarized must be specified")
-  }
+  if (length(variables) == 0) stop("a variable to display must be specified")
   # create plot
   if (length(category) == 0) {
     if (is.null(cut.names)) cut.names <- FALSE
@@ -177,9 +175,7 @@ histSPSS <- function(data, variable, normal = FALSE,
   # initializations
   data <- as.data.frame(data)
   variable <- as.character(variable)
-  if (length(variable) == 0) {
-    stop("a variable to be summarized must be specified")
-  }
+  if (length(variable) == 0) stop("a variable to display must be specified")
   if (is.null(xlab)) xlab <- variable[1]
   if (is.null(ylab)) ylab <- "Frequency"
   # create plot
