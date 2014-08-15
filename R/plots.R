@@ -1,4 +1,85 @@
 #' @export
+linesSPSS <- function(data, variables, index = NULL,
+                      xlab = NULL, ylab = NULL, ...) {
+  # initializations
+  data <- as.data.frame(data)
+  n <- nrow(data)
+  variables <- as.character(variables)
+  if (length(variables) == 0) stop("a variable to display must be specified")
+  # check index to plot on x-axis
+  if (is.null(index) || length(index) == 0) {
+    xval <- seq_len(n)
+    if (is.null(xlab)) xlab <- "Case Number"
+  } else {
+    index <- as.character(index)
+    xval <- data[, index[1]]
+    if (is.null(xlab)) xlab <- index[1]
+  }
+  # create plot
+  if (length(variables) == 1) {
+    if (is.null(ylab)) ylab <- variables
+    .lines(xval, data[, variables], xlab=xlab, ylab=ylab, ...)
+  } else .matlines(xval, data[, variables], xlab=xlab, ylab=ylab, ...)
+}
+
+# internal function for line plot with different defaults
+.lines <- function(x, y, ..., mar = NULL, bg = "#F0F0F0", main = NULL,
+                   xlab = NULL, ylab = NULL, font.lab = 2, cex.lab = 1.2,
+                   # the following arguments are currently ignored
+                   type = "l", log = "", sub = NULL) {
+  # initializations
+  if (is.null(mar)) {
+    top <- if (is.null(main) || nchar(main) == 0) 0 else 2
+    bottom <- if (is.null(xlab) || nchar(xlab) == 0) 2 else 4
+    left <- if (is.null(ylab) || nchar(ylab) == 0) 2 else 4
+    mar <- c(bottom, left, top, 0) + 0.1
+  }
+  # set plot margins
+  op <- par(mar=mar)
+  on.exit(par(op))
+  # initialize plot
+  plot(x, y, ..., type="n", main=main, xlab=xlab, ylab=ylab,
+       font.lab=font.lab, cex.lab=cex.lab)
+  # plot background
+  usr <- par("usr")
+  rect(usr[1], usr[3], usr[2], usr[4], col=bg, border=NA)
+  # add points
+  lines(x, y, ...)
+}
+
+# internal function for matrix line plot with different defaults
+.matlines <- function(x, y, ..., mar = NULL, bg = "#F0F0F0", lty = 1,
+                      lwd = 1.5, col = paletteSPSS(), main = NULL,
+                      xlab = NULL, ylab = NULL, font.lab = 2, cex.lab = 1.2,
+                      # the following arguments are currently ignored
+                      type = "l", log = "", sub = NULL, add = FALSE,
+                      verbose = FALSE) {
+  # initializations
+  labels <- names(y)
+  if (is.null(mar)) {
+    top <- if (is.null(main) || nchar(main) == 0) 0 else 2
+    bottom <- if (is.null(xlab) || nchar(xlab) == 0) 2 else 4
+    left <- if (is.null(ylab) || nchar(ylab) == 0) 2 else 4
+    mar <- c(bottom, left, top, 10) + 0.1
+  }
+  # set plot margins
+  op <- par(mar=mar)
+  on.exit(par(op))
+  # initialize plot
+  matplot(x, y, ..., type="n", main=main, xlab=xlab, ylab=ylab,
+          font.lab=font.lab, cex.lab=cex.lab, add=FALSE, verbose=FALSE)
+  # plot background
+  usr <- par("usr")
+  rect(usr[1], usr[3], usr[2], usr[4], col=bg, border=NA)
+  # add points
+  matlines(x, y, lty=lty, lwd=lwd, col=col, ..., verbose=FALSE)
+  # add legend
+  legend(usr[2], usr[4], legend=labels, lty=lty, lwd=lwd, col=col,
+         bty="n", xpd=NA)
+}
+
+
+#' @export
 boxplotSPSS <- function(data, variables, category = NULL,
                         xlab = NULL, ylab = NULL,
                         cut.names = NULL, ...) {
@@ -253,4 +334,14 @@ getBins <- function(x) {
   # otherwise: square root of number of observations or maximum number of bins
   n <- length(x)
   min(ceiling(sqrt(n)), m)
+}
+
+#' @export
+paletteSPSS <- function() {
+  # define red, green and blue vectors
+  red <-   c( 62,  46, 211, 121, 251, 239,  72, 204, 122, 10, 248, 221,  26, 204, 187, 153, 0, 182, 255, 121, 112, 51, 172, 162,  93, 228,  39, 184, 102,  13)
+  green <- c( 88, 184, 206,  40, 248,  51, 194, 204, 170, 86, 152, 186,  95, 255,  63, 153, 0, 231, 255, 122, 220, 51, 208,  22,  97, 228, 139, 155, 102, 141)
+  blue <-  c(172,  72, 151, 125, 115,  56, 197, 204, 213, 44,  29, 241, 118, 204, 127, 153, 0, 232, 255, 167, 132, 51, 238,  25, 255, 228, 172, 201, 102,  70)
+  # return colors
+  rgb(red, green, blue, maxColorValue=255)
 }
