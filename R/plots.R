@@ -1,87 +1,4 @@
 #' @export
-plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL, ...) {
-  # initializations
-  data <- as.data.frame(data)
-  variables <- as.character(variables)
-  if (length(variables) < 2) stop("at least two variables must be specified")
-  # create plot
-  if (length(variables) == 2) {
-    if (is.null(xlab)) xlab <- variables[1]
-    if (is.null(ylab)) ylab <- variables[2]
-    .plot(data[, variables[1]], data[, variables[2]], xlab=xlab, ylab=ylab, ...)
-  } else .pairs(data[, variables], ...)
-}
-
-# internal function for scatter plot with different defaults
-.plot <- function(x, y, ..., mar = NULL, bg = "#F0F0F0", main = NULL,
-                  xlab = NULL, ylab = NULL, font.lab = 2, cex.lab = 1.2,
-                  # the following arguments are currently ignored
-                  type = "p", log = "", sub = NULL) {
-  # initializations
-  if (is.null(mar)) {
-    top <- if (is.null(main) || nchar(main) == 0) 0 else 2
-    bottom <- if (is.null(xlab) || nchar(xlab) == 0) 2 else 4
-    left <- if (is.null(ylab) || nchar(ylab) == 0) 2 else 4
-    mar <- c(bottom, left, top, 0) + 0.1
-  }
-  # set plot margins
-  op <- par(mar=mar)
-  on.exit(par(op))
-  # initialize plot
-  plot(x, y, ..., type="n", main=main, xlab=xlab, ylab=ylab,
-       font.lab=font.lab, cex.lab=cex.lab)
-  # plot background
-  usr <- par("usr")
-  rect(usr[1], usr[3], usr[2], usr[4], col=bg, border=NA)
-  # add points
-  points(x, y, ...)
-}
-
-# internal function for scatterplot matrix with different defaults
-.pairs <- function(x, ..., frame.plot = TRUE, oma = NULL, bg = "#F0F0F0",
-                   main = NULL, font.main = 2, cex.main = 1.2,
-                   font.lab = 2, cex.lab = 1,
-                   # the following arguments are currently ignored
-                   type = "p", log = "", sub = NULL, xlab = NULL,
-                   ylab = NULL, ann = TRUE, axes = FALSE) {
-  # initializations
-  p <- ncol(x)
-  labels <- names(x)
-  if (is.null(oma)) {
-    top <- if (is.null(main) || nchar(main) == 0) 0 else 3
-    oma <- c(2, 2, top, 0) + 0.1
-  }
-  # set plot margins
-  op <- par(mfrow=c(p, p), mar=c(0, 0, 0, 0), oma=oma)
-  on.exit(par(op))
-  # create plots
-  for (i in seq_len(p)) {
-    for (j in seq_len(p)) {
-      # initialize current plot
-      plot(x[, j], x[, i], type="n", ann=FALSE, axes=FALSE, ...)
-      # plot background
-      usr <- par("usr")
-      rect(usr[1], usr[3], usr[2], usr[4], col=bg, border=NA)
-      # add frame around plot
-      if (frame.plot) box()
-      # add points
-      if (i != j) {
-        points(x[, j], x[, i], ...)
-      }
-      # add variable labels
-      if (j == 1) {
-        mtext(labels[i], side=2, line=0.25, font=font.lab, cex=cex.lab)
-      }
-      if (i == p) {
-        mtext(labels[j], side=1, line=0.5, font=font.lab, cex=cex.lab)
-      }
-    }
-  }
-  # add title
-  mtext(main, side=3, line=1, outer=TRUE, font=font.main, cex=cex.main)
-}
-
-#' @export
 boxplotSPSS <- function(data, variables, category = NULL,
                         xlab = NULL, ylab = NULL,
                         cut.names = NULL, ...) {
@@ -167,6 +84,89 @@ boxplotSPSS <- function(data, variables, category = NULL,
   }
   # return boxplot statistics
   invisible(b)
+}
+
+#' @export
+plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL, ...) {
+  # initializations
+  data <- as.data.frame(data)
+  variables <- as.character(variables)
+  if (length(variables) < 2) stop("at least two variables must be specified")
+  # create plot
+  if (length(variables) == 2) {
+    if (is.null(xlab)) xlab <- variables[1]
+    if (is.null(ylab)) ylab <- variables[2]
+    .plot(data[, variables[1]], data[, variables[2]], xlab=xlab, ylab=ylab, ...)
+  } else .pairs(data[, variables], ...)
+}
+
+# internal function for scatter plot with different defaults
+.plot <- function(x, y, ..., mar = NULL, bg = "#F0F0F0", main = NULL,
+                  xlab = NULL, ylab = NULL, font.lab = 2, cex.lab = 1.2,
+                  # the following arguments are currently ignored
+                  type = "p", log = "", sub = NULL) {
+  # initializations
+  if (is.null(mar)) {
+    top <- if (is.null(main) || nchar(main) == 0) 0 else 2
+    bottom <- if (is.null(xlab) || nchar(xlab) == 0) 2 else 4
+    left <- if (is.null(ylab) || nchar(ylab) == 0) 2 else 4
+    mar <- c(bottom, left, top, 0) + 0.1
+  }
+  # set plot margins
+  op <- par(mar=mar)
+  on.exit(par(op))
+  # initialize plot
+  plot(x, y, ..., type="n", main=main, xlab=xlab, ylab=ylab,
+       font.lab=font.lab, cex.lab=cex.lab)
+  # plot background
+  usr <- par("usr")
+  rect(usr[1], usr[3], usr[2], usr[4], col=bg, border=NA)
+  # add points
+  points(x, y, ...)
+}
+
+# internal function for scatterplot matrix with different defaults
+.pairs <- function(x, ..., frame.plot = TRUE, oma = NULL, bg = "#F0F0F0",
+                   main = NULL, font.main = 2, cex.main = 1.2,
+                   font.lab = 2, cex.lab = 1,
+                   # the following arguments are currently ignored
+                   type = "p", log = "", sub = NULL, xlab = NULL,
+                   ylab = NULL, ann = TRUE, axes = FALSE) {
+  # initializations
+  p <- ncol(x)
+  labels <- names(x)
+  if (is.null(oma)) {
+    top <- if (is.null(main) || nchar(main) == 0) 0 else 3
+    oma <- c(2, 2, top, 0) + 0.1
+  }
+  # set plot margins
+  op <- par(mfrow=c(p, p), mar=c(0, 0, 0, 0), oma=oma)
+  on.exit(par(op))
+  # create plots
+  for (i in seq_len(p)) {
+    for (j in seq_len(p)) {
+      # initialize current plot
+      plot(x[, j], x[, i], type="n", ann=FALSE, axes=FALSE, ...)
+      # plot background
+      usr <- par("usr")
+      rect(usr[1], usr[3], usr[2], usr[4], col=bg, border=NA)
+      # add frame around plot
+      if (frame.plot) box()
+      # add points
+      if (i != j) {
+        points(x[, j], x[, i], ...)
+      }
+      # add variable labels
+      if (j == 1) {
+        mtext(labels[i], side=2, line=0.25, font=font.lab, cex=cex.lab)
+      }
+      if (i == p) {
+        mtext(labels[j], side=1, line=0.5, font=font.lab, cex=cex.lab)
+      }
+    }
+  }
+  # add title
+  mtext(main, side=3, line=1, outer=TRUE, font=font.main, cex=cex.main)
 }
 
 #' @export
