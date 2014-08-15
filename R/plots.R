@@ -266,7 +266,7 @@ histSPSS <- function(data, variable, normal = FALSE,
 }
 
 # internal function with different defaults
-.hist <- function(x, ..., breaks = getBins, normal = FALSE, ylim = NULL,
+.hist <- function(x, ..., breaks = getBins, normal = TRUE, ylim = NULL,
                   frame.plot = TRUE, mar = NULL, bg = "#F0F0F0",
                   border = par("fg"), col = "#D3CE97", main = NULL,
                   xlab = NULL, ylab = NULL, font.lab = 2, cex.lab = 1.2,

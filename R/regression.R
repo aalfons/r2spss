@@ -205,3 +205,61 @@ print.regression <- function(x, digits = 3,
     cat("\n")
   }
 }
+
+#' @export
+coef.regression <- function(object, ...) {
+  nm <- length(object$models)
+  coef(object$models[[nm]])
+}
+
+#' @export
+df.residual.regression <- function(object, ...) {
+  nm <- length(object$models)
+  df.residual(object$models[[nm]])
+}
+
+#' @export
+fitted.regression <- function(object, standardized = FALSE, ...) {
+  # extract fitted values from the last model
+  nm <- length(object$models)
+  fitted <- fitted(object$models[[nm]])
+  # standardize if requested
+  if (standardized) fitted <- (fitted - mean(fitted)) / sd(fitted)
+  # return (standardized) fitted values
+  fitted
+}
+
+#' @export
+residuals.regression <- function(object, standardized = FALSE, ...) {
+  # extract residuals from the last model
+  nm <- length(object$models)
+  residuals <- residuals(object$models[[nm]])
+  # standardize if requested
+  if (standardized) {
+    s <- sqrt(sum(residuals^2) / df.residual(object))
+    residuals <- residuals / s
+  }
+  # return (standardized) residuals
+  residuals
+}
+
+#' @export
+plot.regression <- function(x, y, which = c("histogram", "scatter"),
+                            main = NULL, xlab = NULL, ylab = NULL, ...) {
+  # initializations
+  which <- match.arg(which)
+  if (is.null(main)) main <- paste0("Dependent Variable: ", x$response)
+  residuals <- residuals(x, standardized=TRUE)
+  # histogram
+  if (which == "histogram") {
+    if (is.null(xlab)) xlab <- "Regression Standardized Residual"
+    .hist(residuals, main=main, xlab=xlab, ylab=ylab, ...)
+  }
+  # histogram
+  if (which == "scatter") {
+    if (is.null(xlab)) xlab <- "Regression Standardized Predicted Value"
+    if (is.null(ylab)) ylab <- "Regression Standardized Residual"
+    fitted <- fitted(x, standardized=TRUE)
+    .plot(fitted, residuals, main=main, xlab=xlab, ylab=ylab, ...)
+  }
+}
