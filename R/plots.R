@@ -1,24 +1,24 @@
 #' @export
-boxplotSPSS <- function(data, variable, category = NULL,
+boxplotSPSS <- function(data, variables, category = NULL,
                         xlab = NULL, ylab = NULL,
                         cut.names = NULL, ...) {
   # initializations
   data <- as.data.frame(data)
-  variable <- as.character(variable)
+  variables <- as.character(variables)
   category <- as.character(category)
-  if (length(variable) == 0) {
+  if (length(variables) == 0) {
     stop("a variable to be summarized must be specified")
   }
   # create plot
   if (length(category) == 0) {
     if (is.null(cut.names)) cut.names <- FALSE
-    .boxplot(data[, variable, drop=FALSE], xlab=xlab, ylab=ylab,
+    .boxplot(data[, variables, drop=FALSE], xlab=xlab, ylab=ylab,
              cut.names=cut.names, ...)
   } else {
     if (is.null(cut.names)) cut.names <- TRUE
     if (is.null(xlab)) xlab <- category[1]
-    if (is.null(ylab)) ylab <- variable[1]
-    f <- as.formula(paste0(variable[1], "~", category[1]))
+    if (is.null(ylab)) ylab <- variables[1]
+    f <- as.formula(paste0(variables[1], "~", category[1]))
     .boxplot(f, data=data, xlab=xlab, ylab=ylab, cut.names=cut.names, ...)
   }
 }
