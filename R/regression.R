@@ -107,6 +107,7 @@ print.regression <- function(x, digits = 3,
     cat("\n")
     cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|r|}\n")
     # print table header
+    cat("\\noalign{\\smallskip}\n")
     cat("\\multicolumn{10}{c}{\\textbf{Model Summary}} \\\\\n")
     cat("\\noalign{\\smallskip}\\hline\n")
     cat(" & & & & \\multicolumn{1}{|c|}{Std. Error} & \\multicolumn{5}{|c|}{Change Statistics} \\\\\n")
@@ -115,7 +116,7 @@ print.regression <- function(x, digits = 3,
     cat("\\multicolumn{1}{|c}{Model} & \\multicolumn{1}{|c|}{R} & \\multicolumn{1}{|c|}{R Square} & \\multicolumn{1}{|c|}{R Square} & \\multicolumn{1}{|c|}{Estimate} & \\multicolumn{1}{|c|}{Change} & \\multicolumn{1}{|c|}{F Change} & \\multicolumn{1}{|c|}{df1} & \\multicolumn{1}{|c|}{df2} & \\multicolumn{1}{|c|}{Change} \\\\\n")
     cat("\\hline\n")
     # format model summaries
-    formatted <- formatSPSS(cbind(fits, changes))
+    formatted <- formatSPSS(cbind(fits, changes), digits=digits)
     for (i in seq_along(models)) {
       # print current model summary
       superscript <- sprintf("$^\\text{%s}$", letters[i])
@@ -128,6 +129,7 @@ print.regression <- function(x, digits = 3,
       cat("\\multicolumn{10}{l}{", letters[i],". Predictors: ",
           paste0(predictors[[i]], collapse=", "), "} \\\\\n", sep="")
     }
+    cat("\\noalign{\\smallskip}\n")
     cat("\\end{tabular}\n")
     cat("\n")
     count <- count + 1
@@ -139,6 +141,7 @@ print.regression <- function(x, digits = 3,
     if (count == 0) cat("\n")
     cat("\\begin{tabular}{|ll|r|r|r|r|r|}\n")
     # print table header
+    cat("\\noalign{\\smallskip}\n")
     cat("\\multicolumn{7}{c}{\\textbf{ANOVA}$^{\\text{a}}$} \\\\\n")
     cat("\\noalign{\\smallskip}\\hline\n")
     cat(" & & \\multicolumn{1}{|c|}{Sum of} & & & & \\\\\n")
@@ -146,7 +149,7 @@ print.regression <- function(x, digits = 3,
     cat("\\hline\n")
     for (i in seq_along(anovas)) {
       # extract current ANOVA table
-      formatted <- formatSPSS(anovas[[i]])
+      formatted <- formatSPSS(anovas[[i]], digits=digits)
       # print current ANOVA table
       for (type in rownames(formatted)) {
         if (type == "Regression") {
@@ -169,6 +172,7 @@ print.regression <- function(x, digits = 3,
       cat("\\multicolumn{7}{l}{", letters[i+1],". Predictors: ",
           paste0(predictors[[i]], collapse=", "), "} \\\\\n", sep="")
     }
+    cat("\\noalign{\\smallskip}\n")
     cat("\\end{tabular}\n")
     cat("\n")
     count <- count + 1
@@ -180,6 +184,7 @@ print.regression <- function(x, digits = 3,
     if (count == 0) cat("\n")
     cat("\\begin{tabular}{|ll|r|r|r|r|r|}\n")
     # print table header
+    cat("\\noalign{\\smallskip}\n")
     cat("\\multicolumn{7}{c}{\\textbf{Coefficients}$^{\\text{a}}$} \\\\\n")
     cat("\\noalign{\\smallskip}\\hline\n")
     cat(" & & \\multicolumn{2}{|c|}{Unstandardized} & \\multicolumn{1}{|c|}{Standardized} & & \\\\\n")
@@ -189,7 +194,7 @@ print.regression <- function(x, digits = 3,
     cat("\\hline\n")
     for (i in seq_along(coefficients)) {
       # extract current coefficients
-      formatted <- formatSPSS(coefficients[[i]])
+      formatted <- formatSPSS(coefficients[[i]], digits=digits)
       # print current coefficients
       for (variable in rownames(formatted)) {
         cat(if (variable == "(Constant)") labels[i], "&", variable, "&",
@@ -201,6 +206,7 @@ print.regression <- function(x, digits = 3,
     # finalize LaTeX table
     cat("\\multicolumn{7}{l}{a. Dependent variable: ", x$response,
         "} \\\\\n", sep="")
+    cat("\\noalign{\\smallskip}\n")
     cat("\\end{tabular}\n")
     cat("\n")
   }
