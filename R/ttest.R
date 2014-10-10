@@ -1,6 +1,6 @@
 #' @importFrom lawstat levene.test
 #' @export
-ttest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
+tTest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
   ## initializations
   data <- as.data.frame(data)
   variables <- as.character(variables)
@@ -64,7 +64,7 @@ ttest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
                 group=group[1], type="independent")
   }
   ## return results
-  class(out) <- "ttest"
+  class(out) <- "tTest"
   out
 }
 
@@ -84,7 +84,7 @@ ttest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
 }
 
 #' @export
-print.ttest <- function(x, digits = 3, statistics = TRUE, ...) {
+print.tTest <- function(x, digits = 3, statistics = TRUE, ...) {
 
   ## initializations
   count <- 0
