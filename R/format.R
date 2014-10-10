@@ -1,5 +1,5 @@
 #' @export
-formatSPSS <- function(x, digits = 3) UseMethod("formatSPSS")
+formatSPSS <- function(x, ...) UseMethod("formatSPSS")
 
 #' @export
 formatSPSS.default <- function(x, ...) as.character(x)
@@ -35,7 +35,7 @@ formatSPSS.numeric <- function(x, digits = 3, ...) {
 #' @export
 formatSPSS.matrix <- function(x, ...) {
   # format as vector and add original attributes
-  formatted <- formatSPSS(as.vector(x))
+  formatted <- formatSPSS(as.vector(x), ...)
   attributes(formatted) <- attributes(x)
   # return formatted matrix
   formatted
