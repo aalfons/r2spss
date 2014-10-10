@@ -80,24 +80,23 @@ linesSPSS <- function(data, variables, index = NULL,
 
 
 #' @export
-boxplotSPSS <- function(data, variables, category = NULL,
-                        xlab = NULL, ylab = NULL,
-                        cut.names = NULL, ...) {
+boxplotSPSS <- function(data, variables, group = NULL, xlab = NULL,
+                        ylab = NULL, cut.names = NULL, ...) {
   # initializations
   data <- as.data.frame(data)
   variables <- as.character(variables)
-  category <- as.character(category)
+  group <- as.character(group)
   if (length(variables) == 0) stop("a variable to display must be specified")
   # create plot
-  if (length(category) == 0) {
+  if (length(group) == 0) {
     if (is.null(cut.names)) cut.names <- FALSE
     .boxplot(data[, variables, drop=FALSE], xlab=xlab, ylab=ylab,
              cut.names=cut.names, ...)
   } else {
     if (is.null(cut.names)) cut.names <- TRUE
-    if (is.null(xlab)) xlab <- category[1]
+    if (is.null(xlab)) xlab <- group[1]
     if (is.null(ylab)) ylab <- variables[1]
-    f <- as.formula(paste0(variables[1], "~", category[1]))
+    f <- as.formula(paste0(variables[1], "~", group[1]))
     .boxplot(f, data=data, xlab=xlab, ylab=ylab, cut.names=cut.names, ...)
   }
 }
