@@ -1,12 +1,16 @@
 #' @export
-descriptives <- function(x) {
+descriptives <- function(data, variables) {
+  ## initializations
+  data <- as.data.frame(data)
+  variables <- as.character(variables)
+  if (length(variables) == 0) stop("variables must be specified")
+  x <- data[, variables, drop=FALSE]
   # initializations
-  x <- as.data.frame(x)
   classes <- vapply(x, function(x) class(x)[1], character(1))
   n <- sum(complete.cases(x))
   # compute minimum, maximum, mean and standard deviation for each variable
   desc <- do.call(rbind, lapply(x, .descriptives))
-  row.names(desc) <- names(x)
+  row.names(desc) <- variables
   # return descriptives
   out <- list(classes=classes, descriptives=desc, n=n)
   class(out) <- "descriptives"
@@ -40,6 +44,7 @@ print.descriptives <- function(x, digits = 2, ...) {
   # initialize LaTeX table
   cat("\\begin{tabular}{|l|r|r|r|r|r|}\n")
   # print table header
+  cat("\\noalign{\\smallskip}\n")
   cat("\\multicolumn{6}{c}{\\textbf{Descriptive Statistics}} \\\\\n")
   cat("\\noalign{\\smallskip}\\hline\n")
   cat(" & & & & & \\multicolumn{1}{|c|}{Std.} \\\\\n")
@@ -52,6 +57,6 @@ print.descriptives <- function(x, digits = 2, ...) {
   # print complete cases
   cat("Valid N (listwise) &", x$n, "& & & & \\\\\n")
   # finalize LaTeX table
-  cat("\\hline\n")
+  cat("\\hline\\noalign{\\smallskip}\n")
   cat("\\end{tabular}\n")
 }
