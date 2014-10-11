@@ -23,11 +23,13 @@ linesSPSS <- function(data, variables, index = NULL,
 }
 
 # internal function for line plot with different defaults
-.lines <- function(x, y, ..., mar = NULL, bg = "#F0F0F0", main = NULL,
-                   xlab = NULL, ylab = NULL, font.lab = 2, cex.lab = 1.2,
+.lines <- function(x, y, ..., type = c("l", "o"), xlim = NULL, ylim = NULL,
+                   mar = NULL, bg = "#F0F0F0", main = NULL, xlab = NULL,
+                   ylab = NULL, font.lab = 2, cex.lab = 1.2,
                    # the following arguments are currently ignored
-                   type = "l", log = "", sub = NULL) {
+                   axes = TRUE, xaxt = "s", yaxt = "s", log = "", sub = NULL) {
   # initializations
+  type <- match.arg(type)
   if (is.null(mar)) {
     top <- if (is.null(main) || nchar(main) == 0) 0 else 2
     bottom <- if (is.null(xlab) || nchar(xlab) == 0) 2 else 4
@@ -38,24 +40,36 @@ linesSPSS <- function(data, variables, index = NULL,
   op <- par(mar=mar)
   on.exit(par(op))
   # initialize plot
-  plot(x, y, ..., type="n", main=main, xlab=xlab, ylab=ylab,
-       font.lab=font.lab, cex.lab=cex.lab)
+  if (is.character(x)) {
+    labs <- x
+    x <- seq_along(x)
+    if (is.null(xlim)) xlim <- range(x) + c(-0.5, 0.5)
+    plot(x, y, ..., type="n", xlim=xlim, ylim=ylim, main=main, xlab=xlab,
+         ylab=ylab, font.lab=font.lab, cex.lab=cex.lab, xaxt="n")
+    axis(side=1, at=x, labels=labs)
+  } else {
+    plot(x, y, ..., type="n", xlim=xlim, ylim=ylim, main=main, xlab=xlab,
+         ylab=ylab, font.lab=font.lab, cex.lab=cex.lab)
+  }
   # plot background
   usr <- par("usr")
   rect(usr[1], usr[3], usr[2], usr[4], col=bg, border=NA)
   # add points
-  lines(x, y, ...)
+  lines(x, y, type=type, ...)
 }
 
 # internal function for matrix line plot with different defaults
-.matlines <- function(x, y, ..., mar = NULL, bg = "#F0F0F0", lty = 1,
-                      lwd = 1.5, col = paletteSPSS(), main = NULL,
-                      xlab = NULL, ylab = NULL, font.lab = 2, cex.lab = 1.2,
+.matlines <- function(x, y, ..., type = c("l", "o"), xlim = NULL, ylim = NULL,
+                      mar = NULL, bg = "#F0F0F0", lty = 1, lwd = 1.5,
+                      col = paletteSPSS(), main = NULL, xlab = NULL,
+                      ylab = NULL, font.lab = 2, cex.lab = 1.2,
                       # the following arguments are currently ignored
-                      type = "l", log = "", sub = NULL, add = FALSE,
-                      verbose = FALSE) {
+                      axes = TRUE, xaxt = "s", yaxt = "s", log = "",
+                      sub = NULL, add = FALSE, verbose = FALSE) {
   # initializations
-  labels <- names(y)
+  y <- as.matrix(y)
+  labels <- colnames(y)
+  type <- match.arg(type)
   if (is.null(mar)) {
     top <- if (is.null(main) || nchar(main) == 0) 0 else 2
     bottom <- if (is.null(xlab) || nchar(xlab) == 0) 2 else 4
@@ -66,13 +80,24 @@ linesSPSS <- function(data, variables, index = NULL,
   op <- par(mar=mar)
   on.exit(par(op))
   # initialize plot
-  matplot(x, y, ..., type="n", main=main, xlab=xlab, ylab=ylab,
-          font.lab=font.lab, cex.lab=cex.lab, add=FALSE, verbose=FALSE)
+  if (is.character(x)) {
+    labs <- x
+    x <- seq_along(x)
+    if (is.null(xlim)) xlim <- range(x) + c(-0.5, 0.5)
+    matplot(x, y, ..., type="n", xlim=xlim, ylim=ylim, main=main, xlab=xlab,
+            ylab=ylab, font.lab=font.lab, cex.lab=cex.lab, xaxt="n",
+            add=FALSE, verbose=FALSE)
+    axis(side=1, at=x, labels=labs)
+  } else {
+    matplot(x, y, ..., type="n", xlim=xlim, ylim=ylim, main=main, xlab=xlab,
+            ylab=ylab, font.lab=font.lab, cex.lab=cex.lab, add=FALSE,
+            verbose=FALSE)
+  }
   # plot background
   usr <- par("usr")
   rect(usr[1], usr[3], usr[2], usr[4], col=bg, border=NA)
   # add points
-  matlines(x, y, lty=lty, lwd=lwd, col=col, ..., verbose=FALSE)
+  matlines(x, y, type=type, lty=lty, lwd=lwd, col=col, ..., verbose=FALSE)
   # add legend
   legend(usr[2], usr[4], legend=labels, lty=lty, lwd=lwd, col=col,
          bty="n", xpd=NA)
