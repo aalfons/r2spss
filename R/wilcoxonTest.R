@@ -81,7 +81,6 @@ wilcoxonTest <- function(data, variables, group = NULL) {
   out
 }
 
-
 #' @export
 print.wilcoxonTest <- function(x, digits = 3, statistics = c("ranks", "test"),
                                ...) {
