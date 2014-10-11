@@ -41,7 +41,7 @@ wilcoxonTest <- function(data, variables, group = NULL) {
     variable <- data[, variables[1]]
     by <- as.factor(data[, group[1]])
     if (nlevels(by) != 2) {
-      stop("independent-samples t test requires exactly two groups")
+      stop("rank sum test requires exactly two groups")
     }
     ok <- is.finite(variable) & !is.na(by)
     variable <- variable[ok]
