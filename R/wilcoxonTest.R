@@ -92,10 +92,10 @@ print.wilcoxonTest <- function(x, digits = 3, statistics = c("ranks", "test"),
   ## print LaTeX table for ranks
   if ("ranks" %in% statistics) {
     formatted <- formatSPSS(x$statistics, digits=2)
-    formatted[, "N"] <- paste0(formatted[, "N"], "$^\\text{", c("a", "b"), "}$")
     # print LaTeX table
     cat("\n")
     if (x$type == "paired") {
+      formatted[, "N"] <- paste0(formatted[, "N"], "$^\\text{", c("a", "b"), "}$")
       cat("\\begin{tabular}{|ll|r|r|r|}\n")
       cat("\\noalign{\\smallskip}\n")
       cat("\\multicolumn{5}{c}{\\textbf{Ranks}} \\\\\n")
@@ -111,8 +111,6 @@ print.wilcoxonTest <- function(x, digits = 3, statistics = c("ranks", "test"),
       cat("\\multicolumn{5}{l}{", "b. ", x$variables[2], " > ", x$variables[1], "} \\\\\n", sep="")
       cat("\\multicolumn{5}{l}{", "c. ", x$variables[2], " = ", x$variables[1], "} \\\\\n", sep="")
     } else if (x$type == "independent") {
-      formatted <- formatSPSS(x$statistics, digits=2)
-      # print LaTeX table
       cat("\\begin{tabular}{|ll|r|r|r|}\n")
       cat("\\noalign{\\smallskip}\n")
       cat("\\multicolumn{5}{c}{\\textbf{Ranks}} \\\\\n")
