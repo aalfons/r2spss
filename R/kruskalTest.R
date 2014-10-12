@@ -36,7 +36,7 @@ kruskalTest <- function(data, variable, group) {
 }
 
 #' @export
-print.kruskalTest <- function(x, digits = 3, statistics = c("ranks", "test"),
+print.kruskalTest <- function(x, digits = 2:3, statistics = c("ranks", "test"),
                               ...) {
 
   ## initializations
@@ -45,7 +45,7 @@ print.kruskalTest <- function(x, digits = 3, statistics = c("ranks", "test"),
 
   ## print LaTeX table for ranks
   if ("ranks" %in% statistics) {
-    formatted <- formatSPSS(x$statistics, digits=2)
+    formatted <- formatSPSS(x$statistics, digits=digits[1])
     # print LaTeX table
     cat("\n")
     cat("\\begin{tabular}{|ll|r|r|}\n")
@@ -71,7 +71,7 @@ print.kruskalTest <- function(x, digits = 3, statistics = c("ranks", "test"),
 
     ## collect output for test
     test <- c(x$test$statistic, x$test$p.value)
-    formatted <- formatSPSS(test, digits=digits)
+    formatted <- formatSPSS(test, digits=digits[2])
 
     ## print LaTeX table
     if (count == 0) cat("\n")

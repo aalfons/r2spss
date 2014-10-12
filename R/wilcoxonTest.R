@@ -82,7 +82,7 @@ wilcoxonTest <- function(data, variables, group = NULL) {
 }
 
 #' @export
-print.wilcoxonTest <- function(x, digits = 3, statistics = c("ranks", "test"),
+print.wilcoxonTest <- function(x, digits = 2:3, statistics = c("ranks", "test"),
                                ...) {
 
   ## initializations
@@ -91,7 +91,7 @@ print.wilcoxonTest <- function(x, digits = 3, statistics = c("ranks", "test"),
 
   ## print LaTeX table for ranks
   if ("ranks" %in% statistics) {
-    formatted <- formatSPSS(x$statistics, digits=2)
+    formatted <- formatSPSS(x$statistics, digits=digits[1])
     # print LaTeX table
     cat("\n")
     if (x$type == "paired") {
@@ -134,12 +134,12 @@ print.wilcoxonTest <- function(x, digits = 3, statistics = c("ranks", "test"),
     ## collect output for test
     if (x$type == "paired") {
       test <- c(x$test$statistic, x$test$p.value)
-      formatted <- formatSPSS(test, digits=digits)
+      formatted <- formatSPSS(test, digits=digits[2])
       min <- which.min(x$statistics[, "Sum of Ranks"])
     } else if (x$type == "independent") {
       test <- c(x$exact$statistic, x$w, x$asymptotic$statistic,
                 x$asymptotic$p.value, x$exact$p.value)
-      formatted <- formatSPSS(test, digits=digits)
+      formatted <- formatSPSS(test, digits=digits[2])
     } else stop("type of test not supported")
 
     ## print LaTeX table
