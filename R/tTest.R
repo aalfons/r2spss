@@ -1,4 +1,4 @@
-#' @importFrom lawstat levene.test
+#' @importFrom car leveneTest
 #' @export
 tTest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
   ## initializations
@@ -48,7 +48,7 @@ tTest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
     variable <- variable[ok]
     by <- by[ok]
     # perform tests
-    levene <- levene.test(variable, by, location="mean")
+    levene <- leveneTest(variable, by, center="mean")
     x <- variable[by == levels(by)[1]]
     y <- variable[by == levels(by)[2]]
     pooled <- t.test(x, y, mu=0, paired=FALSE, var.equal=TRUE,
@@ -104,7 +104,7 @@ print.tTest <- function(x, digits = 3, statistics = c("statistics", "test"),
       cat(" & & & \\multicolumn{1}{|c|}{Std.} & \\multicolumn{1}{|c|}{Std. Error} \\\\\n")
       cat(" & \\multicolumn{1}{|c|}{N} & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Deviation} & \\multicolumn{1}{|c|}{Mean} \\\\\n")
       cat("\\hline\n")
-      cat(rownames(formatted), "&", paste(formatted, collapse=" & "), "\\\\\n")
+      cat(rownames(formatted), "&", paste0(formatted, collapse=" & "), "\\\\\n")
     } else if (x$type == "paired") {
       cat("\\begin{tabular}{|l|r|r|r|r|}\n")
       cat("\\noalign{\\smallskip}\n")
@@ -113,8 +113,8 @@ print.tTest <- function(x, digits = 3, statistics = c("statistics", "test"),
       cat(" & & & \\multicolumn{1}{|c|}{Std.} & \\multicolumn{1}{|c|}{Std. Error} \\\\\n")
       cat(" & \\multicolumn{1}{|c|}{N} & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Deviation} & \\multicolumn{1}{|c|}{Mean} \\\\\n")
       cat("\\hline\n")
-      cat(rownames(formatted)[1], "&", paste(formatted[1, ], collapse=" & "), "\\\\\n")
-      cat(rownames(formatted)[2], "&", paste(formatted[2, ], collapse=" & "), "\\\\\n")
+      cat(rownames(formatted)[1], "&", paste0(formatted[1, ], collapse=" & "), "\\\\\n")
+      cat(rownames(formatted)[2], "&", paste0(formatted[2, ], collapse=" & "), "\\\\\n")
     } else if (x$type == "independent") {
       cat("\\begin{tabular}{|ll|r|r|r|r|}\n")
       cat("\\noalign{\\smallskip}\n")
@@ -123,8 +123,8 @@ print.tTest <- function(x, digits = 3, statistics = c("statistics", "test"),
       cat(" & & & & \\multicolumn{1}{|c|}{Std.} & \\multicolumn{1}{|c|}{Std. Error} \\\\\n")
       cat(" &", x$group, "& \\multicolumn{1}{|c|}{N} & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Deviation} & \\multicolumn{1}{|c|}{Mean} \\\\\n")
       cat("\\hline\n")
-      cat(x$variables, "&", rownames(formatted)[1], "&", paste(formatted[1, ], collapse=" & "), "\\\\\n")
-      cat(" &", rownames(formatted)[2], "&", paste(formatted[2, ], collapse=" & "), "\\\\\n")
+      cat(x$variables, "&", rownames(formatted)[1], "&", paste0(formatted[1, ], collapse=" & "), "\\\\\n")
+      cat(" &", rownames(formatted)[2], "&", paste0(formatted[2, ], collapse=" & "), "\\\\\n")
     } else stop("type of test not supported")
     # finalize LaTeX table
     cat("\\hline\\noalign{\\smallskip}\n")
@@ -154,15 +154,15 @@ print.tTest <- function(x, digits = 3, statistics = c("statistics", "test"),
       alpha <- 1 - gamma
       se <- diff(ci) / (2 * qt(1-alpha/2, df=df))
       sd <- se * sqrt(x$n)
-      rn <- paste(x$variables, collapse=" - ")
+      rn <- paste0(x$variables, collapse=" - ")
       test <- data.frame(Mean=x$test$estimate, "Std. Deviation"=sd,
                          "Std. Error Mean"=se, Lower=ci[1], Upper=ci[2],
                          t=x$test$statistic, df=df, "Sig."=x$test$p.value,
                          check.names=FALSE, row.names=rn)
       formatted <- formatSPSS(test, digits=digits)
     } else if (x$type == "independent") {
-      levene <- data.frame("F"=c(x$levene$statistic, NA),
-                           "Sig."=c(x$levene$p.value, NA),
+      levene <- data.frame("F"=x$levene[, "F value"],
+                           "Sig."=x$levene[, "Pr(>F)"],
                            check.names=FALSE, row.names=NULL)
       # equal variances assumed
       est <- x$pooled$estimate[1] - x$pooled$estimate[2]
@@ -209,7 +209,7 @@ print.tTest <- function(x, digits = 3, statistics = c("statistics", "test"),
       cat("\\cline{6-7}\n")
       cat(" & \\multicolumn{1}{|c|}{t} & \\multicolumn{1}{|c|}{df} & \\multicolumn{1}{|c|}{tailed)} & \\multicolumn{1}{|c|}{Difference} & \\multicolumn{1}{|c|}{Lower} & \\multicolumn{1}{|c|}{Upper} \\\\\n")
       cat("\\hline\n")
-      cat(rownames(formatted), "&", paste(formatted, collapse=" & "), "\\\\\n")
+      cat(rownames(formatted), "&", paste0(formatted, collapse=" & "), "\\\\\n")
     } else if (x$type == "paired") {
       cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|}\n")
       cat("\\noalign{\\smallskip}\n")
@@ -223,7 +223,7 @@ print.tTest <- function(x, digits = 3, statistics = c("statistics", "test"),
       cat("\\cline{5-6}\n")
       cat(" & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Deviation} & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Lower} & \\multicolumn{1}{|c|}{Upper} & \\multicolumn{1}{|c|}{t} & \\multicolumn{1}{|c|}{df} & \\multicolumn{1}{|c|}{tailed)} \\\\\n")
       cat("\\hline\n")
-      cat(rownames(formatted), "&", paste(formatted, collapse=" & "), "\\\\\n")
+      cat(rownames(formatted), "&", paste0(formatted, collapse=" & "), "\\\\\n")
     } else if (x$type == "independent") {
       cat("\\begin{tabular}{|ll|r|r|r|r|r|r|r|r|r|}\n")
       cat("\\noalign{\\smallskip}\n")
@@ -239,11 +239,11 @@ print.tTest <- function(x, digits = 3, statistics = c("statistics", "test"),
       cat("\\cline{10-11}\n")
       cat(" & & \\multicolumn{1}{|c|}{F} & \\multicolumn{1}{|c|}{Sig.} & \\multicolumn{1}{|c|}{t} & \\multicolumn{1}{|c|}{df} & \\multicolumn{1}{|c|}{tailed)} & \\multicolumn{1}{|c|}{Difference} & \\multicolumn{1}{|c|}{Difference} & \\multicolumn{1}{|c|}{Lower} & \\multicolumn{1}{|c|}{Upper} \\\\\n")
       cat("\\hline\n")
-      cat(x$variables, "& Equal &", paste(formatted[1,], collapse=" & "), "\\\\\n")
+      cat(x$variables, "& Equal &", paste0(formatted[1,], collapse=" & "), "\\\\\n")
       cat(" & variances & & & & & & & & & \\\\\n")
       cat(" & assumed & & & & & & & & & \\\\\n")
       cat("\\hline\n")
-      cat(" & Equal &", paste(formatted[2,], collapse=" & "), "\\\\\n")
+      cat(" & Equal &", paste0(formatted[2,], collapse=" & "), "\\\\\n")
       cat(" & variances & & & & & & & & & \\\\\n")
       cat(" & not & & & & & & & & & \\\\\n")
       cat(" & assumed & & & & & & & & & \\\\\n")

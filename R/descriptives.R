@@ -52,7 +52,7 @@ print.descriptives <- function(x, digits = 2, ...) {
   cat("\\hline\n")
   # print descriptives for each variable
   for (variable in rownames(formatted)) {
-    cat(variable, "&", paste(formatted[variable, ], collapse=" & "), "\\\\\n")
+    cat(variable, "&", paste0(formatted[variable, ], collapse=" & "), "\\\\\n")
   }
   # print complete cases
   cat("Valid N (listwise) &", x$n, "& & & & \\\\\n")

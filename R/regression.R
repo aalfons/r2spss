@@ -119,7 +119,7 @@ print.regression <- function(x, digits = 3,
     formatted <- formatSPSS(cbind(fits, changes), digits=digits)
     for (i in seq_along(models)) {
       # print current model summary
-      superscript <- sprintf("$^\\text{%s}$", letters[i])
+      superscript <- sprintf("$^{\\text{%s}}$", letters[i])
       cat(labels[i], " & ", formatted[i, 1], superscript, " & ",
           paste0(formatted[i, -1], collapse=" & "), " \\\\\n", sep="")
     }

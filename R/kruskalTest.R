@@ -56,7 +56,7 @@ print.kruskalTest <- function(x, digits = 3, statistics = c("ranks", "test"),
     cat("\\hline\n")
     cat(x$variable)
     for (rn in rownames(formatted)) {
-      cat(" &", rn, "&", paste(formatted[rn, ], collapse=" & "), "\\\\\n")
+      cat(" &", rn, "&", paste0(formatted[rn, ], collapse=" & "), "\\\\\n")
     }
     cat(" & Total &", sum(x$statistics$N), "& \\\\\n")
     cat("\\hline\\noalign{\\smallskip}\n")
