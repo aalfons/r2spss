@@ -141,6 +141,7 @@ print.ANOVA <- function(x, digits = 3,
       for (rn in rownames(formatted)) {
         cat(rn, "&", paste0(formatted[rn, ], collapse=" & "), "\\\\\n")
       }
+      cat("\\hline\n")
     } else if (x$type == "two-way") {
       formatted[duplicated(formatted[, 1]), 1] <- ""
       # initialize LaTeX table
@@ -155,12 +156,13 @@ print.ANOVA <- function(x, digits = 3,
       cat(x$group[1], "&", x$group[2], "& \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Deviation} & \\multicolumn{1}{|c|}{N} \\\\\n")
       cat("\\hline\n")
       # print table
-      for (rn in rownames(formatted)) {
-        cat(paste0(formatted[rn, ], collapse=" & "), "\\\\\n")
+      for (i in seq_len(nrow(formatted))) {
+        cat(paste0(formatted[i, ], collapse=" & "), "\\\\\n")
+        if (i %% (x$j+1) == 0) cat("\\hline\n")
       }
     } else stop("type of ANOVA not supported")
     # finalize LaTeX table
-    cat("\\hline\\noalign{\\smallskip}\n")
+    cat("\\noalign{\\smallskip}\n")
     cat("\\end{tabular}\n")
     cat("\n")
     count <- count + 1
