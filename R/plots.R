@@ -60,9 +60,9 @@ linesSPSS <- function(data, variables, index = NULL,
 
 # internal function for matrix line plot with different defaults
 .matlines <- function(x, y, ..., type = c("l", "o"), xlim = NULL, ylim = NULL,
-                      mar = NULL, bg = "#F0F0F0", lty = 1, lwd = 1.5,
+                      mar = NULL, bg = "#F0F0F0", lty = 1, lwd = 1.5, pch = 1,
                       col = paletteSPSS(), main = NULL, xlab = NULL,
-                      ylab = NULL, font.lab = 2, cex.lab = 1.2,
+                      ylab = NULL, title = NULL, font.lab = 2, cex.lab = 1.2,
                       # the following arguments are currently ignored
                       axes = TRUE, xaxt = "s", yaxt = "s", log = "",
                       sub = NULL, add = FALSE, verbose = FALSE) {
@@ -97,10 +97,11 @@ linesSPSS <- function(data, variables, index = NULL,
   usr <- par("usr")
   rect(usr[1], usr[3], usr[2], usr[4], col=bg, border=NA)
   # add points
-  matlines(x, y, type=type, lty=lty, lwd=lwd, col=col, ..., verbose=FALSE)
+  matlines(x, y, type=type, lty=lty, lwd=lwd, pch=pch, col=col,
+           ..., verbose=FALSE)
   # add legend
-  legend(usr[2], usr[4], legend=labels, lty=lty, lwd=lwd, col=col,
-         bty="n", xpd=NA)
+  legend(usr[2], usr[4], title=title, legend=labels,
+         lty=lty, lwd=lwd, col=col, bty="n", xpd=NA)
 }
 
 
