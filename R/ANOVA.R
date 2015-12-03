@@ -68,8 +68,10 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
     if (any(is.na(n))) stop("unused factor levels")
     mean <- .by(x, f, mean)
     sd <- .by(x, f, sd)
-    info <- data.frame(rep(c(levels(first), "Total"), each=j+1),
-                       rep.int(c(levels(second), "Total"), i+1))
+    lFirst <- c(levels(first), "Total")
+    lSecond <- c(levels(second), "Total")
+    info <- data.frame(factor(rep(lFirst, each=j+1), levels=lFirst),
+                       factor(rep.int(lSecond, i+1), levels=lSecond))
     names(info) <- group[1:2]
     desc <- data.frame(info, Mean=mean, "Std. Deviation"=sd, N=n,
                        check.names=FALSE, row.names=NULL)

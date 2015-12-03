@@ -88,7 +88,7 @@ print.regression <- function(x, digits = 3,
   # compute degrees of freedom
   df <- vapply(anovas, function(a) a$Df[1:2], integer(2), USE.NAMES=FALSE)
   df1 <- abs(diff(df[1, ]))
-  df2 <- df[2, -k]
+  df2 <- df[2, -1]
   # compute F changes and p-values
   f <- (abs(rsqchange) / df1) / ((1 - rsqfull) / df2)
   p <- pf(f, df1, df2, lower.tail=FALSE)
