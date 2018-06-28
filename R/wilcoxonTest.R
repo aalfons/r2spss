@@ -1,3 +1,4 @@
+#' @importFrom stats pnorm pwilcox
 #' @export
 wilcoxonTest <- function(data, variables, group = NULL) {
   ## initializations

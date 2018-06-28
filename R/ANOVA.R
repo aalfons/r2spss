@@ -1,5 +1,5 @@
-#' @importFrom car leveneTest
-#' @importFrom car Anova
+#' @importFrom stats anova aov as.formula lm qt
+#' @importFrom car Anova leveneTest
 #' @export
 ANOVA <- function(data, variable, group, conf.level = 0.95) {
   ## initializations

@@ -1,3 +1,4 @@
+#' @importFrom stats sd t.test
 #' @importFrom car leveneTest
 #' @export
 tTest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
@@ -83,6 +84,7 @@ tTest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
              check.names=FALSE)
 }
 
+#' @importFrom stats qt
 #' @export
 print.tTest <- function(x, digits = 3, statistics = c("statistics", "test"),
                         ...) {

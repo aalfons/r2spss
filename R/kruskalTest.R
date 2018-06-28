@@ -1,3 +1,4 @@
+#' @importFrom stats pchisq
 #' @export
 kruskalTest <- function(data, variable, group) {
   ## initializations

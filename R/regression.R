@@ -20,6 +20,7 @@ regression <- function(..., data, labels = NULL) {
   out
 }
 
+#' @importFrom stats aggregate anova pf
 #' @export
 print.regression <- function(x, digits = 3,
                              statistics = c("summary", "anova", "estimates"),
@@ -212,18 +213,21 @@ print.regression <- function(x, digits = 3,
   }
 }
 
+#' @importFrom stats coef
 #' @export
 coef.regression <- function(object, ...) {
   nm <- length(object$models)
   coef(object$models[[nm]])
 }
 
+#' @importFrom stats df.residual
 #' @export
 df.residual.regression <- function(object, ...) {
   nm <- length(object$models)
   df.residual(object$models[[nm]])
 }
 
+#' @importFrom stats sd
 #' @export
 fitted.regression <- function(object, standardized = FALSE, ...) {
   # extract fitted values from the last model
@@ -235,6 +239,7 @@ fitted.regression <- function(object, standardized = FALSE, ...) {
   fitted
 }
 
+#' @importFrom stats df.residual
 #' @export
 residuals.regression <- function(object, standardized = FALSE, ...) {
   # extract residuals from the last model

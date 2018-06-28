@@ -1,3 +1,4 @@
+#' @importFrom stats complete.cases sd
 #' @export
 descriptives <- function(data, variables) {
   ## initializations

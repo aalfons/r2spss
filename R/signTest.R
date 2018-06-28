@@ -1,3 +1,4 @@
+#' @importFrom stats dbinom pbinom pnorm
 #' @export
 signTest <- function(data, variables, exact = FALSE) {
   ## initializations

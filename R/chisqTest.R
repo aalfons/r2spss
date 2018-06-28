@@ -1,3 +1,4 @@
+#' @importFrom stats pchisq
 #' @export
 chisqTest <- function(data, variables, p = NULL) {
   ## initializations

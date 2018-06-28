@@ -1,3 +1,4 @@
+#' @importFrom graphics axis legend lines matlines matplot par plot rect
 #' @export
 linesSPSS <- function(data, variables, index = NULL,
                       xlab = NULL, ylab = NULL, ...) {
@@ -105,6 +106,8 @@ linesSPSS <- function(data, variables, index = NULL,
 }
 
 
+#' @importFrom graphics boxplot par points rect
+#' @importFrom stats as.formula
 #' @export
 boxplotSPSS <- function(data, variables, group = NULL, xlab = NULL,
                         ylab = NULL, cut.names = NULL, ...) {
@@ -191,6 +194,7 @@ boxplotSPSS <- function(data, variables, group = NULL, xlab = NULL,
 }
 
 
+#' @importFrom graphics box mtext par plot points rect
 #' @export
 plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL, ...) {
   # initializations
@@ -275,6 +279,8 @@ plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL, ...) {
 }
 
 
+#' @importFrom graphics box hist mtext par plot rect
+#' @importFrom stats dnorm sd
 #' @export
 histSPSS <- function(data, variable, normal = FALSE,
                      xlab = NULL, ylab = NULL, ...) {
@@ -361,6 +367,7 @@ getBins <- function(x) {
   min(ceiling(sqrt(n)), m)
 }
 
+#' @importFrom grDevices rgb
 #' @export
 paletteSPSS <- function() {
   # define red, green and blue vectors
