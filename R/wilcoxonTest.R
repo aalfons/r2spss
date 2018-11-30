@@ -1,5 +1,40 @@
+# --------------------------------------
+# Author: Andreas Alfons
+#         Erasmus Universiteit Rotterdam
+# --------------------------------------
+
+#' Wilcoxon Rank Sum and Signed Rank Tests
+#'
+#' Perform a Wilcoxon signed rank test for paired samples or a Wilcoxon rank
+#' sum test for independent samples on variables of a data set.  The output
+#' is printed as a LaTeX table that mimics the look of SPSS output (version
+#' <24).
+#'
+#' @aliases print.wilcoxonTest
+#'
+#' @param data  a data frame containing the variables.
+#' @param variables  a character vector specifying numeric variable(s) to be
+#' used.  If \code{group} is \code{NULL}, the Wilcoxon signed rank test is
+#' performed and this should be a character vector specifying two numeric
+#' variables which contain the paired observations.  If a grouping variable is
+#' specified in \code{group}, the Wilcoxon rank sum test is performed and this
+#' should be a character string specifying the numeric variable of interest.
+#' @param group  a character string specifying a grouping variable for the
+#' Wilcoxon rank sum test, or \code{NULL}.
+#'
+#' @return  An object of class \code{wilcoxonTest}.  The \code{print} method
+#' produces a LaTeX table that mimics the look of SPSS output (version <24).
+#'
+#' @note The Wilcoxon rank sum test also reports the value of the equivalent
+#' Mann-Whitney U test statistic.
+#'
+#' @author Andreas Alfons
+#'
+#' @keywords htest
+#'
 #' @importFrom stats pnorm pwilcox
 #' @export
+
 wilcoxonTest <- function(data, variables, group = NULL) {
   ## initializations
   data <- as.data.frame(data)

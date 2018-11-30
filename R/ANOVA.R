@@ -1,6 +1,33 @@
+# --------------------------------------
+# Author: Andreas Alfons
+#         Erasmus Universiteit Rotterdam
+# --------------------------------------
+
+#' One-way and Two-way ANOVA
+#'
+#' Perform one-way or two-way ANOVA on variables of a data set.  The output is
+#' printed as a LaTeX table that mimics the look of SPSS output (version <24).
+#'
+#' @aliases print.ANOVA
+#'
+#' @param data  a data frame containing the variables.
+#' @param variable  a character string specifying the numeric variable of
+#' interest.
+#' @param group  a character vector specifying one or two grouping variables.
+#' @param conf.level  a number between 0 and 1 giving the confidence level of
+#' the confidence interval.
+#'
+#' @return  An object of class \code{ANOVA}.  The \code{print} method produces
+#' a LaTeX table that mimics the look of SPSS output (version <24).
+#'
+#' @author Andreas Alfons
+#'
+#' @keywords htest
+#'
 #' @importFrom stats anova aov as.formula lm qt
 #' @importFrom car Anova leveneTest
 #' @export
+
 ANOVA <- function(data, variable, group, conf.level = 0.95) {
   ## initializations
   data <- as.data.frame(data)

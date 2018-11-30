@@ -1,8 +1,8 @@
 Package: r2spss
 Type: Package
 Title: Format R Output to Look Like SPSS
-Version: 0.1.1
-Date: 2018-06-26
+Version: 0.1.2
+Date: 2018-11-30
 Description: Format R output to look like SPSS for use in teaching materials.
 License: GPL (>= 2)
 Imports: 
@@ -13,4 +13,4 @@ Imports:
 LazyLoad: yes
 Authors@R: c(person("Andreas", "Alfons", email = "alfons@ese.eur.nl",
     role = c("aut", "cre")), person("David", "Simcha", role = "ctb"))
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0

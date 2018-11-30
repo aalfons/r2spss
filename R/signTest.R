@@ -1,5 +1,33 @@
+# --------------------------------------
+# Author: Andreas Alfons
+#         Erasmus Universiteit Rotterdam
+# --------------------------------------
+
+#' Sign Test
+#'
+#' Perform a sign test for paired samples on variables of a data set.  The
+#' output is printed as a LaTeX table that mimics the look of SPSS output
+#' (version <24).
+#'
+#' @aliases print.signTest
+#'
+#' @param data  a data frame containing the variables.
+#' @param variables  a character vector specifying two numeric variables
+#' containing the paired observations.
+#' @param exact  a logical indicating whether or not to include the exact
+#' p-value using the binomial distribution.  Note that the p-value using the
+#' normal approximation is always reported.
+#'
+#' @return  An object of class \code{signTest}.  The \code{print} method
+#' produces a LaTeX table that mimics the look of SPSS output (version <24).
+#'
+#' @author Andreas Alfons
+#'
+#' @keywords htest
+#'
 #' @importFrom stats dbinom pbinom pnorm
 #' @export
+
 signTest <- function(data, variables, exact = FALSE) {
   ## initializations
   data <- as.data.frame(data)

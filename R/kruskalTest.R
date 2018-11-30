@@ -1,5 +1,30 @@
+# --------------------------------------
+# Author: Andreas Alfons
+#         Erasmus Universiteit Rotterdam
+# --------------------------------------
+
+#' Kruskal-Wallis Test
+#'
+#' Perform a Kruskal-Wallis test on variables of a data set.  The output is
+#' printed as a LaTeX table that mimics the look of SPSS output (version <24).
+#'
+#' @aliases print.kruskalTest
+#'
+#' @param data  a data frame containing the variables.
+#' @param variable  a character string specifying the numeric variable of
+#' interest.
+#' @param group  a character string specifying a grouping variable.
+#'
+#' @return  An object of class \code{kruskalTest}.  The \code{print} method
+#' produces a LaTeX table that mimics the look of SPSS output (version <24).
+#'
+#' @author Andreas Alfons
+#'
+#' @keywords htest
+#'
 #' @importFrom stats pchisq
 #' @export
+
 kruskalTest <- function(data, variable, group) {
   ## initializations
   data <- as.data.frame(data)

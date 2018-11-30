@@ -1,4 +1,30 @@
+# --------------------------------------
+# Author: Andreas Alfons
+#         Erasmus Universiteit Rotterdam
+# --------------------------------------
+
+#' Linear Regression
+#'
+#' Perform linear regression variables of a data set.  The output is printed as
+#' a LaTeX table that mimics the look of SPSS output (version <24).
+#'
+#' @aliases print.regression
+#'
+#' @param \dots at least one formula specifying a regression models.  Different
+#' models can be compared by supplying multiple formulas.
+#' @param data  a data frame containing the variables.
+#' @param labels  a character or numeric vector giving labels for the
+#' regression models in the output tables.
+#'
+#' @return  An object of class \code{regression}.  The \code{print} method
+#' produces a LaTeX table that mimics the look of SPSS output (version <24).
+#'
+#' @author Andreas Alfons
+#'
+#' @keywords multivariate
+#'
 #' @export
+
 regression <- function(..., data, labels = NULL) {
   # initializations
   formulas <- list(...)

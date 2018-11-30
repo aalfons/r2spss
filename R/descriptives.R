@@ -1,5 +1,30 @@
+# --------------------------------------
+# Author: Andreas Alfons
+#         Erasmus Universiteit Rotterdam
+# --------------------------------------
+
+#' Descriptive Statistics
+#'
+#' Compute descriptive statistics of numeric variables of a data set (number of
+#' observations, minimum, maximum, mean, standard deviaiton).  The output is
+#' printed as a LaTeX table that mimics the look of SPSS output (version <24).
+#'
+#' @aliases print.tTest
+#'
+#' @param data  a data frame containing the variables.
+#' @param variables  a character vector specifying numeric variables for which
+#' to compute descriptive statistics.
+#'
+#' @return  An object of class \code{descriptives}.  The \code{print} method
+#' produces a LaTeX table that mimics the look of SPSS output (version <24).
+#'
+#' @author Andreas Alfons
+#'
+#' @keywords univar
+#'
 #' @importFrom stats complete.cases sd
 #' @export
+
 descriptives <- function(data, variables) {
   ## initializations
   data <- as.data.frame(data)

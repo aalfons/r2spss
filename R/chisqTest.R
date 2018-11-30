@@ -1,5 +1,39 @@
+# --------------------------------------
+# Author: Andreas Alfons
+#         Erasmus Universiteit Rotterdam
+# --------------------------------------
+
+#' \eqn{\chi^{2}}{Chi-squared} Tests
+#'
+#' Perform a \eqn{\chi^{2}}{chi-squared} goodness-of-fit test or a
+#' \eqn{\chi^{2}}{chi-squared} test on independence on variables of
+#' a data set.  The output is printed as a LaTeX table that mimics
+#' the look of SPSS output (version <24).
+#'
+#' @aliases print.chisqTest
+#'
+#' @param data  a data frame containing the variables.
+#' @param variables  a character vector specifying the categorical variable(s)
+#' of interest.  If only one variable is specified, a goodness-of-fit test is
+#' performed.  If two variables are specified, a test on independence is
+#' performed (with the first variable used for the rows and the second variable
+#' for the columns of the crosstabulation).
+#' @param p  a vector of probabilities for the categories in the
+#' goodness-of-fit test.
+#'
+#' @return  An object of class \code{chisqTest}.  The \code{print} method
+#' produces a LaTeX table that mimics the look of SPSS output (version <24).
+#'
+#' @note The test on independence also reports the results of a likelihood
+#' ratio test.
+#'
+#' @author Andreas Alfons
+#'
+#' @keywords htest
+#'
 #' @importFrom stats pchisq
 #' @export
+
 chisqTest <- function(data, variables, p = NULL) {
   ## initializations
   data <- as.data.frame(data)
