@@ -10,8 +10,6 @@
 #' is printed as a LaTeX table that mimics the look of SPSS output
 #' (version <24).
 #'
-#' @aliases print.tTest
-#'
 #' @param data  a data frame containing the variables.
 #' @param variables  a character vector specifying numeric variable(s) to be
 #' used for testing the mean(s).  If \code{group} is \code{NULL}, a one-sample
@@ -121,8 +119,22 @@ tTest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
              check.names=FALSE)
 }
 
+
+#' @rdname tTest
+#'
+#' @param x  an object of class \code{"tTest"} as returned by function
+#' \code{tTest}.
+#' @param digits  an integer giving the number of digits after the comma to be
+#' printed in the LaTeX tables.
+#' @param statistics  a character vector specifying which LaTeX tables should
+#' be printed.  Available options are \code{"statistics"} for descriptive
+#' statistics and \code{"test"} for test results.  The default is to print both
+#' tables.
+#' @param \dots currently ignored.
+#'
 #' @importFrom stats qt
 #' @export
+
 print.tTest <- function(x, digits = 3, statistics = c("statistics", "test"),
                         ...) {
 

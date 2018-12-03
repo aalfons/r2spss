@@ -8,16 +8,20 @@
 #' Perform linear regression variables of a data set.  The output is printed as
 #' a LaTeX table that mimics the look of SPSS output (version <24).
 #'
-#' @aliases print.regression
-#'
-#' @param \dots at least one formula specifying a regression models.  Different
-#' models can be compared by supplying multiple formulas.
+#' @param \dots  for \code{regression}, at least one formula specifying a
+#' regression model.  Different models can be compared by supplying multiple
+#' formulas.  For other methods, this is currently ignored.
 #' @param data  a data frame containing the variables.
 #' @param labels  a character or numeric vector giving labels for the
 #' regression models in the output tables.
 #'
 #' @return  An object of class \code{regression}.  The \code{print} method
 #' produces a LaTeX table that mimics the look of SPSS output (version <24).
+#'
+#' The \code{coef}, \code{df.residual}, \code{fitted} and \code{residuals}
+#' methods return the coefficients, residual degrees of freedom, fitted
+#' values and residuals, respectively, of the \emph{last} model (to mimic
+#' SPSS functionality).
 #'
 #' @author Andreas Alfons
 #'
@@ -46,8 +50,21 @@ regression <- function(..., data, labels = NULL) {
   out
 }
 
+
+#' @rdname regression
+#'
+#' @param x,object  an object of class \code{"regression"} as returned by
+#' function \code{regression}.
+#' @param digits  an integer giving the number of digits after the comma to be
+#' printed in the LaTeX tables.
+#' @param statistics  a character vector specifying which LaTeX tables should
+#' be printed.  Available options are \code{"summary"} for model summaries,
+#' \code{"anova"} for ANOVA results, and \code{"estimates"} for estimated
+#' coefficients.  The default is to print all tables.
+#'
 #' @importFrom stats aggregate anova pf
 #' @export
+
 print.regression <- function(x, digits = 3,
                              statistics = c("summary", "anova", "estimates"),
                              ...) {
@@ -239,22 +256,31 @@ print.regression <- function(x, digits = 3,
   }
 }
 
+
+#' @rdname regression
 #' @importFrom stats coef
 #' @export
+
 coef.regression <- function(object, ...) {
   nm <- length(object$models)
   coef(object$models[[nm]])
 }
 
+
+#' @rdname regression
 #' @importFrom stats df.residual
 #' @export
+
 df.residual.regression <- function(object, ...) {
   nm <- length(object$models)
   df.residual(object$models[[nm]])
 }
 
+
+#' @rdname regression
 #' @importFrom stats sd
 #' @export
+
 fitted.regression <- function(object, standardized = FALSE, ...) {
   # extract fitted values from the last model
   nm <- length(object$models)
@@ -265,8 +291,16 @@ fitted.regression <- function(object, standardized = FALSE, ...) {
   fitted
 }
 
+
+#' @rdname regression
+#'
+#' @param standardized  a logical indicating whether to return standardized
+#' residuals and fitted values (\code{TRUE}), or residuals and fitted values on
+#' their original scale (\code{FALSE}).
+#'
 #' @importFrom stats df.residual
 #' @export
+
 residuals.regression <- function(object, standardized = FALSE, ...) {
   # extract residuals from the last model
   nm <- length(object$models)
@@ -279,6 +313,7 @@ residuals.regression <- function(object, standardized = FALSE, ...) {
   # return (standardized) residuals
   residuals
 }
+
 
 #' @export
 plot.regression <- function(x, y, which = c("histogram", "scatter"),

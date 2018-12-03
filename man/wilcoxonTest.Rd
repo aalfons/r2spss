@@ -6,6 +6,9 @@
 \title{Wilcoxon Rank Sum and Signed Rank Tests}
 \usage{
 wilcoxonTest(data, variables, group = NULL)
+
+\method{print}{wilcoxonTest}(x, digits = 2:3, statistics = c("ranks",
+  "test"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -19,6 +22,20 @@ should be a character string specifying the numeric variable of interest.}
 
 \item{group}{a character string specifying a grouping variable for the
 Wilcoxon rank sum test, or \code{NULL}.}
+
+\item{x}{an object of class \code{"wilcoxonTest"} as returned by function
+\code{wilcoxonTest}.}
+
+\item{digits}{an integer vector giving the number of digits after the comma
+to be printed in the LaTeX tables.  The first element corresponds to the
+number of digits in table with the summary of the ranks, and the second
+element corresponds to the number of digits in the table for the test.}
+
+\item{statistics}{a character vector specifying which LaTeX tables should
+be printed.  Available options are \code{"ranks"} for a summary of the ranks
+and \code{"test"} for test results.  The default is to print both tables.}
+
+\item{\dots}{currently ignored.}
 }
 \value{
 An object of class \code{wilcoxonTest}.  The \code{print} method

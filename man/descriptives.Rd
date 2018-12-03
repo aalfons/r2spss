@@ -2,16 +2,26 @@
 % Please edit documentation in R/descriptives.R
 \name{descriptives}
 \alias{descriptives}
-\alias{print.tTest}
+\alias{print.descriptives}
 \title{Descriptive Statistics}
 \usage{
 descriptives(data, variables)
+
+\method{print}{descriptives}(x, digits = 2, ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
 
 \item{variables}{a character vector specifying numeric variables for which
 to compute descriptive statistics.}
+
+\item{x}{an object of class \code{"descriptives"} as returned by function
+\code{descriptives}.}
+
+\item{digits}{an integer giving the number of digits after the comma to be
+printed in the LaTeX table.}
+
+\item{\dots}{currently ignored.}
 }
 \value{
 An object of class \code{descriptives}.  The \code{print} method

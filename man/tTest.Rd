@@ -6,6 +6,9 @@
 \title{t Tests}
 \usage{
 tTest(data, variables, group = NULL, mu = 0, conf.level = 0.95)
+
+\method{print}{tTest}(x, digits = 3, statistics = c("statistics",
+  "test"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -26,6 +29,19 @@ t test.}
 
 \item{conf.level}{a number between 0 and 1 giving the confidence level of
 the confidence interval.}
+
+\item{x}{an object of class \code{"tTest"} as returned by function
+\code{tTest}.}
+
+\item{digits}{an integer giving the number of digits after the comma to be
+printed in the LaTeX tables.}
+
+\item{statistics}{a character vector specifying which LaTeX tables should
+be printed.  Available options are \code{"statistics"} for descriptive
+statistics and \code{"test"} for test results.  The default is to print both
+tables.}
+
+\item{\dots}{currently ignored.}
 }
 \value{
 An object of class \code{tTest}.  The \code{print} method produces

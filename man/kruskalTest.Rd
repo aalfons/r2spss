@@ -6,6 +6,9 @@
 \title{Kruskal-Wallis Test}
 \usage{
 kruskalTest(data, variable, group)
+
+\method{print}{kruskalTest}(x, digits = 2:3, statistics = c("ranks",
+  "test"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -14,6 +17,20 @@ kruskalTest(data, variable, group)
 interest.}
 
 \item{group}{a character string specifying a grouping variable.}
+
+\item{x}{an object of class \code{"kruskalTest"} as returned by function
+\code{kruskalTest}.}
+
+\item{digits}{an integer vector giving the number of digits after the comma
+to be printed in the LaTeX tables.  The first element corresponds to the
+number of digits in table with the summary of the ranks, and the second
+element corresponds to the number of digits in the table for the test.}
+
+\item{statistics}{a character vector specifying which LaTeX tables should
+be printed.  Available options are \code{"ranks"} for a summary of the ranks
+and \code{"test"} for test results.  The default is to print both tables.}
+
+\item{\dots}{currently ignored.}
 }
 \value{
 An object of class \code{kruskalTest}.  The \code{print} method

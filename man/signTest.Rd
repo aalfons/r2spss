@@ -6,6 +6,9 @@
 \title{Sign Test}
 \usage{
 signTest(data, variables, exact = FALSE)
+
+\method{print}{signTest}(x, digits = 3, statistics = c("frequencies",
+  "test"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -16,6 +19,19 @@ containing the paired observations.}
 \item{exact}{a logical indicating whether or not to include the exact
 p-value using the binomial distribution.  Note that the p-value using the
 normal approximation is always reported.}
+
+\item{x}{an object of class \code{"signTest"} as returned by function
+\code{signTest}.}
+
+\item{digits}{an integer giving the number of digits after the comma to be
+printed in the LaTeX tables.}
+
+\item{statistics}{a character vector specifying which LaTeX tables should
+be printed.  Available options are \code{"frequencies"} for a summary of the
+frequencies and \code{"test"} for test results.  The default is to print
+both tables.}
+
+\item{\dots}{currently ignored.}
 }
 \value{
 An object of class \code{signTest}.  The \code{print} method

@@ -8,8 +8,6 @@
 #' Perform a Kruskal-Wallis test on variables of a data set.  The output is
 #' printed as a LaTeX table that mimics the look of SPSS output (version <24).
 #'
-#' @aliases print.kruskalTest
-#'
 #' @param data  a data frame containing the variables.
 #' @param variable  a character string specifying the numeric variable of
 #' interest.
@@ -61,7 +59,22 @@ kruskalTest <- function(data, variable, group) {
   out
 }
 
+
+#' @rdname kruskalTest
+#'
+#' @param x  an object of class \code{"kruskalTest"} as returned by function
+#' \code{kruskalTest}.
+#' @param digits  an integer vector giving the number of digits after the comma
+#' to be printed in the LaTeX tables.  The first element corresponds to the
+#' number of digits in table with the summary of the ranks, and the second
+#' element corresponds to the number of digits in the table for the test.
+#' @param statistics  a character vector specifying which LaTeX tables should
+#' be printed.  Available options are \code{"ranks"} for a summary of the ranks
+#' and \code{"test"} for test results.  The default is to print both tables.
+#' @param \dots currently ignored.
+#'
 #' @export
+
 print.kruskalTest <- function(x, digits = 2:3, statistics = c("ranks", "test"),
                               ...) {
 

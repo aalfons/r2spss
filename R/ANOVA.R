@@ -8,8 +8,6 @@
 #' Perform one-way or two-way ANOVA on variables of a data set.  The output is
 #' printed as a LaTeX table that mimics the look of SPSS output (version <24).
 #'
-#' @aliases print.ANOVA
-#'
 #' @param data  a data frame containing the variables.
 #' @param variable  a character string specifying the numeric variable of
 #' interest.
@@ -137,7 +135,21 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
   out
 }
 
+#' @rdname ANOVA
+#'
+#' @param x  an object of class \code{"ANOVA"} as returned by function
+#' \code{ANOVA}.
+#' @param digits  an integer giving the number of digits after the comma to be
+#' printed in the LaTeX tables.
+#' @param statistics  a character vector specifying which LaTeX tables should
+#' be printed.  Available options are \code{"descriptives"} for descriptive
+#' statistics, \code{"variance"} for Levene's test on homogeneity of the
+#' variances, and \code{"test"} for ANOVA results.  The default is to print all
+#' tables.
+#' @param \dots currently ignored.
+#'
 #' @export
+
 print.ANOVA <- function(x, digits = 3,
                         statistics = c("descriptives", "variance", "test"),
                         ...) {

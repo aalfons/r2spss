@@ -6,6 +6,9 @@
 \title{\eqn{\chi^{2}}{Chi-squared} Tests}
 \usage{
 chisqTest(data, variables, p = NULL)
+
+\method{print}{chisqTest}(x, digits = c(1, 3),
+  statistics = c("frequencies", "test"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -18,6 +21,21 @@ for the columns of the crosstabulation).}
 
 \item{p}{a vector of probabilities for the categories in the
 goodness-of-fit test.}
+
+\item{x}{an object of class \code{"chisqTest"} as returned by function
+\code{chisqTest}.}
+
+\item{digits}{an integer vector giving the number of digits after the comma
+to be printed in the LaTeX tables.  The first element corresponds to the
+number of digits in the table of frequencies, and the second element
+corresponds to the number of digits in the table for the test.}
+
+\item{statistics}{a character vector specifying which LaTeX tables should
+be printed.  Available options are \code{"frequencies"} for a table of the
+observed and expected frequencies, and \code{"test"} for test results.  The
+default is to print both tables.}
+
+\item{\dots}{currently ignored.}
 }
 \value{
 An object of class \code{chisqTest}.  The \code{print} method

@@ -10,8 +10,6 @@
 #' is printed as a LaTeX table that mimics the look of SPSS output (version
 #' <24).
 #'
-#' @aliases print.wilcoxonTest
-#'
 #' @param data  a data frame containing the variables.
 #' @param variables  a character vector specifying numeric variable(s) to be
 #' used.  If \code{group} is \code{NULL}, the Wilcoxon signed rank test is
@@ -117,7 +115,22 @@ wilcoxonTest <- function(data, variables, group = NULL) {
   out
 }
 
+
+#' @rdname wilcoxonTest
+#'
+#' @param x  an object of class \code{"wilcoxonTest"} as returned by function
+#' \code{wilcoxonTest}.
+#' @param digits  an integer vector giving the number of digits after the comma
+#' to be printed in the LaTeX tables.  The first element corresponds to the
+#' number of digits in table with the summary of the ranks, and the second
+#' element corresponds to the number of digits in the table for the test.
+#' @param statistics  a character vector specifying which LaTeX tables should
+#' be printed.  Available options are \code{"ranks"} for a summary of the ranks
+#' and \code{"test"} for test results.  The default is to print both tables.
+#' @param \dots currently ignored.
+#'
 #' @export
+
 print.wilcoxonTest <- function(x, digits = 2:3, statistics = c("ranks", "test"),
                                ...) {
 

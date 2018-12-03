@@ -3,22 +3,58 @@
 \name{regression}
 \alias{regression}
 \alias{print.regression}
+\alias{coef.regression}
+\alias{df.residual.regression}
+\alias{fitted.regression}
+\alias{residuals.regression}
 \title{Linear Regression}
 \usage{
 regression(..., data, labels = NULL)
+
+\method{print}{regression}(x, digits = 3, statistics = c("summary",
+  "anova", "estimates"), ...)
+
+\method{coef}{regression}(object, ...)
+
+\method{df.residual}{regression}(object, ...)
+
+\method{fitted}{regression}(object, standardized = FALSE, ...)
+
+\method{residuals}{regression}(object, standardized = FALSE, ...)
 }
 \arguments{
-\item{\dots}{at least one formula specifying a regression models.  Different
-models can be compared by supplying multiple formulas.}
+\item{\dots}{for \code{regression}, at least one formula specifying a
+regression model.  Different models can be compared by supplying multiple
+formulas.  For other methods, this is currently ignored.}
 
 \item{data}{a data frame containing the variables.}
 
 \item{labels}{a character or numeric vector giving labels for the
 regression models in the output tables.}
+
+\item{x, object}{an object of class \code{"regression"} as returned by
+function \code{regression}.}
+
+\item{digits}{an integer giving the number of digits after the comma to be
+printed in the LaTeX tables.}
+
+\item{statistics}{a character vector specifying which LaTeX tables should
+be printed.  Available options are \code{"summary"} for model summaries,
+\code{"anova"} for ANOVA results, and \code{"estimates"} for estimated
+coefficients.  The default is to print all tables.}
+
+\item{standardized}{a logical indicating whether to return standardized
+residuals and fitted values (\code{TRUE}), or residuals and fitted values on
+their original scale (\code{FALSE}).}
 }
 \value{
 An object of class \code{regression}.  The \code{print} method
 produces a LaTeX table that mimics the look of SPSS output (version <24).
+
+The \code{coef}, \code{df.residual}, \code{fitted} and \code{residuals}
+methods return the coefficients, residual degrees of freedom, fitted
+values and residuals, respectively, of the \emph{last} model (to mimic
+SPSS functionality).
 }
 \description{
 Perform linear regression variables of a data set.  The output is printed as

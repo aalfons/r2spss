@@ -9,8 +9,6 @@
 #' observations, minimum, maximum, mean, standard deviaiton).  The output is
 #' printed as a LaTeX table that mimics the look of SPSS output (version <24).
 #'
-#' @aliases print.tTest
-#'
 #' @param data  a data frame containing the variables.
 #' @param variables  a character vector specifying numeric variables for which
 #' to compute descriptive statistics.
@@ -58,7 +56,17 @@ descriptives <- function(data, variables) {
              "Std. Deviation"=sd, check.names=FALSE)
 }
 
+
+#' @rdname descriptives
+#'
+#' @param x  an object of class \code{"descriptives"} as returned by function
+#' \code{descriptives}.
+#' @param digits  an integer giving the number of digits after the comma to be
+#' printed in the LaTeX table.
+#' @param \dots currently ignored.
+#'
 #' @export
+
 print.descriptives <- function(x, digits = 2, ...) {
   # format descriptives
   d <- ifelse(x$classes == "integer", 0, digits)

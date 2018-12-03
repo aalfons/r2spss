@@ -6,6 +6,9 @@
 \title{One-way and Two-way ANOVA}
 \usage{
 ANOVA(data, variable, group, conf.level = 0.95)
+
+\method{print}{ANOVA}(x, digits = 3, statistics = c("descriptives",
+  "variance", "test"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -17,6 +20,20 @@ interest.}
 
 \item{conf.level}{a number between 0 and 1 giving the confidence level of
 the confidence interval.}
+
+\item{x}{an object of class \code{"ANOVA"} as returned by function
+\code{ANOVA}.}
+
+\item{digits}{an integer giving the number of digits after the comma to be
+printed in the LaTeX tables.}
+
+\item{statistics}{a character vector specifying which LaTeX tables should
+be printed.  Available options are \code{"descriptives"} for descriptive
+statistics, \code{"variance"} for Levene's test on homogeneity of the
+variances, and \code{"test"} for ANOVA results.  The default is to print all
+tables.}
+
+\item{\dots}{currently ignored.}
 }
 \value{
 An object of class \code{ANOVA}.  The \code{print} method produces

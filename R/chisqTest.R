@@ -10,8 +10,6 @@
 #' a data set.  The output is printed as a LaTeX table that mimics
 #' the look of SPSS output (version <24).
 #'
-#' @aliases print.chisqTest
-#'
 #' @param data  a data frame containing the variables.
 #' @param variables  a character vector specifying the categorical variable(s)
 #' of interest.  If only one variable is specified, a goodness-of-fit test is
@@ -107,7 +105,23 @@ chisqTest <- function(data, variables, p = NULL) {
   out
 }
 
+
+#' @rdname chisqTest
+#'
+#' @param x  an object of class \code{"chisqTest"} as returned by function
+#' \code{chisqTest}.
+#' @param digits  an integer vector giving the number of digits after the comma
+#' to be printed in the LaTeX tables.  The first element corresponds to the
+#' number of digits in the table of frequencies, and the second element
+#' corresponds to the number of digits in the table for the test.
+#' @param statistics  a character vector specifying which LaTeX tables should
+#' be printed.  Available options are \code{"frequencies"} for a table of the
+#' observed and expected frequencies, and \code{"test"} for test results.  The
+#' default is to print both tables.
+#' @param \dots currently ignored.
+#'
 #' @export
+
 print.chisqTest <- function(x, digits = c(1, 3),
                             statistics = c("frequencies", "test"),
                             ...) {

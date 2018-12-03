@@ -9,8 +9,6 @@
 #' output is printed as a LaTeX table that mimics the look of SPSS output
 #' (version <24).
 #'
-#' @aliases print.signTest
-#'
 #' @param data  a data frame containing the variables.
 #' @param variables  a character vector specifying two numeric variables
 #' containing the paired observations.
@@ -67,7 +65,21 @@ signTest <- function(data, variables, exact = FALSE) {
   out
 }
 
+
+#' @rdname signTest
+#'
+#' @param x  an object of class \code{"signTest"} as returned by function
+#' \code{signTest}.
+#' @param digits  an integer giving the number of digits after the comma to be
+#' printed in the LaTeX tables.
+#' @param statistics  a character vector specifying which LaTeX tables should
+#' be printed.  Available options are \code{"frequencies"} for a summary of the
+#' frequencies and \code{"test"} for test results.  The default is to print
+#' both tables.
+#' @param \dots currently ignored.
+#'
 #' @export
+
 print.signTest <- function(x, digits = 3, statistics = c("frequencies", "test"),
                            ...) {
 
