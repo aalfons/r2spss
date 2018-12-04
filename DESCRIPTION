@@ -10,7 +10,12 @@ Imports:
     grDevices, 
     stats, 
     car
+Suggests: 
+    openintro
 LazyLoad: yes
 Authors@R: c(person("Andreas", "Alfons", email = "alfons@ese.eur.nl",
-    role = c("aut", "cre")), person("David", "Simcha", role = "ctb"))
+    role = c("aut", "cre")))
+Author: Andreas Alfons [aut, cre]
+Maintainer: Andreas Alfons <alfons@ese.eur.nl>
+Encoding: UTF-8
 RoxygenNote: 6.1.0
