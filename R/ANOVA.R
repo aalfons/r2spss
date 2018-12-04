@@ -6,7 +6,8 @@
 #' One-way and Two-way ANOVA
 #'
 #' Perform one-way or two-way ANOVA on variables of a data set.  The output is
-#' printed as a LaTeX table that mimics the look of SPSS output (version <24).
+#' printed as a LaTeX table that mimics the look of SPSS output (version <24),
+#' and a plot of the results mimics the look of SPSS graphs.
 #'
 #' @param data  a data frame containing the variables.
 #' @param variable  a character string specifying the numeric variable of
@@ -14,9 +15,15 @@
 #' @param group  a character vector specifying one or two grouping variables.
 #' @param conf.level  a number between 0 and 1 giving the confidence level of
 #' the confidence interval.
+#' @param \dots  For the \code{plot} method, additional arguments to be passed
+#' down, in particular graphical parameters (see also \code{\link{linesSPSS}}).
+#' For the \code{print} method, additional arguments are currently ignored.
 #'
 #' @return  An object of class \code{ANOVA}.  The \code{print} method produces
 #' a LaTeX table that mimics the look of SPSS output (version <24).
+#'
+#' The \code{plot} method does not return anything, but produces a profile plot
+#' of the ANOVA results.
 #'
 #' @author Andreas Alfons
 #'
@@ -146,7 +153,6 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
 #' statistics, \code{"variance"} for Levene's test on homogeneity of the
 #' variances, and \code{"test"} for ANOVA results.  The default is to print all
 #' tables.
-#' @param \dots currently ignored.
 #'
 #' @export
 
@@ -312,7 +318,22 @@ print.ANOVA <- function(x, digits = 3,
   }
 }
 
+
+#' @rdname ANOVA
+#'
+#' @param y  ignored (only included because it is defined for the generic
+#' function \code{\link[graphics]{plot}}).
+#' @param which  for two-way ANOVA, an integer with possible values \code{1} or
+#' \code{2} indicating whether the first or the second factor should be used on
+#' the \eqn{x}-axis.  The other factor will then be used for drawing separate
+#' lines.  For one-way ANOVA, this is not meaningful and ignored.
+#' @param type  a character string specifying the type of lines.  Possible
+#' values are \code{"o"} (the default) for overplotted points and lines, and
+#' \code{"l"} for lines only.
+#' @param main,xlab,ylab  the plot title and axis labels.
+#'
 #' @export
+
 plot.ANOVA <- function(x, y, which = 1, type = "o", main = NULL,
                        xlab = NULL, ylab = NULL, ...) {
   if (x$type == "one-way") {
@@ -338,6 +359,7 @@ plot.ANOVA <- function(x, y, which = 1, type = "o", main = NULL,
               title=lines, ...)
   } else stop("type of ANOVA not supported")
 }
+
 
 # apply a function on each group as well as all observations (one factor)
 .tapply <- function(X, INDEX, FUN) c(tapply(X, INDEX, FUN), Total=FUN(X))

@@ -3,12 +3,16 @@
 \name{ANOVA}
 \alias{ANOVA}
 \alias{print.ANOVA}
+\alias{plot.ANOVA}
 \title{One-way and Two-way ANOVA}
 \usage{
 ANOVA(data, variable, group, conf.level = 0.95)
 
 \method{print}{ANOVA}(x, digits = 3, statistics = c("descriptives",
   "variance", "test"), ...)
+
+\method{plot}{ANOVA}(x, y, which = 1, type = "o", main = NULL,
+  xlab = NULL, ylab = NULL, ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -33,15 +37,35 @@ statistics, \code{"variance"} for Levene's test on homogeneity of the
 variances, and \code{"test"} for ANOVA results.  The default is to print all
 tables.}
 
-\item{\dots}{currently ignored.}
+\item{\dots}{For the \code{plot} method, additional arguments to be passed
+down, in particular graphical parameters (see also \code{\link{linesSPSS}}).
+For the \code{print} method, additional arguments are currently ignored.}
+
+\item{y}{ignored (only included because it is defined for the generic
+function \code{\link[graphics]{plot}}).}
+
+\item{which}{for two-way ANOVA, an integer with possible values \code{1} or
+\code{2} indicating whether the first or the second factor should be used on
+the \eqn{x}-axis.  The other factor will then be used for drawing separate
+lines.  For one-way ANOVA, this is not meaningful and ignored.}
+
+\item{type}{a character string specifying the type of lines.  Possible
+values are \code{"o"} (the default) for overplotted points and lines, and
+\code{"l"} for lines only.}
+
+\item{main, xlab, ylab}{the plot title and axis labels.}
 }
 \value{
 An object of class \code{ANOVA}.  The \code{print} method produces
 a LaTeX table that mimics the look of SPSS output (version <24).
+
+The \code{plot} method does not return anything, but produces a profile plot
+of the ANOVA results.
 }
 \description{
 Perform one-way or two-way ANOVA on variables of a data set.  The output is
-printed as a LaTeX table that mimics the look of SPSS output (version <24).
+printed as a LaTeX table that mimics the look of SPSS output (version <24),
+and a plot of the results mimics the look of SPSS graphs.
 }
 \author{
 Andreas Alfons

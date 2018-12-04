@@ -1,10 +1,36 @@
+# --------------------------------------
+# Author: Andreas Alfons
+#         Erasmus Universiteit Rotterdam
+# --------------------------------------
+
+#' Format Objects
+#'
+#' Format an object for printing, mostly used to print numeric data in the same
+#' way SPSS.  This is mainly for internal use in \code{\link{print}} methods.
+#'
+#' @param x  an \R object, typically numeric.  Currently methods are
+#' implemented for vectors, matrices and data frames.  The default method calls
+#' \code{\link{as.character}}.
+#' @param \dots  additional arguments passed down to methods.
+#'
+#' @author Andreas Alfons
+#'
+#' @keywords utilities
+#'
 #' @export
+
 formatSPSS <- function(x, ...) UseMethod("formatSPSS")
 
+
+#' @rdname formatSPSS
 #' @export
+
 formatSPSS.default <- function(x, ...) as.character(x)
 
+
+#' @rdname formatSPSS
 #' @export
+
 formatSPSS.integer <- function(x, ...) {
   # define format for integers
   n <- length(x)
@@ -15,7 +41,14 @@ formatSPSS.integer <- function(x, ...) {
   sprintf(fmt, x)
 }
 
+
+#' @rdname formatSPSS
+#'
+#' @param digits  an integer giving the number of digits after the comma to
+#' display.
+#'
 #' @export
+
 formatSPSS.numeric <- function(x, digits = 3, ...) {
   # define format with specified number of digits
   n <- length(x)
@@ -32,7 +65,10 @@ formatSPSS.numeric <- function(x, digits = 3, ...) {
   formatted
 }
 
+
+#' @rdname formatSPSS
 #' @export
+
 formatSPSS.matrix <- function(x, ...) {
   # format as vector and add original attributes
   formatted <- formatSPSS(as.vector(x), ...)
@@ -41,7 +77,10 @@ formatSPSS.matrix <- function(x, ...) {
   formatted
 }
 
+
+#' @rdname formatSPSS
 #' @export
+
 formatSPSS.data.frame <- function(x, ...) {
   # format each variable
   formatted <- lapply(x, formatSPSS, ...)

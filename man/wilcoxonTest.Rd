@@ -3,7 +3,7 @@
 \name{wilcoxonTest}
 \alias{wilcoxonTest}
 \alias{print.wilcoxonTest}
-\title{Wilcoxon Rank Sum and Signed Rank Tests}
+\title{Wilcoxon Signed Rank and Rank Sum Tests}
 \usage{
 wilcoxonTest(data, variables, group = NULL)
 

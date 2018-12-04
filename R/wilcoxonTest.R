@@ -3,7 +3,7 @@
 #         Erasmus Universiteit Rotterdam
 # --------------------------------------
 
-#' Wilcoxon Rank Sum and Signed Rank Tests
+#' Wilcoxon Signed Rank and Rank Sum Tests
 #'
 #' Perform a Wilcoxon signed rank test for paired samples or a Wilcoxon rank
 #' sum test for independent samples on variables of a data set.  The output

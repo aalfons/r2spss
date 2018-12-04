@@ -7,6 +7,7 @@
 \alias{df.residual.regression}
 \alias{fitted.regression}
 \alias{residuals.regression}
+\alias{plot.regression}
 \title{Linear Regression}
 \usage{
 regression(..., data, labels = NULL)
@@ -21,11 +22,16 @@ regression(..., data, labels = NULL)
 \method{fitted}{regression}(object, standardized = FALSE, ...)
 
 \method{residuals}{regression}(object, standardized = FALSE, ...)
+
+\method{plot}{regression}(x, y, which = c("histogram", "scatter"),
+  main = NULL, xlab = NULL, ylab = NULL, ...)
 }
 \arguments{
 \item{\dots}{for \code{regression}, at least one formula specifying a
 regression model.  Different models can be compared by supplying multiple
-formulas.  For other methods, this is currently ignored.}
+formulas.  For the \code{plot} method, additional arguments to be passed
+down, in particular graphical parameters (see also \code{\link{histSPSS}}
+and \code{\link{plotSPSS}}).  For other methods, this is currently ignored.}
 
 \item{data}{a data frame containing the variables.}
 
@@ -46,6 +52,16 @@ coefficients.  The default is to print all tables.}
 \item{standardized}{a logical indicating whether to return standardized
 residuals and fitted values (\code{TRUE}), or residuals and fitted values on
 their original scale (\code{FALSE}).}
+
+\item{y}{ignored (only included because it is defined for the generic
+function \code{\link[graphics]{plot}}).}
+
+\item{which}{a character string specifying which plot to produce.  Possible
+values are \code{"histogram"} for a histogram of the residuals, or
+\code{"scatter"} for a scatterplot of the standardized residuals against the
+standardized fitted values.}
+
+\item{main, xlab, ylab}{the plot title and axis labels.}
 }
 \value{
 An object of class \code{regression}.  The \code{print} method
@@ -55,10 +71,14 @@ The \code{coef}, \code{df.residual}, \code{fitted} and \code{residuals}
 methods return the coefficients, residual degrees of freedom, fitted
 values and residuals, respectively, of the \emph{last} model (to mimic
 SPSS functionality).
+
+Similarly, the \code{plot} method creates the specified plot for the
+\emph{last} model.
 }
 \description{
-Perform linear regression variables of a data set.  The output is printed as
-a LaTeX table that mimics the look of SPSS output (version <24).
+Perform linear regression on variables of a data set.  The output is printed
+as a LaTeX table that mimics the look of SPSS output (version <24), and plots
+of the results mimic the look of SPSS graphs.
 }
 \author{
 Andreas Alfons

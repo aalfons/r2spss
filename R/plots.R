@@ -1,5 +1,30 @@
+# --------------------------------------
+# Author: Andreas Alfons
+#         Erasmus Universiteit Rotterdam
+# --------------------------------------
+
+#' Line Plots
+#'
+#' Draw connected lines for variables in a data frame.  The plot thereby mimics
+#' the look of SPSS graphs.
+#'
+#' @param data  a data frame containing the variables to be plotted.
+#' @param variables  a character vector specifying at least one variable to be
+#' plotted on the \eqn{y}-axis.  In case of multiple variables, separate lines
+#' are drawn for each variable and a legend is shown.
+#' @param index  a character string specifying a variable to be plotted on the
+#' \eqn{x}-axis, or \code{NULL} to plot the observations against their index.
+#' @param xlab,ylab  the axis labels.
+#' @param \dots  additional arguments to be passed down, in particular
+#' graphical parameters (see \code{\link[graphics]{par}}).
+#'
+#' @author Andreas Alfons
+#'
+#' @keywords hplot
+#'
 #' @importFrom graphics axis legend lines matlines matplot par plot rect
 #' @export
+
 linesSPSS <- function(data, variables, index = NULL,
                       xlab = NULL, ylab = NULL, ...) {
   # initializations
@@ -106,9 +131,38 @@ linesSPSS <- function(data, variables, index = NULL,
 }
 
 
+#' Boxplots
+#'
+#' Draw boxplots of variables in a data frame, including boxplots for groups of
+#' observations and boxplots for separate variables.  The plots thereby mimic
+#' the look of SPSS graphs.
+#'
+#' @param data  a data frame containing the variables to be plotted.
+#' @param variables  a character vector specifying separate variables to be
+#' plotted.  If \code{group} is not \code{NULL}, only the first variable is
+#' used and boxplots of groups of observations are drawn instead.
+#' @param group  an character string specifying a grouping variable, or
+#' \code{NULL} for no grouping.
+#' @param xlab,ylab  the axis labels.
+#' @param cut.names  a logical indicating whether to cut long variable names or
+#' group labels to 8 characters.  The default is \code{TRUE} for boxplots of
+#' separate variables, but \code{FALSE} for boxplots of groups of observations
+#' (which mimics SPSS behavior).
+#' @param \dots  additional arguments to be passed down, in particular
+#' graphical parameters (see \code{\link[graphics]{boxplot}} and
+#' \code{\link[graphics]{par}}).
+#'
+#' @return  A list containing summary statistics is returned invisibly (see
+#' \code{\link[graphics]{boxplot}}).
+#'
+#' @author Andreas Alfons
+#'
+#' @keywords hplot
+#'
 #' @importFrom graphics boxplot par points rect
 #' @importFrom stats as.formula
 #' @export
+
 boxplotSPSS <- function(data, variables, group = NULL, xlab = NULL,
                         ylab = NULL, cut.names = NULL, ...) {
   # initializations
@@ -194,8 +248,29 @@ boxplotSPSS <- function(data, variables, group = NULL, xlab = NULL,
 }
 
 
+#' Scatterplot and Scatterplot Matrix
+#'
+#' Draw a scatterplot or a scatterplot matrix of variables in a data frame.
+#' The plots thereby mimic the look of SPSS graphs.
+#'
+#' @param data  a data frame containing the variables to be plotted.
+#' @param variables  a character vector specifying at least two variables to be
+#' plotted.  In case of two variables, a simple scatterplot is produced with
+#' the first variable on the \eqn{x}-axis and the second variable on the
+#' \eqn{y}-axis.  In case of more than two variables, a scatterplot matrix is
+#' produced.
+#' @param xlab,ylab  the axis labels for a simple scatterplot (the default is
+#' to use the variable names).  This is ignored for a scatterplot matrix.
+#' @param \dots  additional arguments to be passed down, in particular
+#' graphical parameters (see \code{\link[graphics]{par}}).
+#'
+#' @author Andreas Alfons
+#'
+#' @keywords hplot
+#'
 #' @importFrom graphics box mtext par plot points rect
 #' @export
+
 plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL, ...) {
   # initializations
   data <- as.data.frame(data)
@@ -279,9 +354,33 @@ plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL, ...) {
 }
 
 
+#' Histogram
+#'
+#' Draw a histogram of a variable in a data frame.  The plot thereby mimics the
+#' look of SPSS graphs.
+#'
+#' @param data  a data frame containing the variable to be plotted.
+#' @param variable  a character string specifying the variable to be
+#' plotted.
+#' @param normal  a logical indicating whether to add a normal density with the
+#' estimated mean and standard deviation (the default is \code{FALSE}).
+#' @param xlab,ylab  the axis labels (the default is to use the variable name
+#' for the \eqn{x}-axis label and \code{"Frequency"} as the \eqn{y}-axis label).
+#' @param \dots  additional arguments to be passed down, in particular
+#' graphical parameters (see \code{\link[graphics]{hist}} and
+#' \code{\link[graphics]{par}}).
+#'
+#' @return  An object of class \code{"histogram"} is returned invisibly (see
+#' \code{\link[graphics]{hist}}).
+#'
+#' @author Andreas Alfons
+#'
+#' @keywords hplot
+#'
 #' @importFrom graphics box hist mtext par plot rect
 #' @importFrom stats dnorm sd
 #' @export
+
 histSPSS <- function(data, variable, normal = FALSE,
                      xlab = NULL, ylab = NULL, ...) {
   # initializations
@@ -367,8 +466,25 @@ getBins <- function(x) {
   min(ceiling(sqrt(n)), m)
 }
 
+
+#' SPSS Color Palette
+#'
+#' Color palette used by SPSS (e.g., for multiple lines in a plot).
+#'
+#' @return A character vector specifying 30 colors as used by SPSS.
+#'
+#' @author Andreas Alfons
+#'
+#' @examples
+#' df <- data.frame(x = 1:30, y = 0)
+#' colors <- paletteSPSS()
+#' plotSPSS(df, c("x", "y"), col = colors, pch = 16)
+#'
+#' @keywords color
+#'
 #' @importFrom grDevices rgb
 #' @export
+
 paletteSPSS <- function() {
   # define red, green and blue vectors
   red <-   c( 62,  46, 211, 121, 251, 239,  72, 204, 122, 10, 248, 221,  26, 204, 187, 153, 0, 182, 255, 121, 112, 51, 172, 162,  93, 228,  39, 184, 102,  13)
