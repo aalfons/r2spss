@@ -2,17 +2,15 @@
 % Please edit documentation in R/ANOVA.R
 \name{ANOVA}
 \alias{ANOVA}
-\alias{print.ANOVA}
-\alias{plot.ANOVA}
+\alias{print.ANOVASPSS}
+\alias{plot.ANOVASPSS}
 \title{One-way and Two-way ANOVA}
 \usage{
 ANOVA(data, variable, group, conf.level = 0.95)
 
-\method{print}{ANOVA}(x, digits = 3, statistics = c("descriptives",
-  "variance", "test"), ...)
+\method{print}{ANOVASPSS}(x, digits = 3, statistics = c("descriptives", "variance", "test"), ...)
 
-\method{plot}{ANOVA}(x, y, which = 1, type = "o", main = NULL,
-  xlab = NULL, ylab = NULL, ...)
+\method{plot}{ANOVASPSS}(x, y, which = 1, type = "o", main = NULL, xlab = NULL, ylab = NULL, ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -25,7 +23,7 @@ interest.}
 \item{conf.level}{a number between 0 and 1 giving the confidence level of
 the confidence interval.}
 
-\item{x}{an object of class \code{"ANOVA"} as returned by function
+\item{x}{an object of class \code{"ANOVASPSS"} as returned by function
 \code{ANOVA}.}
 
 \item{digits}{an integer giving the number of digits after the comma to be
@@ -56,8 +54,27 @@ values are \code{"o"} (the default) for overplotted points and lines, and
 \item{main, xlab, ylab}{the plot title and axis labels.}
 }
 \value{
-An object of class \code{ANOVA}.  The \code{print} method produces
-a LaTeX table that mimics the look of SPSS output (version <24).
+An object of class \code{"ANOVASPSS"} with the following components:
+\describe{
+  \item{\code{descriptives}}{a data frame containing per-group descriptive
+  statistics.}
+  \item{\code{levene}}{an object as returned by
+  \code{\link[car]{leveneTest}}.}
+  \item{\code{test}}{a data frame containing the ANOVA table.}
+  \item{\code{variable}}{a character string giving the numeric variable of
+  interest.}
+  \item{\code{group}}{a character vector giving the grouping variable(s).}
+  \item{\code{i}}{an integer giving the number of groups in the (first)
+  grouping variable.}
+  \item{\code{j}}{an integer giving the number of groups in the second
+  grouping variable (only two-way ANOVA).}
+  \item{\code{conf.level}}{numeric; the confidence level used.}
+  \item{\code{type}}{a character string giving the type of ANOVA performed
+  (\code{"one-way"} or \code{"two-way"}).}
+}
+
+The \code{print} method produces a LaTeX table that mimics the look of SPSS
+output (version <24).
 
 The \code{plot} method does not return anything, but produces a profile plot
 of the ANOVA results.
@@ -66,6 +83,23 @@ of the ANOVA results.
 Perform one-way or two-way ANOVA on variables of a data set.  The output is
 printed as a LaTeX table that mimics the look of SPSS output (version <24),
 and a plot of the results mimics the look of SPSS graphs.
+}
+\examples{
+# load data
+data("Moore", package = "carData")
+
+# one-way ANOVA
+oneway <- ANOVA(Moore, variable = "conformity",
+                group = "fcategory")
+oneway        # print LaTeX table
+plot(oneway)  # create profile plot
+
+# two-way ANOVA
+twoway <- ANOVA(Moore, variable = "conformity",
+                group = c("fcategory", "partner.status"))
+twoway        # print LaTeX table
+plot(twoway)  # create profile plot
+
 }
 \author{
 Andreas Alfons

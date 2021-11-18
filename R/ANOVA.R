@@ -19,13 +19,49 @@
 #' down, in particular graphical parameters (see also \code{\link{linesSPSS}}).
 #' For the \code{print} method, additional arguments are currently ignored.
 #'
-#' @return  An object of class \code{ANOVA}.  The \code{print} method produces
-#' a LaTeX table that mimics the look of SPSS output (version <24).
+#' @return
+#' An object of class \code{"ANOVASPSS"} with the following components:
+#' \describe{
+#'   \item{\code{descriptives}}{a data frame containing per-group descriptive
+#'   statistics.}
+#'   \item{\code{levene}}{an object as returned by
+#'   \code{\link[car]{leveneTest}}.}
+#'   \item{\code{test}}{a data frame containing the ANOVA table.}
+#'   \item{\code{variable}}{a character string giving the numeric variable of
+#'   interest.}
+#'   \item{\code{group}}{a character vector giving the grouping variable(s).}
+#'   \item{\code{i}}{an integer giving the number of groups in the (first)
+#'   grouping variable.}
+#'   \item{\code{j}}{an integer giving the number of groups in the second
+#'   grouping variable (only two-way ANOVA).}
+#'   \item{\code{conf.level}}{numeric; the confidence level used.}
+#'   \item{\code{type}}{a character string giving the type of ANOVA performed
+#'   (\code{"one-way"} or \code{"two-way"}).}
+#' }
+#'
+#' The \code{print} method produces a LaTeX table that mimics the look of SPSS
+#' output (version <24).
 #'
 #' The \code{plot} method does not return anything, but produces a profile plot
 #' of the ANOVA results.
 #'
 #' @author Andreas Alfons
+#'
+#' @examples
+#' # load data
+#' data("Moore", package = "carData")
+#'
+#' # one-way ANOVA
+#' oneway <- ANOVA(Moore, variable = "conformity",
+#'                 group = "fcategory")
+#' oneway        # print LaTeX table
+#' plot(oneway)  # create profile plot
+#'
+#' # two-way ANOVA
+#' twoway <- ANOVA(Moore, variable = "conformity",
+#'                 group = c("fcategory", "partner.status"))
+#' twoway        # print LaTeX table
+#' plot(twoway)  # create profile plot
 #'
 #' @keywords htest
 #'
@@ -78,7 +114,7 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
     row.names(test) <- c("Between Groups", "Within Groups")
     test$Df <- as.integer(test$Df)
     # construct object
-    out <- list(descriptives=desc, levene=levene, test=test,
+    out <- list(descriptives=desc, levene=levene, test=as.data.frame(test),
                 variable=variable[1], group=group[1], i=i,
                 conf.level=conf.level, type="one-way")
   } else {
@@ -138,13 +174,13 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
                 j=j, conf.level=conf.level, type="two-way")
   }
   ## return results
-  class(out) <- "ANOVA"
+  class(out) <- "ANOVASPSS"
   out
 }
 
 #' @rdname ANOVA
 #'
-#' @param x  an object of class \code{"ANOVA"} as returned by function
+#' @param x  an object of class \code{"ANOVASPSS"} as returned by function
 #' \code{ANOVA}.
 #' @param digits  an integer giving the number of digits after the comma to be
 #' printed in the LaTeX tables.
@@ -156,9 +192,9 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
 #'
 #' @export
 
-print.ANOVA <- function(x, digits = 3,
-                        statistics = c("descriptives", "variance", "test"),
-                        ...) {
+print.ANOVASPSS <- function(x, digits = 3,
+                            statistics = c("descriptives", "variance", "test"),
+                            ...) {
 
   ## initializations
   count <- 0
@@ -334,8 +370,8 @@ print.ANOVA <- function(x, digits = 3,
 #'
 #' @export
 
-plot.ANOVA <- function(x, y, which = 1, type = "o", main = NULL,
-                       xlab = NULL, ylab = NULL, ...) {
+plot.ANOVASPSS <- function(x, y, which = 1, type = "o", main = NULL,
+                           xlab = NULL, ylab = NULL, ...) {
   if (x$type == "one-way") {
     if (is.null(xlab)) xlab <- x$group
     if (is.null(ylab)) ylab <- paste("Mean of", x$variable)
