@@ -15,8 +15,8 @@ descriptives(data, variables)
 \item{variables}{a character vector specifying numeric variables for which
 to compute descriptive statistics.}
 
-\item{x}{an object of class \code{"descriptives"} as returned by function
-\code{descriptives}.}
+\item{x}{an object of class \code{"descriptivesSPSS"} as returned by
+function \code{descriptives}.}
 
 \item{digits}{an integer giving the number of digits after the comma to be
 printed in the LaTeX table.}

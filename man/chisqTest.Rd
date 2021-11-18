@@ -21,7 +21,7 @@ for the columns of the crosstabulation).}
 \item{p}{a vector of probabilities for the categories in the
 goodness-of-fit test.}
 
-\item{x}{an object of class \code{"chisqTest"} as returned by function
+\item{x}{an object of class \code{"chisqTestSPSS"} as returned by function
 \code{chisqTest}.}
 
 \item{digits}{an integer vector giving the number of digits after the comma

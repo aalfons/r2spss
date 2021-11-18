@@ -69,8 +69,8 @@ descriptives <- function(data, variables) {
 
 #' @rdname descriptives
 #'
-#' @param x  an object of class \code{"descriptives"} as returned by function
-#' \code{descriptives}.
+#' @param x  an object of class \code{"descriptivesSPSS"} as returned by
+#' function \code{descriptives}.
 #' @param digits  an integer giving the number of digits after the comma to be
 #' printed in the LaTeX table.
 #' @param \dots currently ignored.

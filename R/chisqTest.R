@@ -132,7 +132,7 @@ chisqTest <- function(data, variables, p = NULL) {
 
 #' @rdname chisqTest
 #'
-#' @param x  an object of class \code{"chisqTest"} as returned by function
+#' @param x  an object of class \code{"chisqTestSPSS"} as returned by function
 #' \code{chisqTest}.
 #' @param digits  an integer vector giving the number of digits after the comma
 #' to be printed in the LaTeX tables.  The first element corresponds to the
