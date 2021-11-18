@@ -20,8 +20,32 @@
 #' @param group  a character string specifying a grouping variable for the
 #' Wilcoxon rank sum test, or \code{NULL}.
 #'
-#' @return  An object of class \code{wilcoxonTest}.  The \code{print} method
-#' produces a LaTeX table that mimics the look of SPSS output (version <24).
+#' @return  An object of class \code{"wilcoxonTestSPSS"} with the following
+#' components:
+#' \describe{
+#'   \item{\code{statistics}}{a data frame containing the relevant information
+#'   on the ranks.}
+#'   \item{\code{test}}{a list containing the results of the Wilcoxon signed
+#'   rank test (only paired-sample test).}
+#'   \item{\code{variables}}{a character vector containing the name(s) of the
+#'   relevant numeric variable(s).}
+#'   \item{\code{n}}{an integer giving the number of observations (only
+#'   paired-sample test).}
+#'   \item{\code{w}}{numeric; the Wilcoxon rank sum test statistic (only
+#'   independent-samples test).}
+#'   \item{\code{asymptotic}}{a list containing the results of the Wilcoxon
+#'   rank sum test using the normal approximation (only independent-samples
+#'   test).}
+#'   \item{\code{exact}}{a list containing the results of the exact Wilcoxon
+#'   rank sum test test (only independent-samples test).}
+#'   \item{\code{group}}{a character string containing the name of the
+#'   grouping variable (only independent-samples test).}
+#'   \item{\code{type}}{a character string giving the type of Wilcoxon test
+#'   performed \code{"paired"} or \code{"independent"}).}
+#' }
+#'
+#' The \code{print} method produces a LaTeX table that mimics the look of SPSS
+#' output (version <24).
 #'
 #' @note The Wilcoxon rank sum test also reports the value of the equivalent
 #' Mann-Whitney U test statistic.
@@ -111,15 +135,15 @@ wilcoxonTest <- function(data, variables, group = NULL) {
                 variables=variables[1], group=group[1], type="independent")
   }
   ## return results
-  class(out) <- "wilcoxonTest"
+  class(out) <- "wilcoxonTestSPSS"
   out
 }
 
 
 #' @rdname wilcoxonTest
 #'
-#' @param x  an object of class \code{"wilcoxonTest"} as returned by function
-#' \code{wilcoxonTest}.
+#' @param x  an object of class \code{"wilcoxonTestSPSS"} as returned by
+#' function \code{wilcoxonTest}.
 #' @param digits  an integer vector giving the number of digits after the comma
 #' to be printed in the LaTeX tables.  The first element corresponds to the
 #' number of digits in table with the summary of the ranks, and the second
@@ -131,8 +155,9 @@ wilcoxonTest <- function(data, variables, group = NULL) {
 #'
 #' @export
 
-print.wilcoxonTest <- function(x, digits = 2:3, statistics = c("ranks", "test"),
-                               ...) {
+print.wilcoxonTestSPSS <- function(x, digits = 2:3,
+                                   statistics = c("ranks", "test"),
+                                   ...) {
 
   ## initializations
   count <- 0

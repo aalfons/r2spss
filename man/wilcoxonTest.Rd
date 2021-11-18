@@ -2,13 +2,12 @@
 % Please edit documentation in R/wilcoxonTest.R
 \name{wilcoxonTest}
 \alias{wilcoxonTest}
-\alias{print.wilcoxonTest}
+\alias{print.wilcoxonTestSPSS}
 \title{Wilcoxon Signed Rank and Rank Sum Tests}
 \usage{
 wilcoxonTest(data, variables, group = NULL)
 
-\method{print}{wilcoxonTest}(x, digits = 2:3, statistics = c("ranks",
-  "test"), ...)
+\method{print}{wilcoxonTestSPSS}(x, digits = 2:3, statistics = c("ranks", "test"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -23,8 +22,8 @@ should be a character string specifying the numeric variable of interest.}
 \item{group}{a character string specifying a grouping variable for the
 Wilcoxon rank sum test, or \code{NULL}.}
 
-\item{x}{an object of class \code{"wilcoxonTest"} as returned by function
-\code{wilcoxonTest}.}
+\item{x}{an object of class \code{"wilcoxonTestSPSS"} as returned by
+function \code{wilcoxonTest}.}
 
 \item{digits}{an integer vector giving the number of digits after the comma
 to be printed in the LaTeX tables.  The first element corresponds to the
@@ -38,8 +37,32 @@ and \code{"test"} for test results.  The default is to print both tables.}
 \item{\dots}{currently ignored.}
 }
 \value{
-An object of class \code{wilcoxonTest}.  The \code{print} method
-produces a LaTeX table that mimics the look of SPSS output (version <24).
+An object of class \code{"wilcoxonTestSPSS"} with the following
+components:
+\describe{
+  \item{\code{statistics}}{a data frame containing the relevant information
+  on the ranks.}
+  \item{\code{test}}{a list containing the results of the Wilcoxon signed
+  rank test (only paired-sample test).}
+  \item{\code{variables}}{a character vector containing the name(s) of the
+  relevant numeric variable(s).}
+  \item{\code{n}}{an integer giving the number of observations (only
+  paired-sample test).}
+  \item{\code{w}}{numeric; the Wilcoxon rank sum test statistic (only
+  independent-samples test).}
+  \item{\code{asymptotic}}{a list containing the results of the Wilcoxon
+  rank sum test using the normal approximation (only independent-samples
+  test).}
+  \item{\code{exact}}{a list containing the results of the exact Wilcoxon
+  rank sum test test (only independent-samples test).}
+  \item{\code{group}}{a character string containing the name of the
+  grouping variable (only independent-samples test).}
+  \item{\code{type}}{a character string giving the type of Wilcoxon test
+  performed \code{"paired"} or \code{"independent"}).}
+}
+
+The \code{print} method produces a LaTeX table that mimics the look of SPSS
+output (version <24).
 }
 \description{
 Perform a Wilcoxon signed rank test for paired samples or a Wilcoxon rank
