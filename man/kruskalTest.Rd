@@ -38,9 +38,10 @@ An object of class \code{"kruskalTestSPSS"} with the following components:
   per-group mean ranks.}
   \item{\code{test}}{a list containing the results of the Kruskal-Wallis
   test.}
-  \item{\code{variable}}{a character string giving the numeric variable of
-  interest.}
-  \item{\code{group}}{a character vector giving the grouping variable.}
+  \item{\code{variable}}{a character string containing the name of the
+  numeric variable of interest.}
+  \item{\code{group}}{a character string containing the name of the
+  grouping variable.}
 }
 
 The \code{print} method produces a LaTeX table that mimics the look of SPSS

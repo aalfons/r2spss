@@ -61,9 +61,10 @@ An object of class \code{"ANOVASPSS"} with the following components:
   \item{\code{levene}}{an object as returned by
   \code{\link[car]{leveneTest}}.}
   \item{\code{test}}{a data frame containing the ANOVA table.}
-  \item{\code{variable}}{a character string giving the numeric variable of
-  interest.}
-  \item{\code{group}}{a character vector giving the grouping variable(s).}
+  \item{\code{variable}}{a character string containing the name of the
+  numeric variable of interest.}
+  \item{\code{group}}{a character vector containing the name(s) of the
+  grouping variable(s).}
   \item{\code{i}}{an integer giving the number of groups in the (first)
   grouping variable.}
   \item{\code{j}}{an integer giving the number of groups in the second

@@ -53,8 +53,8 @@ An object of class \code{"chisqTestSPSS"} with the following components:
   variable corresponding to the rows (only test on independence).}
   \item{\code{c}}{an integer giving the number of groups in the second
   variable corresponding to the columns (only test on independence).}
-  \item{\code{variables}}{a character vector giving the variable(s) of
-  interest.}
+  \item{\code{variables}}{a character vector containing the name(s) of the
+  categorical variable(s) of interest.}
   \item{\code{type}}{a character string giving the type of
   \eqn{\chi^{2}}{chi-squared} test performed (\code{"goodness-of-fit"}
   or \code{"independence"}).}
