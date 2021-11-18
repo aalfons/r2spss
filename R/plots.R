@@ -18,6 +18,8 @@
 #' @param \dots  additional arguments to be passed down, in particular
 #' graphical parameters (see \code{\link[graphics]{par}}).
 #'
+#' @return  Nothing is returned, but a plot is produced.
+#'
 #' @author Andreas Alfons
 #'
 #' @keywords hplot
@@ -263,6 +265,8 @@ boxplotSPSS <- function(data, variables, group = NULL, xlab = NULL,
 #' to use the variable names).  This is ignored for a scatterplot matrix.
 #' @param \dots  additional arguments to be passed down, in particular
 #' graphical parameters (see \code{\link[graphics]{par}}).
+#'
+#' @return  Nothing is returned, but a plot is produced.
 #'
 #' @author Andreas Alfons
 #'

@@ -4,8 +4,7 @@
 \alias{linesSPSS}
 \title{Line Plots}
 \usage{
-linesSPSS(data, variables, index = NULL, xlab = NULL, ylab = NULL,
-  ...)
+linesSPSS(data, variables, index = NULL, xlab = NULL, ylab = NULL, ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables to be plotted.}
@@ -21,6 +20,9 @@ are drawn for each variable and a legend is shown.}
 
 \item{\dots}{additional arguments to be passed down, in particular
 graphical parameters (see \code{\link[graphics]{par}}).}
+}
+\value{
+Nothing is returned, but a plot is produced.
 }
 \description{
 Draw connected lines for variables in a data frame.  The plot thereby mimics

@@ -21,6 +21,9 @@ to use the variable names).  This is ignored for a scatterplot matrix.}
 \item{\dots}{additional arguments to be passed down, in particular
 graphical parameters (see \code{\link[graphics]{par}}).}
 }
+\value{
+Nothing is returned, but a plot is produced.
+}
 \description{
 Draw a scatterplot or a scatterplot matrix of variables in a data frame.
 The plots thereby mimic the look of SPSS graphs.

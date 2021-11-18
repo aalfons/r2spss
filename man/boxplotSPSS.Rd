@@ -4,8 +4,15 @@
 \alias{boxplotSPSS}
 \title{Boxplots}
 \usage{
-boxplotSPSS(data, variables, group = NULL, xlab = NULL, ylab = NULL,
-  cut.names = NULL, ...)
+boxplotSPSS(
+  data,
+  variables,
+  group = NULL,
+  xlab = NULL,
+  ylab = NULL,
+  cut.names = NULL,
+  ...
+)
 }
 \arguments{
 \item{data}{a data frame containing the variables to be plotted.}

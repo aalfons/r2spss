@@ -4,8 +4,7 @@
 \alias{histSPSS}
 \title{Histogram}
 \usage{
-histSPSS(data, variable, normal = FALSE, xlab = NULL, ylab = NULL,
-  ...)
+histSPSS(data, variable, normal = FALSE, xlab = NULL, ylab = NULL, ...)
 }
 \arguments{
 \item{data}{a data frame containing the variable to be plotted.}
