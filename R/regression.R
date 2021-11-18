@@ -18,8 +18,17 @@
 #' @param labels  a character or numeric vector giving labels for the
 #' regression models in the output tables.
 #'
-#' @return  An object of class \code{regression}.  The \code{print} method
-#' produces a LaTeX table that mimics the look of SPSS output (version <24).
+#' @return  An object of class \code{"regressionSPSS"} with the following
+#' components:
+#' \describe{
+#'   \item{\code{models}}{a list in which each component is an ojbect of class
+#'   \code{"lm"} as returned by function \code{\link[stats]{lm}}.}
+#'   \item{\code{response}}{a character string containing the name of the
+#'   response variable.}
+#' }
+#'
+#' The \code{print} method produces a LaTeX table that mimics the look of SPSS
+#' output (version <24).
 #'
 #' The \code{coef}, \code{df.residual}, \code{fitted} and \code{residuals}
 #' methods return the coefficients, residual degrees of freedom, fitted
@@ -33,6 +42,7 @@
 #'
 #' @keywords multivariate
 #'
+#' @importFrom stats lm
 #' @export
 
 regression <- function(..., data, labels = NULL) {
@@ -52,14 +62,14 @@ regression <- function(..., data, labels = NULL) {
   models <- lapply(formulas, lm, data=data)
   # return results
   out <- list(models=models, response=response)
-  class(out) <- "regression"
+  class(out) <- "regressionSPSS"
   out
 }
 
 
 #' @rdname regression
 #'
-#' @param x,object  an object of class \code{"regression"} as returned by
+#' @param x,object  an object of class \code{"regressionSPSS"} as returned by
 #' function \code{regression}.
 #' @param digits  an integer giving the number of digits after the comma to be
 #' printed in the LaTeX tables.
@@ -71,9 +81,9 @@ regression <- function(..., data, labels = NULL) {
 #' @importFrom stats aggregate anova pf
 #' @export
 
-print.regression <- function(x, digits = 3,
-                             statistics = c("summary", "anova", "estimates"),
-                             ...) {
+print.regressionSPSS <- function(x, digits = 3,
+                                 statistics = c("summary", "anova", "estimates"),
+                                 ...) {
 
   ## initializations
   count <- 0
@@ -267,7 +277,7 @@ print.regression <- function(x, digits = 3,
 #' @importFrom stats coef
 #' @export
 
-coef.regression <- function(object, ...) {
+coef.regressionSPSS <- function(object, ...) {
   nm <- length(object$models)
   coef(object$models[[nm]])
 }
@@ -277,7 +287,7 @@ coef.regression <- function(object, ...) {
 #' @importFrom stats df.residual
 #' @export
 
-df.residual.regression <- function(object, ...) {
+df.residual.regressionSPSS <- function(object, ...) {
   nm <- length(object$models)
   df.residual(object$models[[nm]])
 }
@@ -287,7 +297,7 @@ df.residual.regression <- function(object, ...) {
 #' @importFrom stats sd
 #' @export
 
-fitted.regression <- function(object, standardized = FALSE, ...) {
+fitted.regressionSPSS <- function(object, standardized = FALSE, ...) {
   # extract fitted values from the last model
   nm <- length(object$models)
   fitted <- fitted(object$models[[nm]])
@@ -307,7 +317,7 @@ fitted.regression <- function(object, standardized = FALSE, ...) {
 #' @importFrom stats df.residual
 #' @export
 
-residuals.regression <- function(object, standardized = FALSE, ...) {
+residuals.regressionSPSS <- function(object, standardized = FALSE, ...) {
   # extract residuals from the last model
   nm <- length(object$models)
   residuals <- residuals(object$models[[nm]])
@@ -333,8 +343,8 @@ residuals.regression <- function(object, standardized = FALSE, ...) {
 #'
 #' @export
 
-plot.regression <- function(x, y, which = c("histogram", "scatter"),
-                            main = NULL, xlab = NULL, ylab = NULL, ...) {
+plot.regressionSPSS <- function(x, y, which = c("histogram", "scatter"),
+                                main = NULL, xlab = NULL, ylab = NULL, ...) {
   # initializations
   which <- match.arg(which)
   if (is.null(main)) main <- paste0("Dependent Variable: ", x$response)

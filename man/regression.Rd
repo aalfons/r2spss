@@ -2,29 +2,35 @@
 % Please edit documentation in R/regression.R
 \name{regression}
 \alias{regression}
-\alias{print.regression}
-\alias{coef.regression}
-\alias{df.residual.regression}
-\alias{fitted.regression}
-\alias{residuals.regression}
-\alias{plot.regression}
+\alias{print.regressionSPSS}
+\alias{coef.regressionSPSS}
+\alias{df.residual.regressionSPSS}
+\alias{fitted.regressionSPSS}
+\alias{residuals.regressionSPSS}
+\alias{plot.regressionSPSS}
 \title{Linear Regression}
 \usage{
 regression(..., data, labels = NULL)
 
-\method{print}{regression}(x, digits = 3, statistics = c("summary",
-  "anova", "estimates"), ...)
+\method{print}{regressionSPSS}(x, digits = 3, statistics = c("summary", "anova", "estimates"), ...)
 
-\method{coef}{regression}(object, ...)
+\method{coef}{regressionSPSS}(object, ...)
 
-\method{df.residual}{regression}(object, ...)
+\method{df.residual}{regressionSPSS}(object, ...)
 
-\method{fitted}{regression}(object, standardized = FALSE, ...)
+\method{fitted}{regressionSPSS}(object, standardized = FALSE, ...)
 
-\method{residuals}{regression}(object, standardized = FALSE, ...)
+\method{residuals}{regressionSPSS}(object, standardized = FALSE, ...)
 
-\method{plot}{regression}(x, y, which = c("histogram", "scatter"),
-  main = NULL, xlab = NULL, ylab = NULL, ...)
+\method{plot}{regressionSPSS}(
+  x,
+  y,
+  which = c("histogram", "scatter"),
+  main = NULL,
+  xlab = NULL,
+  ylab = NULL,
+  ...
+)
 }
 \arguments{
 \item{\dots}{for \code{regression}, at least one formula specifying a
@@ -38,7 +44,7 @@ and \code{\link{plotSPSS}}).  For other methods, this is currently ignored.}
 \item{labels}{a character or numeric vector giving labels for the
 regression models in the output tables.}
 
-\item{x, object}{an object of class \code{"regression"} as returned by
+\item{x, object}{an object of class \code{"regressionSPSS"} as returned by
 function \code{regression}.}
 
 \item{digits}{an integer giving the number of digits after the comma to be
@@ -64,8 +70,17 @@ standardized fitted values.}
 \item{main, xlab, ylab}{the plot title and axis labels.}
 }
 \value{
-An object of class \code{regression}.  The \code{print} method
-produces a LaTeX table that mimics the look of SPSS output (version <24).
+An object of class \code{"regressionSPSS"} with the following
+components:
+\describe{
+  \item{\code{models}}{a list in which each component is an ojbect of class
+  \code{"lm"} as returned by function \code{\link[stats]{lm}}.}
+  \item{\code{response}}{a character string containing the name of the
+  response variable.}
+}
+
+The \code{print} method produces a LaTeX table that mimics the look of SPSS
+output (version <24).
 
 The \code{coef}, \code{df.residual}, \code{fitted} and \code{residuals}
 methods return the coefficients, residual degrees of freedom, fitted
