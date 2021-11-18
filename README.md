@@ -10,7 +10,7 @@ To install the latest (possibly unstable) development version from GitHub, you c
 
 ```
 install.packages("devtools")
-devtools::install_github("aalfons/robustHD")
+devtools::install_github("aalfons/r2spss")
 ```
 
 If you already have package `devtools` installed, you can skip the first line.
