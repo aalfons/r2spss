@@ -2,13 +2,12 @@
 % Please edit documentation in R/tTest.R
 \name{tTest}
 \alias{tTest}
-\alias{print.tTest}
+\alias{print.tTestSPSS}
 \title{t Tests}
 \usage{
 tTest(data, variables, group = NULL, mu = 0, conf.level = 0.95)
 
-\method{print}{tTest}(x, digits = 3, statistics = c("statistics",
-  "test"), ...)
+\method{print}{tTestSPSS}(x, digits = 3, statistics = c("statistics", "test"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -30,7 +29,7 @@ t test.}
 \item{conf.level}{a number between 0 and 1 giving the confidence level of
 the confidence interval.}
 
-\item{x}{an object of class \code{"tTest"} as returned by function
+\item{x}{an object of class \code{"tTestSPSS"} as returned by function
 \code{tTest}.}
 
 \item{digits}{an integer giving the number of digits after the comma to be
@@ -44,8 +43,33 @@ tables.}
 \item{\dots}{currently ignored.}
 }
 \value{
-An object of class \code{tTest}.  The \code{print} method produces
-a LaTeX table that mimics the look of SPSS output (version <24).
+An object of class \code{"tTestSPSS"} with the following
+components:
+\describe{
+  \item{\code{statistics}}{a data frame containing the relevant descriptive
+  statistics.}
+  \item{\code{test}}{an object of class \code{"htest"} as returned by
+  \code{\link[stats]{t.test}} (only one-sample and paired-sample tests).}
+  \item{\code{variables}}{a character vector containing the name(s) of the
+  relevant numeric variables.}
+  \item{\code{n}}{an integer giving the number of observations (only
+  paired-sample test).}
+  \item{\code{levene}}{an object as returned by
+  \code{\link[car]{leveneTest}} (only independent-samples test).}
+  \item{\code{pooled}}{an object of class \code{"htest"} as returned
+  by \code{\link[stats]{t.test}} assuming equal variances (only
+  independent-samples test).}
+  \item{\code{satterthwaite}}{an object of class \code{"htest"} as returned
+  by \code{\link[stats]{t.test}} not assuming equal variance (only
+  independent-samples test).}
+  \item{\code{group}}{a character string containing the name of the
+  grouping variable (only independent-samples test).}
+  \item{\code{type}}{a character string giving the type of t test performed
+  (\code{"one-sample"}, \code{"paired"}, or \code{"independent"}).}
+}
+
+The \code{print} method produces a LaTeX table that mimics the look of SPSS
+output (version <24).
 }
 \description{
 Perform an one-sample t test, a paired-samples t test or an
