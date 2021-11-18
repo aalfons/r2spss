@@ -2,13 +2,12 @@
 % Please edit documentation in R/chisqTest.R
 \name{chisqTest}
 \alias{chisqTest}
-\alias{print.chisqTest}
+\alias{print.chisqTestSPSS}
 \title{\eqn{\chi^{2}}{Chi-squared} Tests}
 \usage{
 chisqTest(data, variables, p = NULL)
 
-\method{print}{chisqTest}(x, digits = c(1, 3),
-  statistics = c("frequencies", "test"), ...)
+\method{print}{chisqTestSPSS}(x, digits = c(1, 3), statistics = c("frequencies", "test"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -38,8 +37,31 @@ default is to print both tables.}
 \item{\dots}{currently ignored.}
 }
 \value{
-An object of class \code{chisqTest}.  The \code{print} method
-produces a LaTeX table that mimics the look of SPSS output (version <24).
+An object of class \code{"chisqTestSPSS"} with the following components:
+\describe{
+  \item{\code{chisq}}{a list containing the results of the
+  \eqn{\chi^{2}}{chi-squared} test.}
+  \item{\code{lr}}{a list containing the results of a likelihood ratio
+  test (only test on independence).}
+  \item{\code{observed}}{a table containing the observed frequencies.}
+  \item{\code{expected}}{a vector or matrix containing the expected
+  frequencies.}
+  \item{\code{n}}{an integer giving the number of observations.}
+  \item{\code{k}}{an integer giving the number of groups (only
+  goodness-of-fit test).}
+  \item{\code{r}}{an integer giving the number of groups in the first
+  variable corresponding to the rows (only test on independence).}
+  \item{\code{c}}{an integer giving the number of groups in the second
+  variable corresponding to the columns (only test on independence).}
+  \item{\code{variables}}{a character vector giving the variable(s) of
+  interest.}
+  \item{\code{type}}{a character string giving the type of
+  \eqn{\chi^{2}}{chi-squared} test performed (\code{"goodness-of-fit"}
+  or \code{"independence"}).}
+}
+
+The \code{print} method produces a LaTeX table that mimics the look of SPSS
+output (version <24).
 }
 \description{
 Perform a \eqn{\chi^{2}}{chi-squared} goodness-of-fit test or a

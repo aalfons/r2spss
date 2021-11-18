@@ -19,8 +19,32 @@
 #' @param p  a vector of probabilities for the categories in the
 #' goodness-of-fit test.
 #'
-#' @return  An object of class \code{chisqTest}.  The \code{print} method
-#' produces a LaTeX table that mimics the look of SPSS output (version <24).
+#' @return
+#' An object of class \code{"chisqTestSPSS"} with the following components:
+#' \describe{
+#'   \item{\code{chisq}}{a list containing the results of the
+#'   \eqn{\chi^{2}}{chi-squared} test.}
+#'   \item{\code{lr}}{a list containing the results of a likelihood ratio
+#'   test (only test on independence).}
+#'   \item{\code{observed}}{a table containing the observed frequencies.}
+#'   \item{\code{expected}}{a vector or matrix containing the expected
+#'   frequencies.}
+#'   \item{\code{n}}{an integer giving the number of observations.}
+#'   \item{\code{k}}{an integer giving the number of groups (only
+#'   goodness-of-fit test).}
+#'   \item{\code{r}}{an integer giving the number of groups in the first
+#'   variable corresponding to the rows (only test on independence).}
+#'   \item{\code{c}}{an integer giving the number of groups in the second
+#'   variable corresponding to the columns (only test on independence).}
+#'   \item{\code{variables}}{a character vector giving the variable(s) of
+#'   interest.}
+#'   \item{\code{type}}{a character string giving the type of
+#'   \eqn{\chi^{2}}{chi-squared} test performed (\code{"goodness-of-fit"}
+#'   or \code{"independence"}).}
+#' }
+#'
+#' The \code{print} method produces a LaTeX table that mimics the look of SPSS
+#' output (version <24).
 #'
 #' @note The test on independence also reports the results of a likelihood
 #' ratio test.
@@ -101,7 +125,7 @@ chisqTest <- function(data, variables, p = NULL) {
                 r=r, c=c, variables=variables[1:2], type="independence")
   }
   ## return results
-  class(out) <- "chisqTest"
+  class(out) <- "chisqTestSPSS"
   out
 }
 
@@ -122,9 +146,9 @@ chisqTest <- function(data, variables, p = NULL) {
 #'
 #' @export
 
-print.chisqTest <- function(x, digits = c(1, 3),
-                            statistics = c("frequencies", "test"),
-                            ...) {
+print.chisqTestSPSS <- function(x, digits = c(1, 3),
+                                statistics = c("frequencies", "test"),
+                                ...) {
 
   ## initializations
   count <- 0
