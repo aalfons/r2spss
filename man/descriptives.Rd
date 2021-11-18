@@ -2,12 +2,12 @@
 % Please edit documentation in R/descriptives.R
 \name{descriptives}
 \alias{descriptives}
-\alias{print.descriptives}
+\alias{print.descriptivesSPSS}
 \title{Descriptive Statistics}
 \usage{
 descriptives(data, variables)
 
-\method{print}{descriptives}(x, digits = 2, ...)
+\method{print}{descriptivesSPSS}(x, digits = 2, ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -24,8 +24,17 @@ printed in the LaTeX table.}
 \item{\dots}{currently ignored.}
 }
 \value{
-An object of class \code{descriptives}.  The \code{print} method
-produces a LaTeX table that mimics the look of SPSS output (version <24).
+An object of class \code{"descriptivesSPSS"} with the following components:
+\describe{
+  \item{\code{classes}}{a character vector giving the (first) class of the
+  variables of interest.}
+  \item{\code{descriptives}}{a data frame containing the descriptive
+  statistics.}
+  \item{\code{n}}{an integer giving the number of observations.}
+}
+
+The \code{print} method produces a LaTeX table that mimics the look of SPSS
+output (version <24).
 }
 \description{
 Compute descriptive statistics of numeric variables of a data set (number of

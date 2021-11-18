@@ -13,8 +13,18 @@
 #' @param variables  a character vector specifying numeric variables for which
 #' to compute descriptive statistics.
 #'
-#' @return  An object of class \code{descriptives}.  The \code{print} method
-#' produces a LaTeX table that mimics the look of SPSS output (version <24).
+#' @return
+#' An object of class \code{"descriptivesSPSS"} with the following components:
+#' \describe{
+#'   \item{\code{classes}}{a character vector giving the (first) class of the
+#'   variables of interest.}
+#'   \item{\code{descriptives}}{a data frame containing the descriptive
+#'   statistics.}
+#'   \item{\code{n}}{an integer giving the number of observations.}
+#' }
+#'
+#' The \code{print} method produces a LaTeX table that mimics the look of SPSS
+#' output (version <24).
 #'
 #' @author Andreas Alfons
 #'
@@ -37,7 +47,7 @@ descriptives <- function(data, variables) {
   row.names(desc) <- variables
   # return descriptives
   out <- list(classes=classes, descriptives=desc, n=n)
-  class(out) <- "descriptives"
+  class(out) <- "descriptivesSPSS"
   out
 }
 
@@ -67,7 +77,7 @@ descriptives <- function(data, variables) {
 #'
 #' @export
 
-print.descriptives <- function(x, digits = 2, ...) {
+print.descriptivesSPSS <- function(x, digits = 2, ...) {
   # format descriptives
   d <- ifelse(x$classes == "integer", 0, digits)
   formatted <- cbind(
