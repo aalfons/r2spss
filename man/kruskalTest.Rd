@@ -2,13 +2,12 @@
 % Please edit documentation in R/kruskalTest.R
 \name{kruskalTest}
 \alias{kruskalTest}
-\alias{print.kruskalTest}
+\alias{print.kruskalTestSPSS}
 \title{Kruskal-Wallis Test}
 \usage{
 kruskalTest(data, variable, group)
 
-\method{print}{kruskalTest}(x, digits = 2:3, statistics = c("ranks",
-  "test"), ...)
+\method{print}{kruskalTestSPSS}(x, digits = 2:3, statistics = c("ranks", "test"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -18,8 +17,8 @@ interest.}
 
 \item{group}{a character string specifying a grouping variable.}
 
-\item{x}{an object of class \code{"kruskalTest"} as returned by function
-\code{kruskalTest}.}
+\item{x}{an object of class \code{"kruskalTestSPSS"} as returned by
+function \code{kruskalTest}.}
 
 \item{digits}{an integer vector giving the number of digits after the comma
 to be printed in the LaTeX tables.  The first element corresponds to the
@@ -33,8 +32,19 @@ and \code{"test"} for test results.  The default is to print both tables.}
 \item{\dots}{currently ignored.}
 }
 \value{
-An object of class \code{kruskalTest}.  The \code{print} method
-produces a LaTeX table that mimics the look of SPSS output (version <24).
+An object of class \code{"kruskalTestSPSS"} with the following components:
+\describe{
+  \item{\code{statistics}}{a data frame containing information on the
+  per-group mean ranks.}
+  \item{\code{test}}{a list containing the results of the Kruskal-Wallis
+  test.}
+  \item{\code{variable}}{a character string giving the numeric variable of
+  interest.}
+  \item{\code{group}}{a character vector giving the grouping variable.}
+}
+
+The \code{print} method produces a LaTeX table that mimics the look of SPSS
+output (version <24).
 }
 \description{
 Perform a Kruskal-Wallis test on variables of a data set.  The output is

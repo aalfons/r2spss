@@ -13,8 +13,20 @@
 #' interest.
 #' @param group  a character string specifying a grouping variable.
 #'
-#' @return  An object of class \code{kruskalTest}.  The \code{print} method
-#' produces a LaTeX table that mimics the look of SPSS output (version <24).
+#' @return
+#' An object of class \code{"kruskalTestSPSS"} with the following components:
+#' \describe{
+#'   \item{\code{statistics}}{a data frame containing information on the
+#'   per-group mean ranks.}
+#'   \item{\code{test}}{a list containing the results of the Kruskal-Wallis
+#'   test.}
+#'   \item{\code{variable}}{a character string giving the numeric variable of
+#'   interest.}
+#'   \item{\code{group}}{a character vector giving the grouping variable.}
+#' }
+#'
+#' The \code{print} method produces a LaTeX table that mimics the look of SPSS
+#' output (version <24).
 #'
 #' @author Andreas Alfons
 #'
@@ -55,15 +67,15 @@ kruskalTest <- function(data, variable, group) {
   ## return results
   out <- list(statistics=stat, test=test, variable=variable[1],
               group=group[1])
-  class(out) <- "kruskalTest"
+  class(out) <- "kruskalTestSPSS"
   out
 }
 
 
 #' @rdname kruskalTest
 #'
-#' @param x  an object of class \code{"kruskalTest"} as returned by function
-#' \code{kruskalTest}.
+#' @param x  an object of class \code{"kruskalTestSPSS"} as returned by
+#' function \code{kruskalTest}.
 #' @param digits  an integer vector giving the number of digits after the comma
 #' to be printed in the LaTeX tables.  The first element corresponds to the
 #' number of digits in table with the summary of the ranks, and the second
@@ -75,8 +87,9 @@ kruskalTest <- function(data, variable, group) {
 #'
 #' @export
 
-print.kruskalTest <- function(x, digits = 2:3, statistics = c("ranks", "test"),
-                              ...) {
+print.kruskalTestSPSS <- function(x, digits = 2:3,
+                                  statistics = c("ranks", "test"),
+                                  ...) {
 
   ## initializations
   count <- 0
