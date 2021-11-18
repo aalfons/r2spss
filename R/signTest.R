@@ -16,8 +16,23 @@
 #' p-value using the binomial distribution.  Note that the p-value using the
 #' normal approximation is always reported.
 #'
-#' @return  An object of class \code{signTest}.  The \code{print} method
-#' produces a LaTeX table that mimics the look of SPSS output (version <24).
+#' @return  An object of class \code{"signTestSPSS"} with the following
+#' components:
+#' \describe{
+#'   \item{\code{statistics}}{a data frame containing information on the
+#'   number of observations with negative and positive differences.}
+#'   \item{\code{asymptotic}}{a list containing the results of the test using
+#'   the normal approximation.}
+#'   \item{\code{exact}}{if requested, a numeric vector containing the exact
+#'   two-sided p-value, one-sided p-value, and point probability using the
+#'   binomial distribution.}
+#'   \item{\code{variables}}{a character vector containing the names of the two
+#'   numeric variables with the paired observations.}
+#'   \item{\code{n}}{an integer giving the number of observations.}
+#' }
+#'
+#' The \code{print} method produces a LaTeX table that mimics the look of SPSS
+#' output (version <24).
 #'
 #' @author Andreas Alfons
 #'
@@ -61,14 +76,14 @@ signTest <- function(data, variables, exact = FALSE) {
   ## return results
   out <- list(statistics=stat, asymptotic=asymptotic, exact=exact,
               variables=variables[1:2], n=length(d))
-  class(out) <- "signTest"
+  class(out) <- "signTestSPSS"
   out
 }
 
 
 #' @rdname signTest
 #'
-#' @param x  an object of class \code{"signTest"} as returned by function
+#' @param x  an object of class \code{"signTestSPSS"} as returned by function
 #' \code{signTest}.
 #' @param digits  an integer giving the number of digits after the comma to be
 #' printed in the LaTeX tables.
@@ -80,8 +95,9 @@ signTest <- function(data, variables, exact = FALSE) {
 #'
 #' @export
 
-print.signTest <- function(x, digits = 3, statistics = c("frequencies", "test"),
-                           ...) {
+print.signTestSPSS <- function(x, digits = 3,
+                               statistics = c("frequencies", "test"),
+                               ...) {
 
   ## initializations
   count <- 0

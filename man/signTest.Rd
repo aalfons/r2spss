@@ -2,13 +2,12 @@
 % Please edit documentation in R/signTest.R
 \name{signTest}
 \alias{signTest}
-\alias{print.signTest}
+\alias{print.signTestSPSS}
 \title{Sign Test}
 \usage{
 signTest(data, variables, exact = FALSE)
 
-\method{print}{signTest}(x, digits = 3, statistics = c("frequencies",
-  "test"), ...)
+\method{print}{signTestSPSS}(x, digits = 3, statistics = c("frequencies", "test"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -20,7 +19,7 @@ containing the paired observations.}
 p-value using the binomial distribution.  Note that the p-value using the
 normal approximation is always reported.}
 
-\item{x}{an object of class \code{"signTest"} as returned by function
+\item{x}{an object of class \code{"signTestSPSS"} as returned by function
 \code{signTest}.}
 
 \item{digits}{an integer giving the number of digits after the comma to be
@@ -34,8 +33,23 @@ both tables.}
 \item{\dots}{currently ignored.}
 }
 \value{
-An object of class \code{signTest}.  The \code{print} method
-produces a LaTeX table that mimics the look of SPSS output (version <24).
+An object of class \code{"signTestSPSS"} with the following
+components:
+\describe{
+  \item{\code{statistics}}{a data frame containing information on the
+  number of observations with negative and positive differences.}
+  \item{\code{asymptotic}}{a list containing the results of the test using
+  the normal approximation.}
+  \item{\code{exact}}{if requested, a numeric vector containing the exact
+  two-sided p-value, one-sided p-value, and point probability using the
+  binomial distribution.}
+  \item{\code{variables}}{a character vector containing the names of the two
+  numeric variables with the paired observations.}
+  \item{\code{n}}{an integer giving the number of observations.}
+}
+
+The \code{print} method produces a LaTeX table that mimics the look of SPSS
+output (version <24).
 }
 \description{
 Perform a sign test for paired samples on variables of a data set.  The
