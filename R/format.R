@@ -13,6 +13,8 @@
 #' \code{\link{as.character}}.
 #' @param \dots  additional arguments passed down to methods.
 #'
+#' @return A character vector or matrix containing the formatted object.
+#'
 #' @author Andreas Alfons
 #'
 #' @keywords utilities

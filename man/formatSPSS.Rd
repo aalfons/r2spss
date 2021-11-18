@@ -31,6 +31,9 @@ implemented for vectors, matrices and data frames.  The default method calls
 \item{digits}{an integer giving the number of digits after the comma to
 display.}
 }
+\value{
+A character vector or matrix containing the formatted object.
+}
 \description{
 Format an object for printing, mostly used to print numeric data in the same
 way SPSS.  This is mainly for internal use in \code{\link{print}} methods.
