@@ -51,7 +51,7 @@ components:
   \item{\code{test}}{an object of class \code{"htest"} as returned by
   \code{\link[stats]{t.test}} (only one-sample and paired-sample tests).}
   \item{\code{variables}}{a character vector containing the name(s) of the
-  relevant numeric variables.}
+  relevant numeric variable(s).}
   \item{\code{n}}{an integer giving the number of observations (only
   paired-sample test).}
   \item{\code{levene}}{an object as returned by
