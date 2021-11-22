@@ -12,7 +12,10 @@ Imports:
     grDevices, 
     stats, 
     car
+Suggests:
+    knitr
 LazyLoad: yes
+VignetteBuilder: knitr
 Authors@R: c(person("Andreas", "Alfons", email = "alfons@ese.eur.nl",
     role = c("aut", "cre")))
 Author: Andreas Alfons [aut, cre]

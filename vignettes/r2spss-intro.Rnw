@@ -1,0 +1,220 @@
+\documentclass[article,nojss]{jss}
+
+%% -- LaTeX packages and custom commands ---------------------------------------
+
+%% recommended packages
+\usepackage{thumbpdf,lmodern}
+
+%% other packages
+\usepackage{amsmath}
+
+
+%% -- Article metainformation (author, title, ...) -----------------------------
+
+%% - \author{} with primary affiliation
+%% - \Plainauthor{} without affiliations
+%% - Separate authors by \And or \AND (in \author) or by comma (in \Plainauthor).
+%% - \AND starts a new line, \And does not.
+\author{Andreas Alfons \\ Erasmus University Rotterdam}
+\Plainauthor{Andreas Alfons}
+
+%% - \title{} in title case
+%% - \Plaintitle{} without LaTeX markup (if any)
+%% - \Shorttitle{} with LaTeX markup (if any), used as running title
+\title{\pkg{r2spss}: Format \proglang{R} Output to Look Like \proglang{SPSS}}
+\Plaintitle{r2spss: Format R Output to Look Like SPSS}
+\Shorttitle{\pkg{r2spss}: Format \proglang{R} Output to Look Like \proglang{SPSS}}
+
+%% - \Abstract{} almost as usual
+% \Abstract{
+% }
+
+%% - \Keywords{} with LaTeX markup, at least one required
+%% - \Plainkeywords{} without LaTeX markup (if necessary)
+%% - Should be comma-separated and in sentence case.
+\Keywords{\proglang{R}, \proglang{SPSS}, statistics, teaching}
+\Plainkeywords{R, SPSS, statistics, teaching}
+
+%% - \Address{} of at least one author
+%% - May contain multiple affiliations for each author
+%%   (in extra lines, separated by \emph{and}\\).
+%% - May contain multiple authors for the same affiliation
+%%   (in the same first line, separated by comma).
+\Address{
+  Andreas Alfons\\
+  Econometric Institute\\
+  Erasmus School of Economics\\
+  Erasmus University Rotterdam\\
+  PO Box 1738\\
+  3000DR Rotterdam, The Netherlands\\
+  E-mail: \email{alfons@ese.eur.nl}\\
+  URL: \url{https://personal.eur.nl/alfons/}
+}
+
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{r2spss: Format R Output to Look Like SPSS}
+%\VignetteDepends{r2spss}
+%\VignetteKeywords{R, SPSS, statistics, teaching}
+%\VignettePackage{r2spss}
+
+
+\begin{document}
+
+
+% -------------
+% knitr options
+% -------------
+
+<<include=FALSE>>=
+library("knitr")
+options(prompt="R> ", continue = "+  ", width = 75, useFancyQuotes = FALSE)
+opts_chunk$set(fig.path = "figures/figure-", fig.align = "center",
+               fig.lp = "fig:", fig.pos = "h!", tidy = FALSE)
+render_sweave()             # use Sweave environments
+set_header(highlight = "")  # do not use the Sweave.sty package
+@
+
+
+%% -- Introduction -------------------------------------------------------------
+
+%% - In principle "as usual".
+%% - But should typically have some discussion of both _software_ and _methods_.
+%% - Use \proglang{}, \pkg{}, and \code{} markup throughout the manuscript.
+%% - If such markup is in (sub)section titles, a plain text version has to be
+%%   added as well.
+%% - All software mentioned should be properly \cite-d.
+%% - All abbreviations should be introduced.
+%% - Unless the expansions of abbreviations are proper names (like "Journal
+%%   of Statistical Software" above) they should be in sentence case (like
+%%   "generalized linear models" below).
+
+\section{Introduction} \label{sec:intro}
+
+\pkg{r2spss} \citep{r2spss}
+
+
+%% -- Manuscript ---------------------------------------------------------------
+
+%% - In principle "as usual" again.
+%% - When using equations (e.g., {equation}, {eqnarray}, {align}, etc.
+%%   avoid empty lines before and after the equation (which would signal a new
+%%   paragraph.
+%% - When describing longer chunks of code that are _not_ meant for execution
+%%   (e.g., a function synopsis or list of arguments), the environment {Code}
+%%   is recommended. Alternatively, a plain {verbatim} can also be used.
+%%   (For executed code see the next section.)
+
+
+% -----------------------
+% available functionality
+% -----------------------
+
+% \section{Available functionality} \label{sec:functionality}
+
+
+
+%% -- Illustrations ------------------------------------------------------------
+
+%% - Virtually all JSS manuscripts list source code along with the generated
+%%   output. The style files provide dedicated environments for this.
+%% - In R, the environments {Sinput} and {Soutput} - as produced by Sweave() or
+%%   or knitr using the render_sweave() hook - are used (without the need to
+%%   load Sweave.sty).
+%% - Equivalently, {CodeInput} and {CodeOutput} can be used.
+%% - The code input should use "the usual" command prompt in the respective
+%%   software system.
+%% - For R code, the prompt "R> " should be used with "+  " as the
+%%   continuation prompt.
+%% - Comments within the code chunks should be avoided - these should be made
+%%   within the regular LaTeX text.
+
+
+% -------------
+% illustrations
+% -------------
+
+\section[Illustrations: Using package r2spss]%
+{Illustrations: Using package \pkg{r2spss}} \label{sec:illustrations}
+
+We start by loading the package and the example data.
+%
+<<results="hide", message=FALSE, warning=FALSE>>=
+library("r2spss")
+data("Eredivisie")
+@
+
+<<>>=
+# log-transform market values
+Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+# squared values of age
+Eredivisie$AgeSq <- Eredivisie$Age^2
+# fit regression models
+fit <- regression(logMarketValue ~ Age + AgeSq,
+                  logMarketValue ~ Age + AgeSq + Contract + Foreign,
+                  data = Eredivisie, change = TRUE)
+@
+
+<<results="asis">>=
+fit
+@
+
+
+%% -- Summary/conclusions/discussion -------------------------------------------
+
+% \section{Conclusions} \label{sec:summary}
+
+
+%% -- Optional special unnumbered sections -------------------------------------
+
+% \section*{Computational details}
+
+% \begin{leftbar}
+% If necessary or useful, information about certain computational details
+% such as version numbers, operating systems, or compilers could be included
+% in an unnumbered section. Also, auxiliary packages (say, for visualizations,
+% maps, tables, \dots) that are not cited in the main text can be credited here.
+% \end{leftbar}
+
+
+% \section*{Acknowledgments}
+
+% \begin{leftbar}
+% All acknowledgments (note the AE spelling) should be collected in this
+% unnumbered section before the references. It may contain the usual information
+% about funding and feedback from colleagues/reviewers/etc. Furthermore,
+% information such as relative contributions of the authors may be added here
+% (if any).
+% \end{leftbar}
+
+% Andreas Alfons is supported by a grant of the Dutch Research Council (NWO),
+% research program Vidi, project number \mbox{VI.Vidi.195.141}.
+
+
+%% -- Bibliography -------------------------------------------------------------
+%% - References need to be provided in a .bib BibTeX database.
+%% - All references should be made with \cite, \citet, \citep, \citealp etc.
+%%   (and never hard-coded). See the FAQ for details.
+%% - JSS-specific markup (\proglang, \pkg, \code) should be used in the .bib.
+%% - Titles in the .bib should be in title case.
+%% - DOIs should be included where available.
+
+\bibliography{r2spss}
+
+
+%% -- Appendix (if any) --------------------------------------------------------
+%% - After the bibliography with page break.
+%% - With proper section titles and _not_ just "Appendix".
+
+% \newpage
+%
+% \begin{appendix}
+%
+% \section{}
+% \label{app:}
+%
+% \end{appendix}
+
+%% -----------------------------------------------------------------------------
+
+
+\end{document}
