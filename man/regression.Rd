@@ -10,7 +10,7 @@
 \alias{plot.regressionSPSS}
 \title{Linear Regression}
 \usage{
-regression(..., data, labels = NULL)
+regression(..., data, labels = NULL, change = FALSE)
 
 \method{print}{regressionSPSS}(x, digits = 3, statistics = c("summary", "anova", "estimates"), ...)
 
@@ -43,6 +43,9 @@ and \code{\link{plotSPSS}}).  For other methods, this is currently ignored.}
 
 \item{labels}{a character or numeric vector giving labels for the
 regression models in the output tables.}
+
+\item{change}{a logical indicating whether tests on the
+\eqn{R^2}{R-squared} change should be included in model summaries.}
 
 \item{x, object}{an object of class \code{"regressionSPSS"} as returned by
 function \code{regression}.}
@@ -77,6 +80,12 @@ components:
   \code{"lm"} as returned by function \code{\link[stats]{lm}}.}
   \item{\code{response}}{a character string containing the name of the
   response variable.}
+  \item{\code{method}}{a character string specifying whether the nested
+  models are increasing in dimension by entering additional variables
+  (\code{"enter"}) or decreasing in dimension by removing variables
+  (\code{"remove"}).}
+  \item{\code{change}}{a logical indicating whether tests on the
+  \eqn{R^2}{R-squared} change are included in model summaries.}
 }
 
 The \code{print} method produces a LaTeX table that mimics the look of SPSS
@@ -110,16 +119,18 @@ plot(fit1, which = "scatter")  # diagnostic plot
 
 # add a squared effect for age
 fit2 <- regression(logMarketValue ~ Age + AgeSq,
-                   data = Eredivisie)
+                   data = Eredivisie, labels = 2)
 fit2                           # print LaTeX table
 plot(fit2, which = "scatter")  # diagnostic plot
 
 # more complex models with model comparison
-fit3 <- regression(logMarketValue ~ Age + AgeSq + Contract +
-                                    Foreign + Position,
+fit3 <- regression(logMarketValue ~ Age + AgeSq,
                    logMarketValue ~ Age + AgeSq + Contract +
                                     Foreign,
-                   data = Eredivisie)
+                   logMarketValue ~ Age + AgeSq + Contract +
+                                    Foreign + Position,
+                   data = Eredivisie, labels = 2:4,
+                   change = TRUE)
 fit3                             # print LaTeX table
 plot(fit3, which = "histogram")  # diagnostic plot
 

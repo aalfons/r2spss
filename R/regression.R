@@ -17,6 +17,8 @@
 #' @param data  a data frame containing the variables.
 #' @param labels  a character or numeric vector giving labels for the
 #' regression models in the output tables.
+#' @param change  a logical indicating whether tests on the
+#' \eqn{R^2}{R-squared} change should be included in model summaries.
 #'
 #' @return  An object of class \code{"regressionSPSS"} with the following
 #' components:
@@ -25,6 +27,12 @@
 #'   \code{"lm"} as returned by function \code{\link[stats]{lm}}.}
 #'   \item{\code{response}}{a character string containing the name of the
 #'   response variable.}
+#'   \item{\code{method}}{a character string specifying whether the nested
+#'   models are increasing in dimension by entering additional variables
+#'   (\code{"enter"}) or decreasing in dimension by removing variables
+#'   (\code{"remove"}).}
+#'   \item{\code{change}}{a logical indicating whether tests on the
+#'   \eqn{R^2}{R-squared} change are included in model summaries.}
 #' }
 #'
 #' The \code{print} method produces a LaTeX table that mimics the look of SPSS
@@ -55,41 +63,85 @@
 #'
 #' # add a squared effect for age
 #' fit2 <- regression(logMarketValue ~ Age + AgeSq,
-#'                    data = Eredivisie)
+#'                    data = Eredivisie, labels = 2)
 #' fit2                           # print LaTeX table
 #' plot(fit2, which = "scatter")  # diagnostic plot
 #'
 #' # more complex models with model comparison
-#' fit3 <- regression(logMarketValue ~ Age + AgeSq + Contract +
-#'                                     Foreign + Position,
+#' fit3 <- regression(logMarketValue ~ Age + AgeSq,
 #'                    logMarketValue ~ Age + AgeSq + Contract +
 #'                                     Foreign,
-#'                    data = Eredivisie)
+#'                    logMarketValue ~ Age + AgeSq + Contract +
+#'                                     Foreign + Position,
+#'                    data = Eredivisie, labels = 2:4,
+#'                    change = TRUE)
 #' fit3                             # print LaTeX table
 #' plot(fit3, which = "histogram")  # diagnostic plot
 #'
 #' @keywords multivariate
 #'
-#' @importFrom stats lm
+#' @importFrom stats lm model.frame na.pass
 #' @export
 
-regression <- function(..., data, labels = NULL) {
+regression <- function(..., data, labels = NULL, change = FALSE) {
   # initializations
   formulas <- list(...)
   if (is.null(labels)) labels <- seq_along(formulas)
   names(formulas) <- labels
+  nFormulas <- length(formulas)
+  change <- isTRUE(change)
   # check if response is the same in all models
   response <- vapply(formulas, function(x) as.character(x[[2]]), character(1))
   response <- unique(response)
   if (length(response) > 1) {
     stop("the same response must be used for all models")
   }
+  # extract response and predictor matrix for each formula
+  xyList <- lapply(formulas, function(f) {
+    mf <- model.frame(f, data = data, na.action = na.pass,
+                      drop.unused.levels = TRUE)
+    terms <- attr(mf, "terms")
+    list(x = model.matrix(terms, data = mf), y = model.response(mf),
+         intercept = attr(terms, "intercept"))
+  })
+  # check whether all formulas include an intercept
+  haveIntercept <- vapply(xyList, function(xy) xy$intercept == 1, logical(1))
+  if (!all(haveIntercept)) stop("all models must have an intercept")
+  # check whether models are nested and store index of largest model
+  if (nFormulas == 1) {
+    largest <- 1
+    method <- "enter"
+  } else {
+    # check if we have a forward series (adding variables) or backward series
+    # (removing variables) of nested models
+    varNames <- lapply(xyList, function(xy) colnames(xy$x))
+    forwards <- backwards <- rep.int(NA, nFormulas - 1)
+    for (i in seq(nFormulas - 1)) {
+      forwards[i] <- (length(varNames[[i]]) < length(varNames[[i+1]])) &&
+        all(varNames[[i]] %in% varNames[[i+1]])
+      backwards[i] <- (length(varNames[[i+1]]) < length(varNames[[i]])) &&
+        all(varNames[[i+1]] %in% varNames[[i]])
+    }
+    if (!all(forwards) && !all(backwards)) {
+      stop("you must specify a series of nested models")
+    }
+    # store index of largest model
+    if (all(forwards)) {
+      largest <- nFormulas
+      method <- "enter"
+    } else {
+      largest <- 1
+      method = "remove"
+    }
+  }
+  # remove observations with missing values in the largest model
+  yx <- cbind(xyList[[largest]]$y, xyList[[largest]]$x)
+  names(yx)[1] <- response
+  keep <- complete.cases(yx)
   # fit linear models
-  # FIXME: make sure that the same observations are used for all models
-  #        in case of missing values
-  models <- lapply(formulas, lm, data=data)
+  models <- lapply(formulas, lm, data=data[keep, ])
   # return results
-  out <- list(models=models, response=response)
+  out <- list(models=models, response=response, method=method, change=change)
   class(out) <- "regressionSPSS"
   out
 }
@@ -118,6 +170,10 @@ print.regressionSPSS <- function(x, digits = 3,
   statistics <- match.arg(statistics, several.ok=TRUE)
   models <- x$models
   labels <- names(models)
+  change <- x$change
+  # TODO: it's probably a good idea to let the user supply character limits
+  if (change) wrap <- c(90, 66)
+  else wrap <- c(50, 66)
 
   ## extract coefficients
   summaries <- lapply(models, summary)
@@ -173,43 +229,63 @@ print.regressionSPSS <- function(x, digits = 3,
                      "Adj. R Sq"=adjrsq, "Std. Error"=sigma,
                      row.names=labels, check.names=FALSE)
 
-  ## compute change statistics
-  k <- length(models)
-  # compute R square changes
-  rsqchange <- diff(rsq)
-  rsqfull <- rsq[-k]
-  # compute degrees of freedom
-  df <- vapply(anovas, function(a) a$Df[1:2], integer(2), USE.NAMES=FALSE)
-  df1 <- abs(diff(df[1, ]))
-  df2 <- df[2, -1]
-  # compute F changes and p-values
-  f <- (abs(rsqchange) / df1) / ((1 - rsqfull) / df2)
-  p <- pf(f, df1, df2, lower.tail=FALSE)
-  # add information from first model
-  first <- anovas[[1]]
-  changes <- data.frame("R Sq Change"=c(rsq[1], rsqchange),
-                        "F Change"=c(first[1, "F"], f),
-                        df1=c(first[1, "Df"], df1),
-                        df2=c(first[2, "Df"], df2),
-                        "Sig. F Change"=c(first[1, "Sig."], p),
-                        row.names=labels, check.names=FALSE)
+  ## if requested, compute change statistics
+  if (change) {
+    k <- length(models)
+    # compute R square changes and degrees of freedom
+    rsqchange <- diff(rsq)
+    df <- vapply(anovas, function(a) a$Df[1:2], integer(2), USE.NAMES=FALSE)
+    if (x$method == "enter") {
+      # R square of the full model
+      rsqfull <- rsq[-1]
+      # compute degrees of freedom
+      df1 <- diff(df[1, ])
+      df2 <- df[2, -1]
+    } else {
+      # R square of the full model
+      rsqfull <- rsq[-k]
+      # compute degrees of freedom
+      df1 <- -diff(df[1, ])
+      df2 <- df[2, -k]
+    }
+    # compute F changes and p-values
+    f <- (abs(rsqchange) / df1) / ((1 - rsqfull) / df2)
+    p <- pf(f, df1, df2, lower.tail=FALSE)
+    # add information from first model
+    first <- anovas[[1]]
+    changes <- data.frame("R Sq Change"=c(rsq[1], rsqchange),
+                          "F Change"=c(first[1, "F"], f),
+                          df1=c(first[1, "Df"], df1),
+                          df2=c(first[2, "Df"], df2),
+                          "Sig. F Change"=c(first[1, "Sig."], p),
+                          row.names=labels, check.names=FALSE)
+    # add to information on model fits
+    fits <- cbind(fits, changes)
+  }
 
   ## print LaTeX table for model summaries
   if ("summary" %in% statistics) {
     # initialize LaTeX table
     cat("\n")
-    cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|r|}\n")
+    if (change) cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|r|}\n")
+    else cat("\\begin{tabular}{|l|r|r|r|r|}\n")
     # print table header
     cat("\\noalign{\\smallskip}\n")
-    cat("\\multicolumn{10}{c}{\\textbf{Model Summary}} \\\\\n")
+    if (change) cat("\\multicolumn{10}{c}{\\textbf{Model Summary}} \\\\\n")
+    else cat("\\multicolumn{5}{c}{\\textbf{Model Summary}} \\\\\n")
     cat("\\noalign{\\smallskip}\\hline\n")
-    cat(" & & & & \\multicolumn{1}{|c|}{Std. Error} & \\multicolumn{5}{|c|}{Change Statistics} \\\\\n")
-    cat("\\cline{6-10}\n")
-    cat(" & & & \\multicolumn{1}{|c|}{Adjusted} & \\multicolumn{1}{|c|}{of the} & \\multicolumn{1}{|c|}{R Square} & & & & \\multicolumn{1}{|c|}{Sig. F} \\\\\n")
-    cat("\\multicolumn{1}{|c}{Model} & \\multicolumn{1}{|c|}{R} & \\multicolumn{1}{|c|}{R Square} & \\multicolumn{1}{|c|}{R Square} & \\multicolumn{1}{|c|}{Estimate} & \\multicolumn{1}{|c|}{Change} & \\multicolumn{1}{|c|}{F Change} & \\multicolumn{1}{|c|}{df1} & \\multicolumn{1}{|c|}{df2} & \\multicolumn{1}{|c|}{Change} \\\\\n")
+    if (change) {
+      cat(" & & & & \\multicolumn{1}{|c|}{Std. Error} & \\multicolumn{5}{|c|}{Change Statistics} \\\\\n")
+      cat("\\cline{6-10}\n")
+      cat(" & & & \\multicolumn{1}{|c|}{Adjusted} & \\multicolumn{1}{|c|}{of the} & \\multicolumn{1}{|c|}{R Square} & & & & \\multicolumn{1}{|c|}{Sig. F} \\\\\n")
+      cat("\\multicolumn{1}{|c}{Model} & \\multicolumn{1}{|c|}{R} & \\multicolumn{1}{|c|}{R Square} & \\multicolumn{1}{|c|}{R Square} & \\multicolumn{1}{|c|}{Estimate} & \\multicolumn{1}{|c|}{Change} & \\multicolumn{1}{|c|}{F Change} & \\multicolumn{1}{|c|}{df1} & \\multicolumn{1}{|c|}{df2} & \\multicolumn{1}{|c|}{Change} \\\\\n")
+    } else {
+      cat(" & & & \\multicolumn{1}{|c|}{Adjusted} & \\multicolumn{1}{|c|}{Std. Error of} \\\\\n")
+      cat("\\multicolumn{1}{|c}{Model} & \\multicolumn{1}{|c|}{R} & \\multicolumn{1}{|c|}{R Square} & \\multicolumn{1}{|c|}{R Square} & \\multicolumn{1}{|c|}{the Estimate} \\\\\n")
+    }
     cat("\\hline\n")
     # format model summaries
-    formatted <- formatSPSS(cbind(fits, changes), digits=digits)
+    formatted <- formatSPSS(fits, digits=digits)
     for (i in seq_along(models)) {
       # print current model summary
       superscript <- sprintf("$^{\\text{%s}}$", letters[i])
@@ -219,8 +295,13 @@ print.regressionSPSS <- function(x, digits = 3,
     # finalize LaTeX table
     cat("\\hline\n")
     for (i in seq_along(predictors)) {
-      cat("\\multicolumn{10}{l}{", letters[i],". Predictors: ",
-          paste0(predictors[[i]], collapse=", "), "} \\\\\n", sep="")
+      if (change) {
+        printPredictors(predictors[[i]], columns = 10, index = i,
+                        wrap = wrap[1])
+      } else {
+        printPredictors(predictors[[i]], columns = 5, index = i,
+                        wrap = wrap[1])
+      }
     }
     cat("\\noalign{\\smallskip}\n")
     cat("\\end{tabular}\n")
@@ -259,11 +340,10 @@ print.regressionSPSS <- function(x, digits = 3,
       cat("\\hline\n")
     }
     # finalize LaTeX table
-    cat("\\multicolumn{7}{l}{a. Dependent variable: ", x$response,
-        "} \\\\\n", sep="")
+    printResponse(x$response, columns = 7)
     for (i in seq_along(predictors)) {
-      cat("\\multicolumn{7}{l}{", letters[i+1],". Predictors: ",
-          paste0(predictors[[i]], collapse=", "), "} \\\\\n", sep="")
+      printPredictors(predictors[[i]], columns = 7, index = i+1,
+                      wrap = wrap[2])
     }
     cat("\\noalign{\\smallskip}\n")
     cat("\\end{tabular}\n")
@@ -297,11 +377,53 @@ print.regressionSPSS <- function(x, digits = 3,
       cat("\\hline\n")
     }
     # finalize LaTeX table
-    cat("\\multicolumn{7}{l}{a. Dependent variable: ", x$response,
-        "} \\\\\n", sep="")
+    printResponse(x$response, columns = 7)
     cat("\\noalign{\\smallskip}\n")
     cat("\\end{tabular}\n")
     cat("\n")
+  }
+}
+
+
+## utility function to print information on the dependent variable
+printResponse <- function(response, columns) {
+  cat("\\multicolumn{", columns, "}{l}{a. Dependent variable: ", response,
+      "} \\\\\n", sep="")
+}
+
+## utility function to print information on the predictors
+printPredictors <- function(predictors, columns, index = 1, wrap = 66) {
+  # initializations
+  p <- length(predictors)
+  # prepare string for first predictor
+  prefix <- "Predictors: "
+  predictorStrings <- paste0("Predictors: ", predictors[1])
+  # after each predictor except the last, a separator is inserted
+  if (p > 1) {
+    separators <- c(rep.int(", ", p-1), "")
+    predictorStrings <- paste0(c(predictorStrings, predictors[-1]), separators)
+  }
+  # add lines with as many predictors as there is space (given by 'wrap')
+  i <- 0
+  while(length(predictorStrings) > 0) {
+    # update number of lines to print
+    i <- i + 1
+    # determine how many predictors have space
+    width <- nchar(predictorStrings)
+    add <- which(cumsum(width) <= wrap)
+    # too long a variable needs to be added anyway
+    if (length(add) == 0) add <- 1
+    # print predictors that have
+    if (i == 1) {
+      cat("\\multicolumn{", columns, "}{l}{", letters[index],". ",
+          paste0(predictorStrings[add]), "} \\\\\n", sep="")
+    } else {
+      cat("\\multicolumn{", columns, "}{l}{\\phantom{", letters[index],". }",
+          paste0(predictorStrings[add]), "} \\\\\n", sep="")
+
+    }
+    # remove the predictors which have just been printed
+    predictorStrings <- predictorStrings[-add]
   }
 }
 
