@@ -28,6 +28,13 @@
 #'
 #' @author Andreas Alfons
 #'
+#' @examples
+#' # load data
+#' data("Eredivisie")
+#'
+#' # compute descriptive statistics for market value and age
+#' descriptives(Eredivisie, variables = c("MarketValue", "Age"))
+#'
 #' @keywords univar
 #'
 #' @importFrom stats complete.cases sd

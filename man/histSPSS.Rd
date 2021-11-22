@@ -30,6 +30,16 @@ An object of class \code{"histogram"} is returned invisibly (see
 Draw a histogram of a variable in a data frame.  The plot thereby mimics the
 look of SPSS graphs.
 }
+\examples{
+# load data
+data("Eredivisie")
+# log-transform market values
+Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+
+# plot histogram of log market values
+histSPSS(Eredivisie, variable = "logMarketValue")
+
+}
 \author{
 Andreas Alfons
 }

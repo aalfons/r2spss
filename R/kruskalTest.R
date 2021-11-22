@@ -31,6 +31,14 @@
 #'
 #' @author Andreas Alfons
 #'
+#' @examples
+#' # load data
+#' data("Eredivisie")
+#'
+#' # test whether market values differ by playing position
+#' kruskalTest(Eredivisie, variable = "MarketValue",
+#'             group = "Position")
+#'
 #' @keywords htest
 #'
 #' @importFrom stats pchisq

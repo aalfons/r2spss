@@ -55,6 +55,18 @@
 #'
 #' @author Andreas Alfons
 #'
+#' @examples
+#' ## independent-samples t test
+#'
+#' # load data
+#' data("Eredivisie")
+#' # log-transform market values
+#' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+#'
+#' # test whether average log market values differ between
+#' # Dutch and foreign players
+#' tTest(Eredivisie, "logMarketValue", group = "Foreign")
+#'
 #' @keywords htest
 #'
 #' @importFrom stats sd t.test

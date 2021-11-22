@@ -17,6 +17,11 @@
 #'
 #' @author Andreas Alfons
 #'
+#' @examples
+#' # note how numbers in the interval (-1, 1) are printed
+#' # without the zero in front of the comma
+#' formatSPSS(c(-1.5, -2/3, 2/3, 1.5))
+#'
 #' @keywords utilities
 #'
 #' @export

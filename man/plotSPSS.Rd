@@ -28,6 +28,21 @@ Nothing is returned, but a plot is produced.
 Draw a scatterplot or a scatterplot matrix of variables in a data frame.
 The plots thereby mimic the look of SPSS graphs.
 }
+\examples{
+# load data
+data("Eredivisie")
+# log-transform market values
+Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+
+# plot log market values against age
+plotSPSS(Eredivisie, variables = c("Age", "logMarketValue"))
+
+# scatterplot matrix of age, number of minutes played, and
+# log market values
+plotSPSS(Eredivisie,
+         variables = c("Age", "Minutes", "logMarketValue"))
+
+}
 \author{
 Andreas Alfons
 }

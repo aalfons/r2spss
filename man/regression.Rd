@@ -95,6 +95,35 @@ Perform linear regression on variables of a data set.  The output is printed
 as a LaTeX table that mimics the look of SPSS output (version <24), and plots
 of the results mimic the look of SPSS graphs.
 }
+\examples{
+# load data
+data("Eredivisie")
+# log-transform market values
+Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+# squared values of age
+Eredivisie$AgeSq <- Eredivisie$Age^2
+
+# simple regression model of log market value on age
+fit1 <- regression(logMarketValue ~ Age, data = Eredivisie)
+fit1                           # print LaTeX table
+plot(fit1, which = "scatter")  # diagnostic plot
+
+# add a squared effect for age
+fit2 <- regression(logMarketValue ~ Age + AgeSq,
+                   data = Eredivisie)
+fit2                           # print LaTeX table
+plot(fit2, which = "scatter")  # diagnostic plot
+
+# more complex models with model comparison
+fit3 <- regression(logMarketValue ~ Age + AgeSq + Contract +
+                                    Foreign + Position,
+                   logMarketValue ~ Age + AgeSq + Contract +
+                                    Foreign,
+                   data = Eredivisie)
+fit3                             # print LaTeX table
+plot(fit3, which = "histogram")  # diagnostic plot
+
+}
 \author{
 Andreas Alfons
 }

@@ -77,6 +77,19 @@ independent-samples t test on variables of a data set.  The output
 is printed as a LaTeX table that mimics the look of SPSS output
 (version <24).
 }
+\examples{
+## independent-samples t test
+
+# load data
+data("Eredivisie")
+# log-transform market values
+Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+
+# test whether average log market values differ between
+# Dutch and foreign players
+tTest(Eredivisie, "logMarketValue", group = "Foreign")
+
+}
 \author{
 Andreas Alfons
 }

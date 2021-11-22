@@ -19,6 +19,10 @@
 #' should be a character string specifying the numeric variable of interest.
 #' @param group  a character string specifying a grouping variable for the
 #' Wilcoxon rank sum test, or \code{NULL}.
+#' @param exact  a logical indicating whether the Wilcoxon rank sum test
+#' should also return the p-value of the exact test.  The default is
+#' \code{FALSE}.  Note that the p-value of the asymptotic test is always
+#' returned.
 #'
 #' @return  An object of class \code{"wilcoxonTestSPSS"} with the following
 #' components:
@@ -36,8 +40,9 @@
 #'   \item{\code{asymptotic}}{a list containing the results of the Wilcoxon
 #'   rank sum test using the normal approximation (only independent-samples
 #'   test).}
-#'   \item{\code{exact}}{a list containing the results of the exact Wilcoxon
-#'   rank sum test test (only independent-samples test).}
+#'   \item{\code{exact}}{a list containing the test statistic of the exact
+#'   Wilcoxon rank sum test test, and if requested the corresponding p-value
+#'   (only independent-samples test).}
 #'   \item{\code{group}}{a character string containing the name of the
 #'   grouping variable (only independent-samples test).}
 #'   \item{\code{type}}{a character string giving the type of Wilcoxon test
@@ -52,16 +57,27 @@
 #'
 #' @author Andreas Alfons
 #'
+#' @examples
+#' ## independent samples
+#'
+#' # load data
+#' data("Eredivisie")
+#'
+#' # test whether market values differ between Dutch and foreign
+#' # players
+#' wilcoxonTest(Eredivisie, "MarketValue", group = "Foreign")
+#'
 #' @keywords htest
 #'
 #' @importFrom stats pnorm pwilcox
 #' @export
 
-wilcoxonTest <- function(data, variables, group = NULL) {
+wilcoxonTest <- function(data, variables, group = NULL, exact = FALSE) {
   ## initializations
   data <- as.data.frame(data)
   variables <- as.character(variables)
   group <- as.character(group)
+  exact_p_value <- isTRUE(exact)
   ## select test
   if (length(group) == 0) {
     ## signed rank test
@@ -125,11 +141,15 @@ wilcoxonTest <- function(data, variables, group = NULL) {
     asymptotic <- list(statistic=z, p.value=p)
     # exact test without correction for ties
     u <- sum[max] - n[max]*(n[max]+1)/2
-    sigma <- sqrt((prod(n)*(N+1)) / 12)
-    if (u > prod(n)/2) p <- pwilcox(u-1, n[max], n[-max], lower.tail=FALSE)
-    else p <- pwilcox(u, n[max], n[-max])
-    p <- min(2*p, 1)
-    exact <- list(statistic=u, p.value=p)
+    # sigma <- sqrt((prod(n)*(N+1)) / 12)
+    exact <- list(statistic=u)
+    if (exact_p_value) {
+      # compute p-value only if requested, as it can take a long time
+      if (u > prod(n)/2) p <- pwilcox(u-1, n[max], n[-max], lower.tail=FALSE)
+      else p <- pwilcox(u, n[max], n[-max])
+      p <- min(2*p, 1)
+      exact$p.value <- p
+    }
     # construct object
     out <- list(statistics=stat, w=sum[max], asymptotic=asymptotic, exact=exact,
                 variables=variables[1], group=group[1], type="independent")
@@ -211,6 +231,7 @@ print.wilcoxonTestSPSS <- function(x, digits = 2:3,
       formatted <- formatSPSS(test, digits=digits[2])
       min <- which.min(x$statistics[, "Sum of Ranks"])
     } else if (x$type == "independent") {
+      have_exact <- !is.null(x$exact$p.value)
       test <- c(x$exact$statistic, x$w, x$asymptotic$statistic,
                 x$asymptotic$p.value, x$exact$p.value)
       formatted <- formatSPSS(test, digits=digits[2])
@@ -241,7 +262,9 @@ print.wilcoxonTestSPSS <- function(x, digits = 2:3,
       cat("Wilcoxon W &", formatted[2], "\\\\\n")
       cat("Z &", formatted[3], "\\\\\n")
       cat("Asymp. Sig. (2-tailed) &", formatted[4], "\\\\\n")
-      cat("Exact Sig. [2*(1-tailed Sig.)] &", formatted[5], "$^\\text{b}$ \\\\\n", sep="")
+      if (have_exact) {
+        cat("Exact Sig. [2*(1-tailed Sig.)] &", formatted[5], "$^\\text{b}$ \\\\\n", sep="")
+      }
       cat("\\hline\\noalign{\\smallskip}\n")
       cat("\\multicolumn{2}{l}{a. Grouping Variable: ", x$group, "} \\\\\n", sep="")
       cat("\\multicolumn{2}{l}{b. Not corrected for ties.} \\\\\n")

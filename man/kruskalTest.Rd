@@ -51,6 +51,15 @@ output (version <24).
 Perform a Kruskal-Wallis test on variables of a data set.  The output is
 printed as a LaTeX table that mimics the look of SPSS output (version <24).
 }
+\examples{
+# load data
+data("Eredivisie")
+
+# test whether market values differ by playing position
+kruskalTest(Eredivisie, variable = "MarketValue",
+            group = "Position")
+
+}
 \author{
 Andreas Alfons
 }

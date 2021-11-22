@@ -2,9 +2,11 @@ Package: r2spss
 Type: Package
 Title: Format R Output to Look Like SPSS
 Version: 0.2.0
-Date: 2021-11-18
+Date: 2021-11-22
 Description: Create graphics and LaTeX tables that to look like SPSS output for use in teaching materials.  Functionality includes boxplots, histograms, scatterplots, and line plots, as well as descriptive statistics, common hypothesis tests, ANOVA, and linear regression.
 License: GPL (>= 2)
+Depends: 
+    R (>= 3.5.0)
 Imports: 
     graphics, 
     grDevices, 

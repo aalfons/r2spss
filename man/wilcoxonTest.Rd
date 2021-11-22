@@ -5,7 +5,7 @@
 \alias{print.wilcoxonTestSPSS}
 \title{Wilcoxon Signed Rank and Rank Sum Tests}
 \usage{
-wilcoxonTest(data, variables, group = NULL)
+wilcoxonTest(data, variables, group = NULL, exact = FALSE)
 
 \method{print}{wilcoxonTestSPSS}(x, digits = 2:3, statistics = c("ranks", "test"), ...)
 }
@@ -21,6 +21,11 @@ should be a character string specifying the numeric variable of interest.}
 
 \item{group}{a character string specifying a grouping variable for the
 Wilcoxon rank sum test, or \code{NULL}.}
+
+\item{exact}{a logical indicating whether the Wilcoxon rank sum test
+should also return the p-value of the exact test.  The default is
+\code{FALSE}.  Note that the p-value of the asymptotic test is always
+returned.}
 
 \item{x}{an object of class \code{"wilcoxonTestSPSS"} as returned by
 function \code{wilcoxonTest}.}
@@ -53,8 +58,9 @@ components:
   \item{\code{asymptotic}}{a list containing the results of the Wilcoxon
   rank sum test using the normal approximation (only independent-samples
   test).}
-  \item{\code{exact}}{a list containing the results of the exact Wilcoxon
-  rank sum test test (only independent-samples test).}
+  \item{\code{exact}}{a list containing the test statistic of the exact
+  Wilcoxon rank sum test test, and if requested the corresponding p-value
+  (only independent-samples test).}
   \item{\code{group}}{a character string containing the name of the
   grouping variable (only independent-samples test).}
   \item{\code{type}}{a character string giving the type of Wilcoxon test
@@ -73,6 +79,17 @@ is printed as a LaTeX table that mimics the look of SPSS output (version
 \note{
 The Wilcoxon rank sum test also reports the value of the equivalent
 Mann-Whitney U test statistic.
+}
+\examples{
+## independent samples
+
+# load data
+data("Eredivisie")
+
+# test whether market values differ between Dutch and foreign
+# players
+wilcoxonTest(Eredivisie, "MarketValue", group = "Foreign")
+
 }
 \author{
 Andreas Alfons

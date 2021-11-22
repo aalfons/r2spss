@@ -1,0 +1,13 @@
+Changes in r2spss version 0.2.0
+
+    + More detailed documentation of returned objects.
+
+    + Bugfix in regression() regarding computation of standardized coefficients.
+
+    + Added argument 'exact' to wilcoxonTest() such that the p-value of the
+      exact Wilcoxon Rank sum test is only computed when requested.
+
+    + Plots now have horizontal axis labels by default, and scientific number
+      format in axis annotations is suppressed.
+
+    + Added Eredivisie data set and examples.

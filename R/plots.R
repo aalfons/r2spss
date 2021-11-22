@@ -53,7 +53,7 @@ linesSPSS <- function(data, variables, index = NULL,
 # internal function for line plot with different defaults
 .lines <- function(x, y, ..., type = c("l", "o"), xlim = NULL, ylim = NULL,
                    mar = NULL, bg = "#F0F0F0", main = NULL, xlab = NULL,
-                   ylab = NULL, font.lab = 2, cex.lab = 1.2,
+                   ylab = NULL, font.lab = 2, cex.lab = 1.2, las = 1,
                    # the following arguments are currently ignored
                    axes = TRUE, xaxt = "s", yaxt = "s", log = "", sub = NULL) {
   # initializations
@@ -65,8 +65,12 @@ linesSPSS <- function(data, variables, index = NULL,
     mar <- c(bottom, left, top, 0) + 0.1
   }
   # set plot margins
-  op <- par(mar=mar)
-  on.exit(par(op))
+  op <- par(mar=mar, las=las)
+  oo <- options(scipen = .Machine$integer.max/2) # doesn't work with integer.max
+  on.exit({
+    par(op)
+    options(oo)
+  })
   # initialize plot
   if (is.character(x)) {
     labs <- x
@@ -91,6 +95,7 @@ linesSPSS <- function(data, variables, index = NULL,
                       mar = NULL, bg = "#F0F0F0", lty = 1, lwd = 1.5, pch = 1,
                       col = paletteSPSS(), main = NULL, xlab = NULL,
                       ylab = NULL, title = NULL, font.lab = 2, cex.lab = 1.2,
+                      las = 1,
                       # the following arguments are currently ignored
                       axes = TRUE, xaxt = "s", yaxt = "s", log = "",
                       sub = NULL, add = FALSE, verbose = FALSE) {
@@ -105,8 +110,12 @@ linesSPSS <- function(data, variables, index = NULL,
     mar <- c(bottom, left, top, 10) + 0.1
   }
   # set plot margins
-  op <- par(mar=mar)
-  on.exit(par(op))
+  op <- par(mar=mar, las=las)
+  oo <- options(scipen = .Machine$integer.max/2) # doesn't work with integer.max
+  on.exit({
+    par(op)
+    options(oo)
+  })
   # initialize plot
   if (is.character(x)) {
     labs <- x
@@ -159,6 +168,16 @@ linesSPSS <- function(data, variables, index = NULL,
 #'
 #' @author Andreas Alfons
 #'
+#' @examples
+#' # load data
+#' data("Eredivisie")
+#' # log-transform market values
+#' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+#'
+#' # plot log market values of Dutch and Foreign players
+#' boxplotSPSS(Eredivisie, variables = "logMarketValue",
+#'             group = "Foreign")
+#'
 #' @keywords hplot
 #'
 #' @importFrom graphics boxplot par points rect
@@ -191,7 +210,7 @@ boxplotSPSS <- function(data, variables, group = NULL, xlab = NULL,
                      border = par("fg"), lty = 1, col = "#D3CE97",
                      outline = TRUE, pch = c(1, 42), cex = c(1, 1.5),
                      main = NULL, xlab = NULL, ylab = NULL, font.lab = 2,
-                     cex.lab = 1.2, axes = TRUE, names = NULL,
+                     cex.lab = 1.2, axes = TRUE, las = 1, names = NULL,
                      show.names = TRUE, cut.names = FALSE,
                      # the following arguments are currently ignored
                      plot = TRUE, range = 1.5, horizontal = FALSE,
@@ -204,8 +223,12 @@ boxplotSPSS <- function(data, variables, group = NULL, xlab = NULL,
     mar <- c(bottom, left, top, 0) + 0.1
   }
   # set plot margins
-  op <- par(font.lab=font.lab, mar=mar)
-  on.exit(par(op))
+  op <- par(font.lab=font.lab, mar=mar, las=las)
+  oo <- options(scipen = .Machine$integer.max/2) # doesn't work with integer.max
+  on.exit({
+    par(op)
+    options(oo)
+  })
   # get boxplot statistics and initialize plot
   b <- boxplot(..., boxwex=boxwex, outline=outline, axes = FALSE)
   # plot background
@@ -270,6 +293,20 @@ boxplotSPSS <- function(data, variables, group = NULL, xlab = NULL,
 #'
 #' @author Andreas Alfons
 #'
+#' @examples
+#' # load data
+#' data("Eredivisie")
+#' # log-transform market values
+#' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+#'
+#' # plot log market values against age
+#' plotSPSS(Eredivisie, variables = c("Age", "logMarketValue"))
+#'
+#' # scatterplot matrix of age, number of minutes played, and
+#' # log market values
+#' plotSPSS(Eredivisie,
+#'          variables = c("Age", "Minutes", "logMarketValue"))
+#'
 #' @keywords hplot
 #'
 #' @importFrom graphics box mtext par plot points rect
@@ -291,6 +328,7 @@ plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL, ...) {
 # internal function for scatter plot with different defaults
 .plot <- function(x, y, ..., mar = NULL, bg = "#F0F0F0", main = NULL,
                   xlab = NULL, ylab = NULL, font.lab = 2, cex.lab = 1.2,
+                  las = 1,
                   # the following arguments are currently ignored
                   type = "p", log = "", sub = NULL) {
   # initializations
@@ -301,8 +339,12 @@ plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL, ...) {
     mar <- c(bottom, left, top, 0) + 0.1
   }
   # set plot margins
-  op <- par(mar=mar)
-  on.exit(par(op))
+  op <- par(mar=mar, las=las)
+  oo <- options(scipen = .Machine$integer.max/2) # doesn't work with integer.max
+  on.exit({
+    par(op)
+    options(oo)
+  })
   # initialize plot
   plot(x, y, ..., type="n", main=main, xlab=xlab, ylab=ylab,
        font.lab=font.lab, cex.lab=cex.lab)
@@ -379,6 +421,15 @@ plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL, ...) {
 #'
 #' @author Andreas Alfons
 #'
+#' @examples
+#' # load data
+#' data("Eredivisie")
+#' # log-transform market values
+#' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+#'
+#' # plot histogram of log market values
+#' histSPSS(Eredivisie, variable = "logMarketValue")
+#'
 #' @keywords hplot
 #'
 #' @importFrom graphics box hist mtext par plot rect
@@ -404,6 +455,7 @@ histSPSS <- function(data, variable, normal = FALSE,
                   frame.plot = TRUE, mar = NULL, bg = "#F0F0F0",
                   border = par("fg"), col = "#D3CE97", main = NULL,
                   xlab = NULL, ylab = NULL, font.lab = 2, cex.lab = 1.2,
+                  las = 1,
                   # the following arguments are currently ignored
                   freq = TRUE, probability = !freq, plot = TRUE,
                   warn.unused = FALSE, add = FALSE, log = "", sub = NULL) {
@@ -416,8 +468,12 @@ histSPSS <- function(data, variable, normal = FALSE,
     mar <- c(bottom, left, top, 8) + 0.1
   }
   # set graphical parameters
-  op <- par(mar=mar, yaxs="i")
-  on.exit(par(op))
+  op <- par(mar=mar, yaxs="i", las=las)
+  oo <- options(scipen = .Machine$integer.max/2) # doesn't work with integer.max
+  on.exit({
+    par(op)
+    options(oo)
+  })
   # get histogram statistics
   h <- hist(x, ..., breaks=breaks, plot=FALSE, warn.unused=FALSE)
   # compute summary statistics

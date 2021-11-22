@@ -40,6 +40,34 @@
 #'
 #' @author Andreas Alfons
 #'
+#' @examples
+#' # load data
+#' data("Eredivisie")
+#' # log-transform market values
+#' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+#' # squared values of age
+#' Eredivisie$AgeSq <- Eredivisie$Age^2
+#'
+#' # simple regression model of log market value on age
+#' fit1 <- regression(logMarketValue ~ Age, data = Eredivisie)
+#' fit1                           # print LaTeX table
+#' plot(fit1, which = "scatter")  # diagnostic plot
+#'
+#' # add a squared effect for age
+#' fit2 <- regression(logMarketValue ~ Age + AgeSq,
+#'                    data = Eredivisie)
+#' fit2                           # print LaTeX table
+#' plot(fit2, which = "scatter")  # diagnostic plot
+#'
+#' # more complex models with model comparison
+#' fit3 <- regression(logMarketValue ~ Age + AgeSq + Contract +
+#'                                     Foreign + Position,
+#'                    logMarketValue ~ Age + AgeSq + Contract +
+#'                                     Foreign,
+#'                    data = Eredivisie)
+#' fit3                             # print LaTeX table
+#' plot(fit3, which = "histogram")  # diagnostic plot
+#'
 #' @keywords multivariate
 #'
 #' @importFrom stats lm
@@ -78,7 +106,7 @@ regression <- function(..., data, labels = NULL) {
 #' \code{"anova"} for ANOVA results, and \code{"estimates"} for estimated
 #' coefficients.  The default is to print all tables.
 #'
-#' @importFrom stats aggregate anova pf
+#' @importFrom stats aggregate anova model.matrix model.response pf
 #' @export
 
 print.regressionSPSS <- function(x, digits = 3,

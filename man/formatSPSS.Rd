@@ -38,6 +38,12 @@ A character vector or matrix containing the formatted object.
 Format an object for printing, mostly used to print numeric data in the same
 way SPSS.  This is mainly for internal use in \code{\link{print}} methods.
 }
+\examples{
+# note how numbers in the interval (-1, 1) are printed
+# without the zero in front of the comma
+formatSPSS(c(-1.5, -2/3, 2/3, 1.5))
+
+}
 \author{
 Andreas Alfons
 }

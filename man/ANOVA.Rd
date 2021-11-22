@@ -87,17 +87,19 @@ and a plot of the results mimics the look of SPSS graphs.
 }
 \examples{
 # load data
-data("Moore", package = "carData")
+data("Eredivisie")
+# log-transform market values
+Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
 
 # one-way ANOVA
-oneway <- ANOVA(Moore, variable = "conformity",
-                group = "fcategory")
+oneway <- ANOVA(Eredivisie, variable = "logMarketValue",
+                group = "Position")
 oneway        # print LaTeX table
 plot(oneway)  # create profile plot
 
 # two-way ANOVA
-twoway <- ANOVA(Moore, variable = "conformity",
-                group = c("fcategory", "partner.status"))
+twoway <- ANOVA(Eredivisie, variable = "logMarketValue",
+                group = c("Position", "Foreign"))
 twoway        # print LaTeX table
 plot(twoway)  # create profile plot
 

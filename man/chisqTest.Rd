@@ -73,6 +73,19 @@ the look of SPSS output (version <24).
 The test on independence also reports the results of a likelihood
 ratio test.
 }
+\examples{
+# load data
+data("Eredivisie")
+
+# test whether playing position and dummy variable for
+# foreign players are independent
+chisqTest(Eredivisie, c("Position", "Foreign"))
+
+# test whether the traditional Dutch 4-3-3 (total football)
+# is still reflected in player composition
+chisqTest(Eredivisie, "Position", p = c(1, 4, 3, 3)/11)
+
+}
 \author{
 Andreas Alfons
 }

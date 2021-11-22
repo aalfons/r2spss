@@ -44,6 +44,17 @@ Draw boxplots of variables in a data frame, including boxplots for groups of
 observations and boxplots for separate variables.  The plots thereby mimic
 the look of SPSS graphs.
 }
+\examples{
+# load data
+data("Eredivisie")
+# log-transform market values
+Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+
+# plot log market values of Dutch and Foreign players
+boxplotSPSS(Eredivisie, variables = "logMarketValue",
+            group = "Foreign")
+
+}
 \author{
 Andreas Alfons
 }
