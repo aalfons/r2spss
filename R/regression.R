@@ -96,9 +96,14 @@ print.regressionSPSS <- function(x, digits = 3,
   coefficients <- mapply(function(m, s) {
     # extract coefficients
     coef <- coefficients(s)
+    # extract response and predictor matrix (without intercept column)
+    y <- model.response(m$model)
+    terms <- attr(m$model, "terms")
+    x <- model.matrix(terms, data = m$model)[, -1, drop = FALSE]
     # compute standardized coefficients
-    syx <- vapply(m$model, sd, numeric(1))
-    beta <- c(NA_real_, coef[-1, 1] * syx[-1] / syx[1])
+    sy <- sd(y)
+    sx <- apply(x, 2, sd)
+    beta <- c(NA_real_, coef[-1, 1] * sx / sy)
     # rename rows and columns
     rownames(coef)[1] <- "(Constant)"
     colnames(coef) <- c("B", "Std. Error", "t", "Sig.")
