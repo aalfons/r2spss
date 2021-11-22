@@ -77,7 +77,7 @@ wilcoxonTest <- function(data, variables, group = NULL, exact = FALSE) {
   data <- as.data.frame(data)
   variables <- as.character(variables)
   group <- as.character(group)
-  exact_p_value <- isTRUE(exact)
+  exactPValue <- isTRUE(exact)
   ## select test
   if (length(group) == 0) {
     ## signed rank test
@@ -143,7 +143,7 @@ wilcoxonTest <- function(data, variables, group = NULL, exact = FALSE) {
     u <- sum[max] - n[max]*(n[max]+1)/2
     # sigma <- sqrt((prod(n)*(N+1)) / 12)
     exact <- list(statistic=u)
-    if (exact_p_value) {
+    if (exactPValue) {
       # compute p-value only if requested, as it can take a long time
       if (u > prod(n)/2) p <- pwilcox(u-1, n[max], n[-max], lower.tail=FALSE)
       else p <- pwilcox(u, n[max], n[-max])
@@ -231,7 +231,7 @@ print.wilcoxonTestSPSS <- function(x, digits = 2:3,
       formatted <- formatSPSS(test, digits=digits[2])
       min <- which.min(x$statistics[, "Sum of Ranks"])
     } else if (x$type == "independent") {
-      have_exact <- !is.null(x$exact$p.value)
+      haveExact <- !is.null(x$exact$p.value)
       test <- c(x$exact$statistic, x$w, x$asymptotic$statistic,
                 x$asymptotic$p.value, x$exact$p.value)
       formatted <- formatSPSS(test, digits=digits[2])
@@ -262,7 +262,7 @@ print.wilcoxonTestSPSS <- function(x, digits = 2:3,
       cat("Wilcoxon W &", formatted[2], "\\\\\n")
       cat("Z &", formatted[3], "\\\\\n")
       cat("Asymp. Sig. (2-tailed) &", formatted[4], "\\\\\n")
-      if (have_exact) {
+      if (haveExact) {
         cat("Exact Sig. [2*(1-tailed Sig.)] &", formatted[5], "$^\\text{b}$ \\\\\n", sep="")
       }
       cat("\\hline\\noalign{\\smallskip}\n")
