@@ -4,6 +4,11 @@ Changes in r2spss version 0.2.0
 
     + Bugfix in regression() regarding computation of standardized coefficients.
 
+    + Bugfixes in regression() regarding nested model comparisons.
+
+    + Added argument 'change' to function regression() such that tests on the
+      R-squared change are only included in model summaries when requested.
+
     + Added argument 'exact' to wilcoxonTest() such that the p-value of the
       exact Wilcoxon Rank sum test is only computed when requested.
 
