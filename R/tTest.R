@@ -56,6 +56,20 @@
 #' @author Andreas Alfons
 #'
 #' @examples
+#' ## one-sample and paired-sample t test
+#'
+#' # load data
+#' data("Exams")
+#'
+#' # test whether the average grade on the resit
+#' # differs from 5.5 (minimum passing grade)
+#' tTest(Exams, "Resit", mu = 5.5)
+#'
+#' # test whether average grades differ between the
+#' # regular exam and the resit
+#' tTest(Exams, c("Resit", "Regular"))
+#'
+#'
 #' ## independent-samples t test
 #'
 #' # load data

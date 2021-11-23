@@ -36,6 +36,14 @@
 #'
 #' @author Andreas Alfons
 #'
+#' @examples
+#' # load data
+#' data("Exams")
+#'
+#' # test whether grades differ between the
+#' # regular exam and the resit
+#' signTest(Exams, c("Regular", "Resit"))
+#'
 #' @keywords htest
 #'
 #' @importFrom stats dbinom pbinom pnorm

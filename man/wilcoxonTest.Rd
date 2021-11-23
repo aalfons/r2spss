@@ -81,6 +81,16 @@ The Wilcoxon rank sum test also reports the value of the equivalent
 Mann-Whitney U test statistic.
 }
 \examples{
+## paired samples
+
+# load data
+data("Exams")
+
+# test whether grades differ between the
+# regular exam and the resit
+wilcoxonTest(Exams, c("Regular", "Resit"))
+
+
 ## independent samples
 
 # load data

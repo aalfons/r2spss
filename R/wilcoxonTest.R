@@ -58,6 +58,16 @@
 #' @author Andreas Alfons
 #'
 #' @examples
+#' ## paired samples
+#'
+#' # load data
+#' data("Exams")
+#'
+#' # test whether grades differ between the
+#' # regular exam and the resit
+#' wilcoxonTest(Exams, c("Regular", "Resit"))
+#'
+#'
 #' ## independent samples
 #'
 #' # load data

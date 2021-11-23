@@ -16,3 +16,5 @@ Changes in r2spss version 0.2.0
       format in axis annotations is suppressed.
 
     + Added Eredivisie data set and examples.
+
+    + Added Exams data set and examples.
