@@ -22,6 +22,25 @@
 #'
 #' @author Andreas Alfons
 #'
+#' @examples
+#' # load data
+#' data("Eredivisie")
+#' # log-transform market values
+#' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+#'
+#' # aggregate log market values by position
+#' means <- aggregate(Eredivisie[, "logMarketValue", drop = FALSE],
+#'                    Eredivisie[, "Position", drop = FALSE],
+#'                    FUN = mean)
+#'
+#' # create profile plot
+#' linesSPSS(means, "logMarketValue", "Position")
+#'
+#' # easier and fancier as the plot method of ANOVA results
+#' oneway <- ANOVA(Eredivisie, "logMarketValue",
+#'                 group = "Position")
+#' plot(oneway)
+#'
 #' @keywords hplot
 #'
 #' @importFrom graphics axis legend lines matlines matplot par plot rect
@@ -65,7 +84,7 @@ linesSPSS <- function(data, variables, index = NULL,
     mar <- c(bottom, left, top, 0) + 0.1
   }
   # set plot margins
-  op <- par(mar=mar, las=las)
+  op <- par(mar=mar, las=las, font.lab=font.lab)
   oo <- options(scipen = .Machine$integer.max/2) # doesn't work with integer.max
   on.exit({
     par(op)
@@ -110,7 +129,7 @@ linesSPSS <- function(data, variables, index = NULL,
     mar <- c(bottom, left, top, 10) + 0.1
   }
   # set plot margins
-  op <- par(mar=mar, las=las)
+  op <- par(mar=mar, las=las, font.lab=font.lab)
   oo <- options(scipen = .Machine$integer.max/2) # doesn't work with integer.max
   on.exit({
     par(op)
