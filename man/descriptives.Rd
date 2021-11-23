@@ -46,7 +46,7 @@ printed as a LaTeX table that mimics the look of SPSS output (version <24).
 data("Eredivisie")
 
 # compute descriptive statistics for market value and age
-descriptives(Eredivisie, variables = c("MarketValue", "Age"))
+descriptives(Eredivisie, c("MarketValue", "Age"))
 
 }
 \author{

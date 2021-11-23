@@ -55,13 +55,13 @@
 #' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
 #'
 #' # one-way ANOVA
-#' oneway <- ANOVA(Eredivisie, variable = "logMarketValue",
+#' oneway <- ANOVA(Eredivisie, "logMarketValue",
 #'                 group = "Position")
 #' oneway        # print LaTeX table
 #' plot(oneway)  # create profile plot
 #'
 #' # two-way ANOVA
-#' twoway <- ANOVA(Eredivisie, variable = "logMarketValue",
+#' twoway <- ANOVA(Eredivisie, "logMarketValue",
 #'                 group = c("Position", "Foreign"))
 #' twoway        # print LaTeX table
 #' plot(twoway)  # create profile plot

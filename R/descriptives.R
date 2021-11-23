@@ -33,7 +33,7 @@
 #' data("Eredivisie")
 #'
 #' # compute descriptive statistics for market value and age
-#' descriptives(Eredivisie, variables = c("MarketValue", "Age"))
+#' descriptives(Eredivisie, c("MarketValue", "Age"))
 #'
 #' @keywords univar
 #'

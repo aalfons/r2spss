@@ -36,8 +36,7 @@
 #' data("Eredivisie")
 #'
 #' # test whether market values differ by playing position
-#' kruskalTest(Eredivisie, variable = "MarketValue",
-#'             group = "Position")
+#' kruskalTest(Eredivisie, "MarketValue", group = "Position")
 #'
 #' @keywords htest
 #'

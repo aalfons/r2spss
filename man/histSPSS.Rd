@@ -37,7 +37,7 @@ data("Eredivisie")
 Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
 
 # plot histogram of log market values
-histSPSS(Eredivisie, variable = "logMarketValue")
+histSPSS(Eredivisie, "logMarketValue")
 
 }
 \author{

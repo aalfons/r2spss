@@ -56,8 +56,7 @@ printed as a LaTeX table that mimics the look of SPSS output (version <24).
 data("Eredivisie")
 
 # test whether market values differ by playing position
-kruskalTest(Eredivisie, variable = "MarketValue",
-            group = "Position")
+kruskalTest(Eredivisie, "MarketValue", group = "Position")
 
 }
 \author{

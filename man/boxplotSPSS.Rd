@@ -51,8 +51,7 @@ data("Eredivisie")
 Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
 
 # plot log market values of Dutch and Foreign players
-boxplotSPSS(Eredivisie, variables = "logMarketValue",
-            group = "Foreign")
+boxplotSPSS(Eredivisie, "logMarketValue", group = "Foreign")
 
 }
 \author{

@@ -175,8 +175,7 @@ linesSPSS <- function(data, variables, index = NULL,
 #' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
 #'
 #' # plot log market values of Dutch and Foreign players
-#' boxplotSPSS(Eredivisie, variables = "logMarketValue",
-#'             group = "Foreign")
+#' boxplotSPSS(Eredivisie, "logMarketValue", group = "Foreign")
 #'
 #' @keywords hplot
 #'
@@ -300,12 +299,11 @@ boxplotSPSS <- function(data, variables, group = NULL, xlab = NULL,
 #' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
 #'
 #' # plot log market values against age
-#' plotSPSS(Eredivisie, variables = c("Age", "logMarketValue"))
+#' plotSPSS(Eredivisie, c("Age", "logMarketValue"))
 #'
 #' # scatterplot matrix of age, number of minutes played, and
 #' # log market values
-#' plotSPSS(Eredivisie,
-#'          variables = c("Age", "Minutes", "logMarketValue"))
+#' plotSPSS(Eredivisie, c("Age", "Minutes", "logMarketValue"))
 #'
 #' @keywords hplot
 #'
@@ -428,7 +426,7 @@ plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL, ...) {
 #' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
 #'
 #' # plot histogram of log market values
-#' histSPSS(Eredivisie, variable = "logMarketValue")
+#' histSPSS(Eredivisie, "logMarketValue")
 #'
 #' @keywords hplot
 #'
