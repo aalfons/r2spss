@@ -5,7 +5,7 @@
 
 #' t Tests
 #'
-#' Perform an one-sample t test, a paired-samples t test or an
+#' Perform a one-sample t test, a paired-sample t test or an
 #' independent-samples t test on variables of a data set.  The output
 #' is printed as a LaTeX table that mimics the look of SPSS output
 #' (version <24).
@@ -13,7 +13,7 @@
 #' @param data  a data frame containing the variables.
 #' @param variables  a character vector specifying numeric variable(s) to be
 #' used for testing the mean(s).  If \code{group} is \code{NULL}, a one-sample
-#' t test is performed if only one variable is specified, and a paired-samples
+#' t test is performed if only one variable is specified, and a paired-sample
 #' t test is performed if two variables are specified.  If a grouping variable
 #' is specified in \code{group}, an independent-samples t-test is performed and
 #' this should be a character string specifying the numeric variable of
@@ -109,7 +109,7 @@ tTest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
       out <- list(statistics=stat, test=test, variables=variables[1],
                   type="one-sample")
     } else {
-      ## paired-samples t test
+      ## paired-sample t test
       x <- data[, variables[1]]
       y <- data[, variables[2]]
       # compute statistics

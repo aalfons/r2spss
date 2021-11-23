@@ -169,6 +169,16 @@ linesSPSS <- function(data, variables, index = NULL,
 #' @author Andreas Alfons
 #'
 #' @examples
+#' ## paired sample
+#' # load data
+#' data("Exams")
+#'
+#' # plot grades on regular and resit exams
+#' boxplotSPSS(Exams, c("Regular", "Resit"))
+#'
+#'
+#' ## independent samples
+#'
 #' # load data
 #' data("Eredivisie")
 #' # log-transform market values

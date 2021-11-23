@@ -52,7 +52,7 @@ The \code{print} method produces a LaTeX table that mimics the look of SPSS
 output (version <24).
 }
 \description{
-Perform a sign test for paired samples on variables of a data set.  The
+Perform a sign test for a paired sample on variables of a data set.  The
 output is printed as a LaTeX table that mimics the look of SPSS output
 (version <24).
 }
