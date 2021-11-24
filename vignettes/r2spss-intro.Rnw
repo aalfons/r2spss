@@ -26,8 +26,18 @@
 \Shorttitle{\pkg{r2spss}: Format \proglang{R} Output to Look Like \proglang{SPSS}}
 
 %% - \Abstract{} almost as usual
-% \Abstract{
-% }
+\Abstract{
+The \proglang{R} package \pkg{r2spss} allows to create plots and
+\proglang{LaTeX} tables that to look like \proglang{SPSS} output for use in
+teaching materials.  Rather than copying-and-pasting \proglang{SPSS} output
+into documents, \proglang{R} code that mocks up \proglang{SPSS} output can be
+integrated directly into dynamic \proglang{LaTeX} documents with tools such
+as the \proglang{R} package \pkg{knitr}.  Package \pkg{r2spss} provides
+functionality for methods that are typically covered in introductory statistics
+courses: descriptive statistics, common hypothesis tests, ANOVA, and linear
+regression, as well as boxplots, histograms, scatterplots, and line plots
+(including profile plots).
+}
 
 %% - \Keywords{} with LaTeX markup, at least one required
 %% - \Plainkeywords{} without LaTeX markup (if necessary)
@@ -68,7 +78,8 @@
 <<include=FALSE>>=
 library("knitr")
 options(prompt="R> ", continue = "+  ", width = 75, useFancyQuotes = FALSE)
-opts_chunk$set(fig.path = "figures/figure-", fig.align = "center",
+opts_chunk$set(fig.path = "figures/figure-", fig.width = 4.5, fig.height = 4.5,
+               out.width = "0.5\\textwidth", fig.align = "center",
                fig.lp = "fig:", fig.pos = "h!", tidy = FALSE)
 render_sweave()             # use Sweave environments
 set_header(highlight = "")  # do not use the Sweave.sty package
@@ -90,7 +101,21 @@ set_header(highlight = "")  # do not use the Sweave.sty package
 
 \section{Introduction} \label{sec:intro}
 
-\pkg{r2spss} \citep{r2spss}
+Many academic programs in the social sciences or economics require to teach
+statistics with \proglang{SPSS} \citep{SPSS}.  Preparing teaching materials in
+this case typically involves copying-and-pasting \proglang{SPSS} output into
+documents or slides, which is cumbersome and prone to errors.  Moreover, this
+approach is not scalable for regular updates of the materials, or for
+individualizing assignments and exams in order to combat fraud.  On the other
+hand, tools such as package \pkg{knitr} \citep{xie15, knitr} for integrating
+the statistical computing environment \proglang{R} \citep{R} and the document
+preparation system \proglang{LaTeX} \citep[e.g.,][]{LaTeX} make preparing
+teaching materials easier, less error-prone, and more scalable.  There are even
+specialized tools such as package \pkg{exams} \citep{gruen09, zeileis14, exams}
+that allow assignments and exams to be individualized in a scalable manner.
+Package \pkg{r2spss} \citep{r2spss} makes it possible to leverage those
+developments for creating teaching materials with \proglang{SPSS} output by
+mocking up such output with \proglang{R}.
 
 
 %% -- Manuscript ---------------------------------------------------------------
@@ -103,14 +128,6 @@ set_header(highlight = "")  # do not use the Sweave.sty package
 %%   (e.g., a function synopsis or list of arguments), the environment {Code}
 %%   is recommended. Alternatively, a plain {verbatim} can also be used.
 %%   (For executed code see the next section.)
-
-
-% -----------------------
-% available functionality
-% -----------------------
-
-% \section{Available functionality} \label{sec:functionality}
-
 
 
 %% -- Illustrations ------------------------------------------------------------
@@ -136,26 +153,289 @@ set_header(highlight = "")  # do not use the Sweave.sty package
 \section[Illustrations: Using package r2spss]%
 {Illustrations: Using package \pkg{r2spss}} \label{sec:illustrations}
 
-We start by loading the package and the example data.
+We start by loading the package.
 %
 <<results="hide", message=FALSE, warning=FALSE>>=
 library("r2spss")
-data("Eredivisie")
 @
 
+
+\subsection[LaTeX requirements and knitr options]%
+{\proglang{LaTeX} requirements and \pkg{knitr} options}
+
+Some of the tables produced by \pkg{r2spss} require the \proglang{LaTeX}
+package \pkg{amsmath}, hence the following command should be included in the
+preamble of your \proglang{LaTeX} document.
+\begin{Code}
+% somewhere before \begin{document}
+\usepackage{amsmath}
+\end{Code}
+
+When creating \proglang{LaTeX} tables in \proglang{R} code chunks with
+\pkg{knitr}, the output of the chunk should be written directly into the output
+document by setting the chunk option \verb+results='asis'+.  For more
+information on \pkg{knitr} chunk options, in particular various options for
+figures, please see \url{https://yihui.org/knitr/options/}.
+
+
+\subsection{Example data sets}
+
+The following two data sets from package \pkg{r2spss} will be used to
+illustrate its functionality: \code{Eredivisie} and \code{Exams}.  The former
+contains information on all football players in the Dutch Eredivisie, the
+highest men's football league in the Netherlands, who played at least one match
+in the 2013-14 season.  The latter contains grades for an applied statistics
+course at Erasmus University Rotterdam for students who took both the regular
+exam and the resit.
+%
+<<results="hide", message=FALSE, warning=FALSE>>=
+data("Eredivisie")
+data("Exams")
+@
+
+Among other information, the \code{Eredivisie} data contain the market values
+of the football players.  In many examples, we will use the logarithm of the
+market values rather that the market values themselves, so we add those to the
+data set.
+%
 <<>>=
-# log-transform market values
 Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
-# squared values of age
+@
+
+
+\subsection{Descriptive statistics and plots}
+
+Descriptive statistics can be produced with function \code{descriptives()},
+for example of the age, minutes played, and logarithm of market value of
+football players in the \code{Eredivisie} data.
+%
+\begin{center}
+<<results="asis">>=
+descriptives(Eredivisie, c("Age", "Minutes", "logMarketValue"))
+@
+\end{center}
+
+Functions \code{histSPSS()} and \code{boxplotSPSS()} can be used to create a
+histogram or boxplot, respectively, of a specified variable.
+<<>>=
+histSPSS(Eredivisie, "logMarketValue")
+@
+%
+<<>>=
+boxplotSPSS(Eredivisie, "logMarketValue")
+@
+
+A scatterplot or scatterplot matrix can be produced with function
+\code{plotSPSS()} by specifying the corresponding variables.
+<<>>=
+plotSPSS(Eredivisie, c("Age", "logMarketValue"))
+@
+%
+<<>>=
+plotSPSS(Eredivisie, c("Age", "Minutes", "logMarketValue"))
+@
+
+\subsection{Analyzing one sample}
+
+With the \code{Exams} data, we can perform a one-sample $t$ test on whether the
+average grade on the resit exam differs from 5.5, which is the minimum passing
+grade in the Netherlands.  For this purpose, we can use function \code{tTest()}
+with a single variable as well as the value under the null-hypothesis.
+%
+\begin{center}
+<<results="asis">>=
+tTest(Exams, "Resit", mu = 5.5)
+@
+\end{center}
+
+
+\subsection{Analyzing paired observations}
+
+Similarly, we can perform a paired-sample $t$ test on whether the average
+grades differ between the regular exam and the resit by supplying the two
+corresponding variables to function \code{tTest()}.
+%
+\begin{center}
+<<results="asis">>=
+tTest(Exams, c("Resit", "Regular"))
+@
+\end{center}
+
+As nonparametric alternatives, we can perform a Wilcoxon signed rank test
+with function \code{wilcoxonTest()} or a sign test with function
+\code{signTest()}.
+%
+\begin{center}
+<<results="asis">>=
+wilcoxonTest(Exams, c("Regular", "Resit"))
+@
+\end{center}
+%
+\begin{center}
+<<results="asis">>=
+signTest(Exams, c("Regular", "Resit"))
+@
+\end{center}
+
+Note that the order of the variables in the nonparametric test is reversed
+compared to the paired-sample $t$ test, but all three tests compute the
+differences in the form \code{Resit - Regular}.  This behavior is carried over
+from \proglang{SPSS}.
+
+To check which of these tests are suitable for the given data, we can for
+example use a boxplot.  Function \code{boxplotSPSS()} allows to specify
+multiple variables to be plotted.
+%
+<<>>=
+boxplotSPSS(Exams, c("Regular", "Resit"))
+@
+
+
+\subsection{Comparing two groups}
+
+An independent-samples $t$ test can be performed with function \code{tTest()}
+by specifying the numeric variable of interest as well as a grouping variable.
+As an example, we test whether the average log market values differ between
+Dutch and foreign football players.
+%
+\begin{center}
+<<eval=FALSE>>=
+tTest(Eredivisie, "logMarketValue", group = "Foreign")
+@
+\footnotesize
+<<echo=FALSE, results="asis">>=
+tTest(Eredivisie, "logMarketValue", group = "Foreign")
+@
+\end{center}
+
+As a nonparametric alternative, we can perform a Wilcoxon rank sum test
+with function \code{wilcoxonTest()} in a similar manner.  Note that it is
+not necessary to use the logarithms of the market values here, as this test
+works with ranks instead of the observed values.
+%
+\begin{center}
+<<results="asis">>=
+wilcoxonTest(Eredivisie, "MarketValue", group = "Foreign")
+@
+\end{center}
+
+We can again use a boxplot to check whether the $t$ test is  suitable for the
+given data, as function \code{boxplotSPSS()} allows to specify a grouping
+variable as well.
+%
+<<>>=
+boxplotSPSS(Eredivisie, "logMarketValue", group = "Foreign")
+@
+
+
+\subsection{Comparing multiple groups}
+
+For comparing the means of multiple groups, one-way ANOVA can be performed with
+function \code{ANOVA()}.  Here we test whether there are differences among
+the average log market values for players on different positions.
+%
+\begin{center}
+<<results="asis">>=
+oneway <- ANOVA(Eredivisie, "logMarketValue", group = "Position")
+oneway
+@
+\end{center}
+
+The \code{plot()} method for the resulting object produces a profile plot.
+%
+<<>>=
+plot(oneway)
+@
+
+A nonparametric alternative based on ranks is the Kruskal-Wallis test, which
+can be applied with function \code{kruskalTest()}.  It is again not necessary
+to use the logarithms of the market values for this test.
+%
+\begin{center}
+<<results="asis">>=
+kruskalTest(Eredivisie, "MarketValue", group = "Position")
+@
+\end{center}
+
+Similarly, two-way ANOVA can be performed by supplying two grouping variables
+to function \code{ANOVA()}.
+%
+\begin{center}
+<<results="asis">>=
+twoway <- ANOVA(Eredivisie, "logMarketValue",
+                group = c("Position", "Foreign"))
+twoway
+@
+\end{center}
+
+We can again produce a profile plot with the \code{plot()} method for the
+resulting object.  Argument \code{which} can be used to specify which of the
+two grouping variables should be used on the $x$-axis of the profile plot.
+%
+<<fig.width=6, out.width = "0.7\\textwidth">>=
+plot(twoway)
+@
+
+The \code{plot()} method illustrated in this section calls function
+\code{linesSPSS()} to produce the plots.  The latter is more generally
+applicable and can also be used, e.g., for plotting time series.
+
+
+\subsection{Linear regression}
+
+In this section, we compare two regression models to explain the log market
+values of football players.  The first model uses only the player's age as a
+linear and a squared effect, while the second model adds the remaining contract
+length and a dummy variable for foreign players.
+
+We first add the squared values of age to the data set.
+%
+<<>>=
 Eredivisie$AgeSq <- Eredivisie$Age^2
-# fit regression models
+@
+
+We then estimate the regression models with function \code{regression()}.  As
+usual in \proglang{R}, we specify the regression models with formulas.
+%
+\begin{center}
+<<results="asis">>=
+regression(logMarketValue ~ Age + AgeSq,
+           logMarketValue ~ Age + AgeSq + Contract + Foreign,
+           data = Eredivisie)
+@
+\end{center}
+
+Argument \code{change} can be set to \code{TRUE} in order to include a test
+on the change in $R^{2}$ from one model to the next.  If we then only want to
+print the corresponding table containing the model summaries, we can use the
+argument \code{statistics} of the \code{print()} method.
+
+\begin{center}
+<<results="asis">>=
 fit <- regression(logMarketValue ~ Age + AgeSq,
                   logMarketValue ~ Age + AgeSq + Contract + Foreign,
                   data = Eredivisie, change = TRUE)
+print(fit, statistics = "summary")
 @
+\end{center}
 
-<<results="asis">>=
-fit
+Of course, the \code{print()} methods for all objects returned by functions
+from package \pkg{r2spss} allow to select which tables to print.  See the
+respective help files for details.
+
+The \code{plot()} method of the regression results can be used to create a
+histogram of the residuals or a scatterplot of the standardized residuals
+against the standardized fitted values.  Argument \code{which} can be used
+to select between those two plots.  Mimicking \proglang{SPSS} functionality,
+the plot is created for the \emph{last} specified model in the call to
+\code{regression()}.
+%
+<<>>=
+plot(fit, which = "histogram")
+@
+%
+<<>>=
+plot(fit, which = "scatter")
 @
 
 
