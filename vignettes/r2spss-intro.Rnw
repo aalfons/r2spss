@@ -28,7 +28,7 @@
 %% - \Abstract{} almost as usual
 \Abstract{
 The \proglang{R} package \pkg{r2spss} allows to create plots and
-\proglang{LaTeX} tables that to look like \proglang{SPSS} output for use in
+\proglang{LaTeX} tables that look like \proglang{SPSS} output for use in
 teaching materials.  Rather than copying-and-pasting \proglang{SPSS} output
 into documents, \proglang{R} code that mocks up \proglang{SPSS} output can be
 integrated directly into dynamic \proglang{LaTeX} documents with tools such

@@ -5,9 +5,9 @@
 Football players of the Dutch Eredivisie season 2013-14
 }
 \description{
-Data on all football players in the Dutch Eredivisie, the highest football
-league in the Netherlands, who played at least one match in the 2013-14
-season.
+Data on all football players in the Dutch Eredivisie, the highest men's
+football league in the Netherlands, who played at least one match in the
+2013-14 season.
 }
 \usage{data("Eredivisie")}
 \format{
