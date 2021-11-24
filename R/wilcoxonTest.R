@@ -5,7 +5,7 @@
 
 #' Wilcoxon Signed Rank and Rank Sum Tests
 #'
-#' Perform a Wilcoxon signed rank test for paired samples or a Wilcoxon rank
+#' Perform a Wilcoxon signed rank test for a paired sample or a Wilcoxon rank
 #' sum test for independent samples on variables of a data set.  The output
 #' is printed as a LaTeX table that mimics the look of SPSS output (version
 #' <24).
@@ -58,6 +58,16 @@
 #' @author Andreas Alfons
 #'
 #' @examples
+#' ## paired sample
+#'
+#' # load data
+#' data("Exams")
+#'
+#' # test whether grades differ between the
+#' # regular exam and the resit
+#' wilcoxonTest(Exams, c("Regular", "Resit"))
+#'
+#'
 #' ## independent samples
 #'
 #' # load data

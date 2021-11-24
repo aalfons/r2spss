@@ -45,14 +45,23 @@ observations and boxplots for separate variables.  The plots thereby mimic
 the look of SPSS graphs.
 }
 \examples{
+## paired sample
+# load data
+data("Exams")
+
+# plot grades on regular and resit exams
+boxplotSPSS(Exams, c("Regular", "Resit"))
+
+
+## independent samples
+
 # load data
 data("Eredivisie")
 # log-transform market values
 Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
 
 # plot log market values of Dutch and Foreign players
-boxplotSPSS(Eredivisie, variables = "logMarketValue",
-            group = "Foreign")
+boxplotSPSS(Eredivisie, "logMarketValue", group = "Foreign")
 
 }
 \author{

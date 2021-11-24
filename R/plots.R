@@ -22,6 +22,25 @@
 #'
 #' @author Andreas Alfons
 #'
+#' @examples
+#' # load data
+#' data("Eredivisie")
+#' # log-transform market values
+#' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+#'
+#' # aggregate log market values by position
+#' means <- aggregate(Eredivisie[, "logMarketValue", drop = FALSE],
+#'                    Eredivisie[, "Position", drop = FALSE],
+#'                    FUN = mean)
+#'
+#' # create profile plot
+#' linesSPSS(means, "logMarketValue", "Position")
+#'
+#' # easier and fancier as the plot method of ANOVA results
+#' oneway <- ANOVA(Eredivisie, "logMarketValue",
+#'                 group = "Position")
+#' plot(oneway)
+#'
 #' @keywords hplot
 #'
 #' @importFrom graphics axis legend lines matlines matplot par plot rect
@@ -65,7 +84,7 @@ linesSPSS <- function(data, variables, index = NULL,
     mar <- c(bottom, left, top, 0) + 0.1
   }
   # set plot margins
-  op <- par(mar=mar, las=las)
+  op <- par(mar=mar, las=las, font.lab=font.lab)
   oo <- options(scipen = .Machine$integer.max/2) # doesn't work with integer.max
   on.exit({
     par(op)
@@ -110,7 +129,7 @@ linesSPSS <- function(data, variables, index = NULL,
     mar <- c(bottom, left, top, 10) + 0.1
   }
   # set plot margins
-  op <- par(mar=mar, las=las)
+  op <- par(mar=mar, las=las, font.lab=font.lab)
   oo <- options(scipen = .Machine$integer.max/2) # doesn't work with integer.max
   on.exit({
     par(op)
@@ -169,14 +188,23 @@ linesSPSS <- function(data, variables, index = NULL,
 #' @author Andreas Alfons
 #'
 #' @examples
+#' ## paired sample
+#' # load data
+#' data("Exams")
+#'
+#' # plot grades on regular and resit exams
+#' boxplotSPSS(Exams, c("Regular", "Resit"))
+#'
+#'
+#' ## independent samples
+#'
 #' # load data
 #' data("Eredivisie")
 #' # log-transform market values
 #' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
 #'
 #' # plot log market values of Dutch and Foreign players
-#' boxplotSPSS(Eredivisie, variables = "logMarketValue",
-#'             group = "Foreign")
+#' boxplotSPSS(Eredivisie, "logMarketValue", group = "Foreign")
 #'
 #' @keywords hplot
 #'
@@ -300,12 +328,11 @@ boxplotSPSS <- function(data, variables, group = NULL, xlab = NULL,
 #' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
 #'
 #' # plot log market values against age
-#' plotSPSS(Eredivisie, variables = c("Age", "logMarketValue"))
+#' plotSPSS(Eredivisie, c("Age", "logMarketValue"))
 #'
 #' # scatterplot matrix of age, number of minutes played, and
 #' # log market values
-#' plotSPSS(Eredivisie,
-#'          variables = c("Age", "Minutes", "logMarketValue"))
+#' plotSPSS(Eredivisie, c("Age", "Minutes", "logMarketValue"))
 #'
 #' @keywords hplot
 #'
@@ -428,7 +455,7 @@ plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL, ...) {
 #' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
 #'
 #' # plot histogram of log market values
-#' histSPSS(Eredivisie, variable = "logMarketValue")
+#' histSPSS(Eredivisie, "logMarketValue")
 #'
 #' @keywords hplot
 #'

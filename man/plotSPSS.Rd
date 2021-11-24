@@ -35,12 +35,11 @@ data("Eredivisie")
 Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
 
 # plot log market values against age
-plotSPSS(Eredivisie, variables = c("Age", "logMarketValue"))
+plotSPSS(Eredivisie, c("Age", "logMarketValue"))
 
 # scatterplot matrix of age, number of minutes played, and
 # log market values
-plotSPSS(Eredivisie,
-         variables = c("Age", "Minutes", "logMarketValue"))
+plotSPSS(Eredivisie, c("Age", "Minutes", "logMarketValue"))
 
 }
 \author{

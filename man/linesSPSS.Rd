@@ -28,6 +28,26 @@ Nothing is returned, but a plot is produced.
 Draw connected lines for variables in a data frame.  The plot thereby mimics
 the look of SPSS graphs.
 }
+\examples{
+# load data
+data("Eredivisie")
+# log-transform market values
+Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+
+# aggregate log market values by position
+means <- aggregate(Eredivisie[, "logMarketValue", drop = FALSE],
+                   Eredivisie[, "Position", drop = FALSE],
+                   FUN = mean)
+
+# create profile plot
+linesSPSS(means, "logMarketValue", "Position")
+
+# easier and fancier as the plot method of ANOVA results
+oneway <- ANOVA(Eredivisie, "logMarketValue",
+                group = "Position")
+plot(oneway)
+
+}
 \author{
 Andreas Alfons
 }

@@ -5,7 +5,7 @@
 
 #' Sign Test
 #'
-#' Perform a sign test for paired samples on variables of a data set.  The
+#' Perform a sign test for a paired sample on variables of a data set.  The
 #' output is printed as a LaTeX table that mimics the look of SPSS output
 #' (version <24).
 #'
@@ -35,6 +35,14 @@
 #' output (version <24).
 #'
 #' @author Andreas Alfons
+#'
+#' @examples
+#' # load data
+#' data("Exams")
+#'
+#' # test whether grades differ between the
+#' # regular exam and the resit
+#' signTest(Exams, c("Regular", "Resit"))
 #'
 #' @keywords htest
 #'
