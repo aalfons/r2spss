@@ -1,6 +1,5 @@
 # r2spss: Format R Output to Look Like SPSS
 
-
 Create plots and `LaTeX` tables that look like `SPSS` output for use in teaching materials.  Rather than copying-and-pasting `SPSS` output into documents, `R` code that mocks up `SPSS` output can be integrated directly into dynamic `LaTeX` documents with tools such as [`knitr`](https://yihui.org/knitr/).  Functionality includes method that are typically covered in introductory statistics classes: descriptive statistics, common hypothesis tests, ANOVA, and linear regression, as well as boxplots, histograms, scatterplots, and line plots (including profile plots).
 
 
@@ -26,6 +25,16 @@ Some of the tables produced by `r2spss` require the `LaTeX` package `amsmath`, h
 ```
 
 When creating `LaTeX` tables in `R` code chunks with `knitr`, the output of the chunk should be written directly into the output document by setting the chunk option `results='asis'`.  For more information on `knitr` chunk options, in particular various options for figures, please consult the [knitr documentation](https://yihui.org/knitr/options/).
+
+
+## Package vignette
+
+Various examples for using `r2spss` are given in the package vignette, which 
+can be accessed from the `R` console with
+
+```
+vignette("r2spss-intro")
+```
 
 
 ## Community guidelines
