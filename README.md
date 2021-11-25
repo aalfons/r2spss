@@ -8,6 +8,15 @@ Create plots and `LaTeX` tables that look like `SPSS` output for use in teaching
 
 ## Installation
 
+Package `r2spss` is on CRAN (The Comprehensive R Archive Network), hence the latest release can be easily installed from the `R` command line via
+
+```
+install.packages("r2spss")
+```
+
+
+## Building from source
+
 To install the latest (possibly unstable) development version from GitHub, you can pull this repository and install it from the `R` command line via
 
 ```
