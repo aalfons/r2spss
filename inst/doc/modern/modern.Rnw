@@ -1,0 +1,67 @@
+\documentclass[a4paper, 11pt]{article}
+
+
+% the part in between the lines needs to in the preamble of the LaTeX document
+% ----------------------------------------------------------------------------
+% additional packages
+\usepackage{amsmath}  % only requirement for theme = "legacy"
+\usepackage{colortbl}
+
+% define colors
+\definecolor{graySPSS}{gray}{0.87}
+\definecolor{lightgraySPSS}{RGB}{250,250,252}
+\definecolor{darkgraySPSS}{gray}{0.66}
+\definecolor{blueSPSS}{RGB}{39,73,96}
+% ----------------------------------------------------------------------------
+
+
+% title and author
+\title{For testing purposes}
+\author{Andreas Alfons}
+
+
+\begin{document}
+
+% \maketitle
+
+
+% -------------
+% knitr options
+% -------------
+
+<<include=FALSE>>=
+library("knitr")
+options(prompt="R> ", continue = "+  ", width = 75, useFancyQuotes = FALSE)
+opts_chunk$set(fig.path = "figures/figure-", fig.width = 4.5, fig.height = 4.5,
+               out.width = "0.5\\textwidth", fig.align = "center",
+               fig.lp = "fig:", fig.pos = "h!", tidy = FALSE, prompt = TRUE,
+               highlight = FALSE)
+@
+
+
+% ---------------------------
+% example with package r2spss
+% ---------------------------
+
+<<echo=FALSE, results="hide", message=FALSE, warning=FALSE>>=
+library("r2spss")
+data("Eredivisie")
+# log-transform market values
+Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+# squared values of age
+Eredivisie$AgeSq <- Eredivisie$Age^2
+@
+
+\begin{center}
+<<echo=FALSE, results="asis">>=
+foo <- regression(logMarketValue ~ Age + AgeSq,
+                  logMarketValue ~ Age + AgeSq + Contract + Foreign,
+                  data = Eredivisie)
+print(foo, statistics = "estimates", theme = "legacy")
+print(foo, statistics = "estimates", theme = "modern")
+@
+\end{center}
+
+
+
+\end{document}

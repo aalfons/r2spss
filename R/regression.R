@@ -163,11 +163,13 @@ regression <- function(..., data, labels = NULL, change = FALSE) {
 
 print.regressionSPSS <- function(x, digits = 3,
                                  statistics = c("summary", "anova", "estimates"),
-                                 ...) {
+                                 theme = c("legacy", "modern"), ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok=TRUE)
+  theme <- match.arg(theme)
+  legacy <- theme == "legacy"
   models <- x$models
   labels <- names(models)
   change <- x$change
@@ -296,11 +298,11 @@ print.regressionSPSS <- function(x, digits = 3,
     cat("\\hline\n")
     for (i in seq_along(predictors)) {
       if (change) {
-        printPredictors(predictors[[i]], columns = 10, index = i,
-                        wrap = wrap[1])
+        catPredictors(predictors[[i]], columns = 10, index = i,
+                      wrap = wrap[1])
       } else {
-        printPredictors(predictors[[i]], columns = 5, index = i,
-                        wrap = wrap[1])
+        catPredictors(predictors[[i]], columns = 5, index = i,
+                      wrap = wrap[1])
       }
     }
     cat("\\noalign{\\smallskip}\n")
@@ -342,8 +344,8 @@ print.regressionSPSS <- function(x, digits = 3,
     # finalize LaTeX table
     printResponse(x$response, columns = 7)
     for (i in seq_along(predictors)) {
-      printPredictors(predictors[[i]], columns = 7, index = i+1,
-                      wrap = wrap[2])
+      catPredictors(predictors[[i]], columns = 7, index = i+1,
+                    wrap = wrap[2])
     }
     cat("\\noalign{\\smallskip}\n")
     cat("\\end{tabular}\n")
@@ -355,15 +357,40 @@ print.regressionSPSS <- function(x, digits = 3,
   if ("estimates" %in% statistics) {
     # initialize LaTeX table
     if (count == 0) cat("\n")
-    cat("\\begin{tabular}{|ll|r|r|r|r|r|}\n")
+    if (legacy) cat("\\begin{tabular}{|ll|r|r|r|r|r|}\n")
+    else {
+      cat(latexTabular(info = 2, results = 5))
+      cat("\n")
+    }
     # print table header
     cat("\\noalign{\\smallskip}\n")
     cat("\\multicolumn{7}{c}{\\textbf{Coefficients}$^{\\text{a}}$} \\\\\n")
-    cat("\\noalign{\\smallskip}\\hline\n")
-    cat(" & & \\multicolumn{2}{|c|}{Unstandardized} & \\multicolumn{1}{|c|}{Standardized} & & \\\\\n")
-    cat(" & & \\multicolumn{2}{|c|}{Coefficients} & \\multicolumn{1}{|c|}{Coefficients} & & \\\\\n")
-    cat("\\cline{3-5}\n")
-    cat("\\multicolumn{1}{|c}{Model} & & \\multicolumn{1}{|c|}{B} & \\multicolumn{1}{|c|}{Std. Error} & \\multicolumn{1}{|c|}{Beta} & \\multicolumn{1}{|c|}{t} & \\multicolumn{1}{|c|}{Sig.} \\\\\n")
+    if (legacy) {
+      cat("\\noalign{\\smallskip}\\hline\n")
+      cat(" & & \\multicolumn{2}{c|}{Unstandardized} & \\multicolumn{1}{c|}{Standardized} & & \\\\\n")
+      cat(" & & \\multicolumn{2}{c|}{Coefficients} & \\multicolumn{1}{c|}{Coefficients} & & \\\\\n")
+      cat("\\cline{3-5}\n")
+      cat("\\multicolumn{1}{|c}{Model} & & \\multicolumn{1}{c|}{B} & \\multicolumn{1}{c|}{Std. Error} & \\multicolumn{1}{c|}{Beta} & \\multicolumn{1}{c|}{t} & \\multicolumn{1}{c|}{Sig.} \\\\\n")
+    } else {
+      cat("\\noalign{\\smallskip}\n")
+      cat(latexMulticolumn("", 2), "&",
+          latexMulticolumn("Unstandardized", 2, right = TRUE), "&",
+          latexMulticolumn("Standardized", 1, right = TRUE), "&",
+          latexMulticolumn("", 1, right = TRUE), "&",
+          latexMulticolumn("", 1), "\\\\\n")
+      cat(latexMulticolumn("", 2), "&",
+          latexMulticolumn("Coefficients", 2, right = TRUE), "&",
+          latexMulticolumn("Coefficients", 1, right = TRUE), "&",
+          latexMulticolumn("", 1, right = TRUE), "&",
+          latexMulticolumn("", 1), "\\\\\n")
+      cat(latexMulticolumn("Model", 1), "&",
+          latexMulticolumn("", 1), "&",
+          latexMulticolumn("B", 1, right = TRUE), "&",
+          latexMulticolumn("Std. Error", 1, right = TRUE), "&",
+          latexMulticolumn("Beta", 1, right = TRUE), "&",
+          latexMulticolumn("t", 1, right = TRUE), "&",
+          latexMulticolumn("Sig.", 1), "\\\\\n")
+    }
     cat("\\hline\n")
     for (i in seq_along(coefficients)) {
       # extract current coefficients
@@ -375,9 +402,10 @@ print.regressionSPSS <- function(x, digits = 3,
       }
       # finalize current model
       cat("\\hline\n")
+      # cat("\\noalign{\\color{darkgraySPSS}\\hrule}%\n")  # doesn't work
     }
     # finalize LaTeX table
-    printResponse(x$response, columns = 7)
+    catResponse(x$response, columns = 7)
     cat("\\noalign{\\smallskip}\n")
     cat("\\end{tabular}\n")
     cat("\n")
@@ -386,13 +414,13 @@ print.regressionSPSS <- function(x, digits = 3,
 
 
 ## utility function to print information on the dependent variable
-printResponse <- function(response, columns) {
+catResponse <- function(response, columns) {
   cat("\\multicolumn{", columns, "}{l}{a. Dependent variable: ", response,
       "} \\\\\n", sep="")
 }
 
 ## utility function to print information on the predictors
-printPredictors <- function(predictors, columns, index = 1, wrap = 66) {
+catPredictors <- function(predictors, columns, index = 1, wrap = 66) {
   # initializations
   p <- length(predictors)
   # prepare string for first predictor

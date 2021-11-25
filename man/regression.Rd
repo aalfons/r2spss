@@ -12,7 +12,13 @@
 \usage{
 regression(..., data, labels = NULL, change = FALSE)
 
-\method{print}{regressionSPSS}(x, digits = 3, statistics = c("summary", "anova", "estimates"), ...)
+\method{print}{regressionSPSS}(
+  x,
+  digits = 3,
+  statistics = c("summary", "anova", "estimates"),
+  theme = c("legacy", "modern"),
+  ...
+)
 
 \method{coef}{regressionSPSS}(object, ...)
 
