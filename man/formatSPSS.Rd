@@ -19,7 +19,7 @@ formatSPSS(x, ...)
 
 \method{formatSPSS}{matrix}(x, digits = 3, pValue = NULL, ...)
 
-\method{formatSPSS}{data.frame}(x, ...)
+\method{formatSPSS}{data.frame}(x, digits = 3, pValue = NULL, ...)
 }
 \arguments{
 \item{x}{an \R object, typically numeric.  Currently methods are

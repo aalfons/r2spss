@@ -107,9 +107,18 @@ formatSPSS.matrix <- function(x, digits = 3, pValue = NULL, ...) {
 #' @rdname formatSPSS
 #' @export
 
-formatSPSS.data.frame <- function(x, ...) {
-  # format each variable
-  formatted <- lapply(x, formatSPSS, ...)
+formatSPSS.data.frame <- function(x, digits = 3, pValue = NULL, ...) {
+  # # format each variable
+  # formatted <- lapply(x, formatSPSS, ...)
+  # formatted <- do.call(cbind, formatted)
+  # initializations
+  d <- dim(x)
+  colNames <- names(x)
+  if (is.null(pValue)) pValue <- grepl("Sig.", colNames, fixed = TRUE)
+  else pValue <- rep_len(pValue, d[2])
+  # format each column
+  formatted <- mapply(function(v, p) formatSPSS(v, digits = digits, pValue = p),
+                      v = x, p = pValue, SIMPLIFY = FALSE, USE.NAMES = TRUE)
   formatted <- do.call(cbind, formatted)
   # add row names
   rownames(formatted) <- row.names(x)
