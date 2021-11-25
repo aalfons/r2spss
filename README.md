@@ -1,5 +1,8 @@
 # r2spss: Format R Output to Look Like SPSS
 
+[![CRAN](https://www.R-pkg.org/badges/version/r2spss)](https://CRAN.R-project.org/package=r2spss) 
+
+
 Create plots and `LaTeX` tables that look like `SPSS` output for use in teaching materials.  Rather than copying-and-pasting `SPSS` output into documents, `R` code that mocks up `SPSS` output can be integrated directly into dynamic `LaTeX` documents with tools such as [`knitr`](https://yihui.org/knitr/).  Functionality includes methods that are typically covered in introductory statistics classes: descriptive statistics, common hypothesis tests, ANOVA, and linear regression, as well as boxplots, histograms, scatterplots, and line plots (including profile plots).
 
 
