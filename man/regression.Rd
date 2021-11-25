@@ -16,7 +16,7 @@ regression(..., data, labels = NULL, change = FALSE)
   x,
   digits = 3,
   statistics = c("summary", "anova", "estimates"),
-  theme = c("legacy", "modern"),
+  theme = c("modern", "legacy"),
   ...
 )
 

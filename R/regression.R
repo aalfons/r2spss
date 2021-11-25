@@ -163,7 +163,7 @@ regression <- function(..., data, labels = NULL, change = FALSE) {
 
 print.regressionSPSS <- function(x, digits = 3,
                                  statistics = c("summary", "anova", "estimates"),
-                                 theme = c("legacy", "modern"), ...) {
+                                 theme = c("modern", "legacy"), ...) {
 
   ## initializations
   count <- 0
@@ -269,25 +269,75 @@ print.regressionSPSS <- function(x, digits = 3,
   if ("summary" %in% statistics) {
     # initialize LaTeX table
     cat("\n")
-    if (change) cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|r|}\n")
-    else cat("\\begin{tabular}{|l|r|r|r|r|}\n")
+    if (legacy) {
+      if (change) cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|r|}\n")
+      else cat("\\begin{tabular}{|l|r|r|r|r|}\n")
+    } else {
+      if (change) cat(latexTabular(info = 1, results = 9))
+      else cat(latexTabular(info = 1, results = 4))
+      cat("\n")
+    }
     # print table header
     cat("\\noalign{\\smallskip}\n")
     if (change) cat("\\multicolumn{10}{c}{\\textbf{Model Summary}} \\\\\n")
     else cat("\\multicolumn{5}{c}{\\textbf{Model Summary}} \\\\\n")
-    cat("\\noalign{\\smallskip}\\hline\n")
-    if (change) {
-      cat(" & & & & \\multicolumn{1}{|c|}{Std. Error} & \\multicolumn{5}{|c|}{Change Statistics} \\\\\n")
-      cat("\\cline{6-10}\n")
-      cat(" & & & \\multicolumn{1}{|c|}{Adjusted} & \\multicolumn{1}{|c|}{of the} & \\multicolumn{1}{|c|}{R Square} & & & & \\multicolumn{1}{|c|}{Sig. F} \\\\\n")
-      cat("\\multicolumn{1}{|c}{Model} & \\multicolumn{1}{|c|}{R} & \\multicolumn{1}{|c|}{R Square} & \\multicolumn{1}{|c|}{R Square} & \\multicolumn{1}{|c|}{Estimate} & \\multicolumn{1}{|c|}{Change} & \\multicolumn{1}{|c|}{F Change} & \\multicolumn{1}{|c|}{df1} & \\multicolumn{1}{|c|}{df2} & \\multicolumn{1}{|c|}{Change} \\\\\n")
+    if (legacy) {
+      cat("\\noalign{\\smallskip}\\hline\n")
+      if (change) {
+        cat(" & & & & \\multicolumn{1}{c|}{Std. Error} & \\multicolumn{5}{c|}{Change Statistics} \\\\\n")
+        cat("\\cline{6-10}\n")
+        cat(" & & & \\multicolumn{1}{c|}{Adjusted} & \\multicolumn{1}{c|}{of the} & \\multicolumn{1}{c|}{R Square} & & & & \\multicolumn{1}{c|}{Sig. F} \\\\\n")
+        cat("\\multicolumn{1}{|c|}{Model} & \\multicolumn{1}{c|}{R} & \\multicolumn{1}{c|}{R Square} & \\multicolumn{1}{c|}{R Square} & \\multicolumn{1}{c|}{Estimate} & \\multicolumn{1}{c|}{Change} & \\multicolumn{1}{c|}{F Change} & \\multicolumn{1}{c|}{df1} & \\multicolumn{1}{c|}{df2} & \\multicolumn{1}{c|}{Change} \\\\\n")
+      } else {
+        cat(" & & & \\multicolumn{1}{c|}{Adjusted} & \\multicolumn{1}{c|}{Std. Error of} \\\\\n")
+        cat("\\multicolumn{1}{|c|}{Model} & \\multicolumn{1}{c|}{R} & \\multicolumn{1}{c|}{R Square} & \\multicolumn{1}{c|}{R Square} & \\multicolumn{1}{c|}{the Estimate} \\\\\n")
+      }
     } else {
-      cat(" & & & \\multicolumn{1}{|c|}{Adjusted} & \\multicolumn{1}{|c|}{Std. Error of} \\\\\n")
-      cat("\\multicolumn{1}{|c}{Model} & \\multicolumn{1}{|c|}{R} & \\multicolumn{1}{|c|}{R Square} & \\multicolumn{1}{|c|}{R Square} & \\multicolumn{1}{|c|}{the Estimate} \\\\\n")
+      cat("\\noalign{\\smallskip}\n")
+      if (change) {
+        cat(latexMulticolumn("", 1), "&",
+            latexMulticolumn("", 1, right = TRUE), "&",
+            latexMulticolumn("", 1, right = TRUE), "&",
+            latexMulticolumn("Std. Error", 1, right = TRUE), "&",
+            latexMulticolumn("", 1, right = TRUE), "&",
+            latexMulticolumn("Change Statistics", 5), "\\\\\n")
+        cat(latexMulticolumn("", 1), "&",
+            latexMulticolumn("", 1, right = TRUE), "&",
+            latexMulticolumn("", 1, right = TRUE), "&",
+            latexMulticolumn("Adjusted", 1, right = TRUE), "&",
+            latexMulticolumn("of the", 1, right = TRUE), "&",
+            latexMulticolumn("R Square", 1, right = TRUE), "&",
+            latexMulticolumn("", 1, right = TRUE), "&",
+            latexMulticolumn("", 1, right = TRUE), "&",
+            latexMulticolumn("", 1, right = TRUE), "&",
+            latexMulticolumn("Sig. F", 1), "\\\\\n")
+        cat(latexMulticolumn("Model", 1), "&",
+            latexMulticolumn("R", 1, right = TRUE), "&",
+            latexMulticolumn("R Square", 1, right = TRUE), "&",
+            latexMulticolumn("R Square", 1, right = TRUE), "&",
+            latexMulticolumn("Estimate", 1, right = TRUE), "&",
+            latexMulticolumn("Change", 1, right = TRUE), "&",
+            latexMulticolumn("F Change", 1, right = TRUE), "&",
+            latexMulticolumn("df1", 1, right = TRUE), "&",
+            latexMulticolumn("df2", 1, right = TRUE), "&",
+            latexMulticolumn("Change", 1), "\\\\\n")
+      } else {
+        cat(latexMulticolumn("", 1), "&",
+            latexMulticolumn("", 1, right = TRUE), "&",
+            latexMulticolumn("", 1, right = TRUE), "&",
+            latexMulticolumn("Adjusted", 1, right = TRUE), "&",
+            latexMulticolumn("Std. Error of", 1), "\\\\\n")
+        cat(latexMulticolumn("Model", 1), "&",
+            latexMulticolumn("R", 1, right = TRUE), "&",
+            latexMulticolumn("R Square", 1, right = TRUE), "&",
+            latexMulticolumn("R Square", 1, right = TRUE), "&",
+            latexMulticolumn("the Estimate", 1), "\\\\\n")
+      }
     }
     cat("\\hline\n")
     # format model summaries
-    formatted <- formatSPSS(fits, digits=digits)
+    if (legacy) formatted <- formatSPSS(fits, digits=digits, pValue=FALSE)
+    else formatted <- formatSPSS(fits, digits=digits)
     for (i in seq_along(models)) {
       # print current model summary
       superscript <- sprintf("$^{\\text{%s}}$", letters[i])
@@ -315,17 +365,40 @@ print.regressionSPSS <- function(x, digits = 3,
   if ("anova" %in% statistics) {
     # initialize LaTeX table
     if (count == 0) cat("\n")
-    cat("\\begin{tabular}{|ll|r|r|r|r|r|}\n")
+    if (legacy) cat("\\begin{tabular}{|ll|r|r|r|r|r|}\n")
+    else {
+      cat(latexTabular(info = 2, results = 5))
+      cat("\n")
+    }
     # print table header
     cat("\\noalign{\\smallskip}\n")
     cat("\\multicolumn{7}{c}{\\textbf{ANOVA}$^{\\text{a}}$} \\\\\n")
-    cat("\\noalign{\\smallskip}\\hline\n")
-    cat(" & & \\multicolumn{1}{|c|}{Sum of} & & & & \\\\\n")
-    cat("\\multicolumn{1}{|c}{Model} & & \\multicolumn{1}{|c|}{Squares} & \\multicolumn{1}{|c|}{df} & \\multicolumn{1}{|c|}{Mean Square} & \\multicolumn{1}{|c|}{F} & \\multicolumn{1}{|c|}{Sig.} \\\\\n")
+    if (legacy) {
+      cat("\\noalign{\\smallskip}\\hline\n")
+      cat(" & & \\multicolumn{1}{c|}{Sum of} & & & & \\\\\n")
+      cat("\\multicolumn{1}{|c}{Model} & & \\multicolumn{1}{c|}{Squares} & \\multicolumn{1}{c|}{df} & \\multicolumn{1}{c|}{Mean Square} & \\multicolumn{1}{c|}{F} & \\multicolumn{1}{c|}{Sig.} \\\\\n")
+    } else {
+      cat("\\noalign{\\smallskip}\n")
+      cat(latexMulticolumn("", 2), "&",
+          latexMulticolumn("Sum of", 1, right = TRUE), "&",
+          latexMulticolumn("", 1, right = TRUE), "&",
+          latexMulticolumn("", 1, right = TRUE), "&",
+          latexMulticolumn("", 1, right = TRUE), "&",
+          latexMulticolumn("", 1), "\\\\\n")
+      cat(latexMulticolumn("Model", 1, "l"), "&",
+          latexMulticolumn("", 1), "&",
+          latexMulticolumn("Squares", 1, right = TRUE), "&",
+          latexMulticolumn("df", 1, right = TRUE), "&",
+          latexMulticolumn("Mean Square", 1, right = TRUE), "&",
+          latexMulticolumn("F", 1, right = TRUE), "&",
+          latexMulticolumn("Sig.", 1), "\\\\\n")
+    }
     cat("\\hline\n")
     for (i in seq_along(anovas)) {
       # extract current ANOVA table
-      formatted <- formatSPSS(anovas[[i]], digits=digits)
+      if (legacy) {
+        formatted <- formatSPSS(anovas[[i]], digits=digits, pValue=FALSE)
+      } else formatted <- formatSPSS(anovas[[i]], digits=digits)
       # print current ANOVA table
       for (type in rownames(formatted)) {
         if (type == "Regression") {
@@ -342,7 +415,7 @@ print.regressionSPSS <- function(x, digits = 3,
       cat("\\hline\n")
     }
     # finalize LaTeX table
-    printResponse(x$response, columns = 7)
+    catResponse(x$response, columns = 7)
     for (i in seq_along(predictors)) {
       catPredictors(predictors[[i]], columns = 7, index = i+1,
                     wrap = wrap[2])
@@ -383,7 +456,7 @@ print.regressionSPSS <- function(x, digits = 3,
           latexMulticolumn("Coefficients", 1, right = TRUE), "&",
           latexMulticolumn("", 1, right = TRUE), "&",
           latexMulticolumn("", 1), "\\\\\n")
-      cat(latexMulticolumn("Model", 1), "&",
+      cat(latexMulticolumn("Model", 1, "l"), "&",
           latexMulticolumn("", 1), "&",
           latexMulticolumn("B", 1, right = TRUE), "&",
           latexMulticolumn("Std. Error", 1, right = TRUE), "&",
