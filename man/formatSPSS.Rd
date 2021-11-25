@@ -15,9 +15,9 @@ formatSPSS(x, ...)
 
 \method{formatSPSS}{integer}(x, ...)
 
-\method{formatSPSS}{numeric}(x, digits = 3, ...)
+\method{formatSPSS}{numeric}(x, digits = 3, pValue = FALSE, ...)
 
-\method{formatSPSS}{matrix}(x, ...)
+\method{formatSPSS}{matrix}(x, digits = 3, pValue = NULL, ...)
 
 \method{formatSPSS}{data.frame}(x, ...)
 }

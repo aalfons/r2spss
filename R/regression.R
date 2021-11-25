@@ -394,7 +394,9 @@ print.regressionSPSS <- function(x, digits = 3,
     cat("\\hline\n")
     for (i in seq_along(coefficients)) {
       # extract current coefficients
-      formatted <- formatSPSS(coefficients[[i]], digits=digits)
+      if (legacy) {
+        formatted <- formatSPSS(coefficients[[i]], digits=digits, pValue=FALSE)
+      } else formatted <- formatSPSS(coefficients[[i]], digits=digits)
       # print current coefficients
       for (variable in rownames(formatted)) {
         cat(if (variable == "(Constant)") labels[i], "&", variable, "&",

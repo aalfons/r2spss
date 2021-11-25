@@ -56,15 +56,22 @@ formatSPSS.integer <- function(x, ...) {
 #'
 #' @export
 
-formatSPSS.numeric <- function(x, digits = 3, ...) {
+formatSPSS.numeric <- function(x, digits = 3, pValue = FALSE, ...) {
   # define format with specified number of digits
   n <- length(x)
   digits <- rep_len(digits, n)
   fmt <- paste0("%.", digits, "f")
   # use empty string for NA
-  fmt <- ifelse(is.finite(x), fmt, "")
+  finite <- is.finite(x)
+  fmt <- ifelse(finite, fmt, "")
   # convert numbers to strings
   formatted <- sprintf(fmt, x)
+  # if requested format p-value
+  if (isTRUE(pValue)) {
+    zeros <- rep.int(0, n)
+    below <- finite & formatted == sprintf(fmt, zeros)
+    formatted[below] <- gsub("^<0.", "$<$.", paste0("<", 10^(-digits[below])))
+  }
   # replace leading zeros
   formatted <- gsub("^0.", ".", formatted)    # positive numbers
   formatted <- gsub("^-0.", "-.", formatted)  # negative numbers
@@ -76,9 +83,21 @@ formatSPSS.numeric <- function(x, digits = 3, ...) {
 #' @rdname formatSPSS
 #' @export
 
-formatSPSS.matrix <- function(x, ...) {
-  # format as vector and add original attributes
-  formatted <- formatSPSS(as.vector(x), ...)
+formatSPSS.matrix <- function(x, digits = 3, pValue = NULL, ...) {
+  # # format as vector and add original attributes
+  # formatted <- formatSPSS(as.vector(x), ...)
+  # attributes(formatted) <- attributes(x)
+  # initializations
+  d <- dim(x)
+  colNames <- colnames(x)
+  if (is.null(pValue)) {
+    if (is.null(colNames)) pValue <- rep.int(FALSE, d[2])
+    else pValue <- grepl("Sig.", colNames, fixed = TRUE)
+  } else pValue <- rep_len(pValue, d[2])
+  # format each column and add original attributes
+  formatted <- vapply(seq_len(d[2]), function(j) {
+    formatSPSS(x[, j], digits = digits, pValue = pValue[j])
+  }, character(d[1]))
   attributes(formatted) <- attributes(x)
   # return formatted matrix
   formatted
