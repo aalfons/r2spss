@@ -49,14 +49,14 @@ latexTabular <- function(info = 1, results = 1, alignment = NULL,
 # text ........ character string giving the text to be written inside the
 #               merged cell.  For a non-empty string, the text will receive
 #               color 'blueSPSS'.
-# cols ........ number of subsequent columns to merge.
+# columns ..... number of subsequent columns to merge.
 # alignment ... character string containing an alignment specifier for the
 #               merged cell.  The default is "c" for centered.
 # left ........ logical vector indicating whether to draw a left border in
 #               color 'darkgraySPSS'.  The default is FALSE.
 # right ....... logical vector indicating whether to draw a right border in
 #               color 'darkgraySPSS'.  The default is FALSE.
-latexMulticolumn <- function(text, cols = 1, alignment = "c",
+latexMulticolumn <- function(text, columns = 1, alignment = "c",
                              left = FALSE, right = FALSE) {
   # if requested, define left and right borders
   left <- if (left) "!{\\color{darkgraySPSS}\\vrule}" else ""
@@ -66,5 +66,5 @@ latexMulticolumn <- function(text, cols = 1, alignment = "c",
   # full specification of the merged cell
   spec <- paste0(left, color, alignment, right)
   # create \multicolumn statement
-  sprintf("\\multicolumn{%d}{%s}{%s}", cols, spec, text)
+  sprintf("\\multicolumn{%d}{%s}{%s}", columns, spec, text)
 }

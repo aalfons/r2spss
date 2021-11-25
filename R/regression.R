@@ -401,7 +401,8 @@ print.regressionSPSS <- function(x, digits = 3,
             paste0(formatted[variable, ], collapse=" & "), "\\\\\n")
       }
       # finalize current model
-      cat("\\hline\n")
+      # FIXME: line in between models should be in color 'darkgraySPSS'
+      cat("\\hline\n")                                     # regular black line
       # cat("\\noalign{\\color{darkgraySPSS}\\hrule}%\n")  # doesn't work
     }
     # finalize LaTeX table
