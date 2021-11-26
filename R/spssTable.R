@@ -100,16 +100,13 @@ spssTable.data.frame <- function(object, main = NULL, sub = NULL,
   if (writeMain) {
     cat("\\noalign{\\smallskip}\n")
     cat("\\multicolumn{", columns, "}{c}{\\textbf{", main, "}} \\\\\n", sep="")
-  }
-  if (writeSub) {
     cat("\\noalign{\\smallskip}\n")
-    cat("\\multicolumn{", columns, "}{l}{", sub, "} \\\\\n", sep="")
   }
+  if (writeSub) cat("\\multicolumn{", columns, "}{l}{", sub, "} \\\\\n", sep="")
 
   ## if supplied, write table header
   if (writeHeader) {
-    if (legacy) cat("\\noalign{\\smallskip}\\hline\n")
-    else cat("\\noalign{\\smallskip}\n")
+    if (legacy) cat("\\hline\n")
     # TODO: For now, only a simple header layout with one row of cells is
     #       supported.  In addition, only row names are supported, but not
     #       yet an additional label.
@@ -136,11 +133,12 @@ spssTable.data.frame <- function(object, main = NULL, sub = NULL,
         paste0(formatted[rn, ], collapse = " & "),
         "\\\\\n")
   }
+  cat("\\hline\n")
 
   ## TODO: if supplied, write footnotes
 
-  ## finalize table
-  cat("\\hline\\noalign{\\smallskip}\n")
+  ## write \end{tabular} statement
+  cat("\\noalign{\\smallskip}\n")
   cat("\\end{tabular}\n")
 
 }

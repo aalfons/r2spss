@@ -503,39 +503,55 @@ print.ANOVASPSS <- function(x, digits = 3,
   if ("test" %in% statistics) {
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
-    if (legacy) formatted <- formatSPSS(x$test, digits=digits, pValue=FALSE)
-    else formatted <- formatSPSS(x$test, digits=digits)
     # print LaTeX table
     if (x$type == "one-way") {
-      if (legacy) cat("\\begin{tabular}{|l|r|r|r|r|r|}\n")
-      else {
-        cat(latexTabular(6, info = 1))
-        cat("\n")
-      }
-      # print table header
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{6}{c}{\\textbf{ANOVA}} \\\\\n")
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{6}{l}{", x$variable, "} \\\\\n", sep="")
-      if (legacy) {
-        cat("\\hline\n")
-        cat(" & \\multicolumn{1}{|c|}{Sum of Squares} & \\multicolumn{1}{c|}{df} & \\multicolumn{1}{c|}{Mean Square} & \\multicolumn{1}{c|}{F} & \\multicolumn{1}{c|}{Sig.} \\\\\n")
-      } else {
-        cat(latexMulticolumn("", 1, "l"), "&",
-            latexMulticolumn("Sum of Squares", 1, right = TRUE), "&",
-            latexMulticolumn("df", 1, right = TRUE), "&",
-            latexMulticolumn("Mean Square", 1, right = TRUE), "&",
-            latexMulticolumn("F", 1, right = TRUE), "&",
-            latexMulticolumn("Sig.", 1), "\\\\\n")
-      }
-      cat("\\hline\n")
-      # print table
-      for (rn in rownames(formatted)) {
-        cat(rn, "&", paste0(formatted[rn, ], collapse=" & "), "\\\\\n")
-      }
-      cat("Total &", formatSPSS(sum(x$test[, "Sum Sq"]), digits=digits), "&", sum(x$test$Df), "& & & \\\\\n")
-      cat("\\hline\n")
+      # if (legacy) cat("\\begin{tabular}{|l|r|r|r|r|r|}\n")
+      # else {
+      #   cat(latexTabular(6, info = 1))
+      #   cat("\n")
+      # }
+      # # print table header
+      # cat("\\noalign{\\smallskip}\n")
+      # cat("\\multicolumn{6}{c}{\\textbf{ANOVA}} \\\\\n")
+      # cat("\\noalign{\\smallskip}\n")
+      # cat("\\multicolumn{6}{l}{", x$variable, "} \\\\\n", sep="")
+      # if (legacy) {
+      #   cat("\\hline\n")
+      #   cat(" & \\multicolumn{1}{|c|}{Sum of Squares} & \\multicolumn{1}{c|}{df} & \\multicolumn{1}{c|}{Mean Square} & \\multicolumn{1}{c|}{F} & \\multicolumn{1}{c|}{Sig.} \\\\\n")
+      # } else {
+      #   cat(latexMulticolumn("", 1, "l"), "&",
+      #       latexMulticolumn("Sum of Squares", 1, right = TRUE), "&",
+      #       latexMulticolumn("df", 1, right = TRUE), "&",
+      #       latexMulticolumn("Mean Square", 1, right = TRUE), "&",
+      #       latexMulticolumn("F", 1, right = TRUE), "&",
+      #       latexMulticolumn("Sig.", 1), "\\\\\n")
+      # }
+      # cat("\\hline\n")
+      # # print table
+      # for (rn in rownames(formatted)) {
+      #   cat(rn, "&", paste0(formatted[rn, ], collapse=" & "), "\\\\\n")
+      # }
+      # cat("Total &", formatSPSS(sum(x$test[, "Sum Sq"]), digits=digits), "&", sum(x$test$Df), "& & & \\\\\n")
+      # cat("\\hline\n")
+
+      # transform ANOVA table into SPSS format
+      test <- data.frame("Sum of Squares" = c(x$test[, "Sum Sq"],
+                                              sum(x$test[, "Sum Sq"])),
+                         "df" = c(x$test$Df, sum(x$test$Df)),
+                         "Mean Square" = c(x$test[, "Mean Sq"], NA_real_),
+                         "F" = c(x$test[, "F value"], NA_real_),
+                         "Sig." = c(x$test[, "Pr(>F)"], NA_real_),
+                         check.names = FALSE)
+      row.names(test) <- c(row.names(x$test), "Total")
+      # write table
+      spssTable(test, main = "ANOVA", sub = x$variable, row.names = TRUE,
+                digits = digits[1], theme = theme)
+
     } else if (x$type == "two-way") {
+
+      if (legacy) formatted <- formatSPSS(x$test, digits=digits, pValue=FALSE)
+      else formatted <- formatSPSS(x$test, digits=digits)
+
       RSq <- 1 - x$test["Error", "Sum Sq"] / x$test["Corrected Total", "Sum Sq"]
       AdjRSq <- 1 - x$test["Error", "Mean Sq"] /
         (x$test["Corrected Total", "Sum Sq"] / x$test["Corrected Total", "Df"])
@@ -575,10 +591,12 @@ print.ANOVASPSS <- function(x, digits = 3,
       }
       cat("\\hline\n")
       cat("\\multicolumn{6}{l}{a. R Squared = ", formatSPSS(RSq, digits=digits), " (Adjusted R Squared = ", formatSPSS(AdjRSq, digits=digits), ")} \\\\\n", sep="")
+
+      # finalize LaTeX table
+      cat("\\noalign{\\smallskip}\n")
+      cat("\\end{tabular}\n")
+
     } else stop("type of ANOVA not supported")
-    # finalize LaTeX table
-    cat("\\noalign{\\smallskip}\n")
-    cat("\\end{tabular}\n")
     cat("\n")
   }
 }
