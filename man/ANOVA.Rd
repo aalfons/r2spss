@@ -8,7 +8,13 @@
 \usage{
 ANOVA(data, variable, group, conf.level = 0.95)
 
-\method{print}{ANOVASPSS}(x, digits = 3, statistics = c("descriptives", "variance", "test"), ...)
+\method{print}{ANOVASPSS}(
+  x,
+  digits = 3,
+  statistics = c("descriptives", "variance", "test"),
+  theme = c("modern", "legacy"),
+  ...
+)
 
 \method{plot}{ANOVASPSS}(x, y, which = 1, type = "o", main = NULL, xlab = NULL, ylab = NULL, ...)
 }
