@@ -20,9 +20,15 @@ spssTable.data.frame <- function(object, main = NULL, sub = NULL,
                                  theme = c("modern", "legacy"),
                                  ...) {
 
-  ## TODO: add argument append, which if TRUE sets writing titles, header, and
+  ## TODO: Add argument append, which if TRUE sets writing titles, header, and
   ##       footnotes to FALSE, and also suppressed the \begin{tabulate} and
-  ##       \end{tabulate} statements
+  ##       \end{tabulate} statements.  But then it's unclear where and how to
+  ##       begin and end the tabulate environment.
+  ##
+  ## It's better to have an argument 'environment' that can take the values
+  ## TRUE, FALSE, "begin", and "end".  Alignment specifiers and border
+  ## indicators should only be checked if this is TRUE or "begin", or if
+  ## headers are requested.
 
   ## initializations
   # check main and sub title
