@@ -92,7 +92,10 @@ formatSPSS.matrix <- function(x, digits = 3, pValue = NULL, ...) {
   colNames <- colnames(x)
   if (is.null(pValue)) {
     if (is.null(colNames)) pValue <- rep.int(FALSE, d[2])
-    else pValue <- grepl("Sig.", colNames, fixed = TRUE)
+    else {
+      pValue <- grepl("Sig.", colNames, fixed = TRUE) |
+        grepl("Pr(", colNames, fixed = TRUE)
+    }
   } else pValue <- rep_len(pValue, d[2])
   # format each column and add original attributes
   formatted <- vapply(seq_len(d[2]), function(j) {
@@ -114,8 +117,10 @@ formatSPSS.data.frame <- function(x, digits = 3, pValue = NULL, ...) {
   # initializations
   d <- dim(x)
   colNames <- names(x)
-  if (is.null(pValue)) pValue <- grepl("Sig.", colNames, fixed = TRUE)
-  else pValue <- rep_len(pValue, d[2])
+  if (is.null(pValue)) {
+    pValue <- grepl("Sig.", colNames, fixed = TRUE) |
+      grepl("Pr(", colNames, fixed = TRUE)
+  } else pValue <- rep_len(pValue, d[2])
   # format each column
   formatted <- mapply(function(v, p) formatSPSS(v, digits = digits, pValue = p),
                       v = x, p = pValue, SIMPLIFY = FALSE, USE.NAMES = TRUE)
