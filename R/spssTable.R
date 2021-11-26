@@ -10,15 +10,15 @@
 ##                 "Confidence Interval" = c("Lower\nBound", "Upper\nBound"))
 ##            Line separators break up the header into different lines
 
-spssTable <- function(object, ...) UseMethod("spssTable")
+latexTableSPSS <- function(object, ...) UseMethod("latexTableSPSS")
 
-spssTable.data.frame <- function(object, main = NULL, sub = NULL,
-                                 header = TRUE, label = NULL,
-                                 row.names = TRUE, info = NULL,
-                                 digits = 3, alignment = NULL,
-                                 border = NULL, footnotes = NULL,
-                                 theme = c("modern", "legacy"),
-                                 ...) {
+latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
+                                      header = TRUE, label = NULL,
+                                      row.names = TRUE, info = NULL,
+                                      digits = 3, alignment = NULL,
+                                      border = NULL, footnotes = NULL,
+                                      theme = c("modern", "legacy"),
+                                      ...) {
 
   ## TODO: Add argument append, which if TRUE sets writing titles, header, and
   ##       footnotes to FALSE, and also suppressed the \begin{tabulate} and

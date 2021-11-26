@@ -544,8 +544,8 @@ print.ANOVASPSS <- function(x, digits = 3,
                          check.names = FALSE)
       row.names(test) <- c(row.names(x$test), "Total")
       # write table
-      spssTable(test, main = "ANOVA", sub = x$variable, row.names = TRUE,
-                digits = digits[1], theme = theme)
+      latexTableSPSS(test, main = "ANOVA", sub = x$variable, row.names = TRUE,
+                     digits = digits[1], theme = theme)
 
     } else if (x$type == "two-way") {
 
