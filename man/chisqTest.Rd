@@ -7,7 +7,13 @@
 \usage{
 chisqTest(data, variables, p = NULL)
 
-\method{print}{chisqTestSPSS}(x, digits = c(1, 3), statistics = c("frequencies", "test"), ...)
+\method{print}{chisqTestSPSS}(
+  x,
+  digits = c(1, 3),
+  statistics = c("frequencies", "test"),
+  theme = c("modern", "legacy"),
+  ...
+)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}

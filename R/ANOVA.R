@@ -257,7 +257,7 @@ print.ANOVASPSS <- function(x, digits = 3,
       # initialize LaTeX table
       if (legacy) cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|}\n")
       else {
-        cat(latexTabular(info = 1, results = 8))
+        cat(latexTabular(9, info = 1))
         cat("\n")
       }
       # print table header
@@ -319,7 +319,7 @@ print.ANOVASPSS <- function(x, digits = 3,
       # initialize LaTeX table
       if (legacy) cat("\\begin{tabular}{|ll|r|r|r|}\n")
       else {
-        cat(latexTabular(info = 2, results = 3))
+        cat(latexTabular(5, info = 2))
         cat("\n")
       }
       # print table header
@@ -386,7 +386,7 @@ print.ANOVASPSS <- function(x, digits = 3,
       if (legacy) cat("\\begin{tabular}{|r|r|r|r|}\n")
       else {
         align <- c("l", "L{0.3\\linewidth}", "r", "r", "r", "r")
-        cat(latexTabular(info = 2, results = 4, alignment = align))
+        cat(latexTabular(6, info = 2, alignment = align))
         cat("\n")
       }
       # print table header
@@ -429,7 +429,7 @@ print.ANOVASPSS <- function(x, digits = 3,
       if (legacy) cat("\\begin{tabular}{|r|r|r|r|}\n")
       else {
         align <- c("l", "L{0.3\\linewidth}", "r", "r", "r", "r")
-        cat(latexTabular(info = 2, results = 4, alignment = align))
+        cat(latexTabular(6, info = 2, alignment = align))
         cat("\n")
       }
       # print table header
@@ -509,7 +509,7 @@ print.ANOVASPSS <- function(x, digits = 3,
     if (x$type == "one-way") {
       if (legacy) cat("\\begin{tabular}{|l|r|r|r|r|r|}\n")
       else {
-        cat(latexTabular(info = 1, results = 5))
+        cat(latexTabular(6, info = 1))
         cat("\n")
       }
       # print table header
@@ -542,7 +542,7 @@ print.ANOVASPSS <- function(x, digits = 3,
       formatted[1, "Sum Sq"] <- paste0(formatted[1, "Sum Sq"], "$^{\\text{a}}$")
       if (legacy) cat("\\begin{tabular}{|l|r|r|r|r|r|}\n")
       else {
-        cat(latexTabular(info = 1, results = 5))
+        cat(latexTabular(6, info = 1))
         cat("\n")
       }
       # print table header

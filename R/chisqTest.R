@@ -160,11 +160,13 @@ chisqTest <- function(data, variables, p = NULL) {
 
 print.chisqTestSPSS <- function(x, digits = c(1, 3),
                                 statistics = c("frequencies", "test"),
-                                ...) {
+                                theme = c("modern", "legacy"), ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok=TRUE)
+  theme <- match.arg(theme)
+  legacy <- theme == "legacy"
 
   ## print LaTeX table for frequencies
   if ("frequencies" %in% statistics) {
@@ -177,19 +179,34 @@ print.chisqTestSPSS <- function(x, digits = c(1, 3),
       expected <- c(expected, Total=NA)
       frequencies <- data.frame("Observed N"=observed, "Expected N"=expected,
                                 Residual=observed-expected, check.names=FALSE)
-      formatted <- formatSPSS(frequencies, digits=digits[1])
-      # initialize LaTeX table
-      cat("\\begin{tabular}{|l|r|r|r|}\n")
-      # print table header
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{4}{c}{\\textbf{", x$variables, "}} \\\\\n", sep="")
-      cat("\\noalign{\\smallskip}\\hline\n")
-      cat(" &", paste0(paste0("\\multicolumn{1}{|c|}{", colnames(formatted), "}"), collapse=" & "), "\\\\\n")
-      cat("\\hline\n")
-      # print table
-      for (rn in rownames(formatted)) {
-        cat(rn, "&", paste0(formatted[rn, ], collapse=" & "), "\\\\\n")
-      }
+      # formatted <- formatSPSS(frequencies, digits=digits[1])
+      # # initialize LaTeX table
+      # if (legacy) cat("\\begin{tabular}{|l|r|r|r|}\n")
+      # else {
+      #   cat(latexTabular(4, info = 1))
+      #   cat("\n")
+      # }
+      # # print table header
+      # cat("\\noalign{\\smallskip}\n")
+      # cat("\\multicolumn{4}{c}{\\textbf{", x$variables, "}} \\\\\n", sep="")
+      # if (legacy) {
+      #   cat("\\noalign{\\smallskip}\\hline\n")
+      #   cat(" &", paste0(paste0("\\multicolumn{1}{|c|}{", colnames(formatted), "}"), collapse=" & "), "\\\\\n")
+      # } else {
+      #   #
+      #   # cat(latexMulticolumn("", 1, "l"), "&",
+      #   #     latexMulticolumn("", 1, right = TRUE), "&",
+      #   #     "\\\\\n")
+      # }
+      # cat("\\hline\n")
+      # # print table
+      # for (rn in rownames(formatted)) {
+      #   cat(rn, "&", paste0(formatted[rn, ], collapse=" & "), "\\\\\n")
+      # }
+
+      spssTable(frequencies, main = x$variables, row.names = TRUE,
+                digits = digits[1], theme = theme)
+
     } else if (x$type == "independence") {
       # add totals
       observed <- cbind(observed, Total=rowSums(observed))
@@ -219,10 +236,12 @@ print.chisqTestSPSS <- function(x, digits = c(1, 3),
       cat("\\hline\n")
       cat(rownames(observed)[x$r+1], "& & Count &", paste0(observed[x$r+1,], collapse=" & "), "\\\\\n")
       cat(" & & Expected Count &", paste0(expected[x$r+1,], collapse=" & "), "\\\\\n")
+
+      # finalize LaTeX table
+      cat("\\hline\\noalign{\\smallskip}\n")
+      cat("\\end{tabular}\n")
+
     } else stop("type of test not supported")
-    # finalize LaTeX table
-    cat("\\hline\\noalign{\\smallskip}\n")
-    cat("\\end{tabular}\n")
     cat("\n")
     count <- count + 1
   }

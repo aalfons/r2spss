@@ -273,8 +273,8 @@ print.regressionSPSS <- function(x, digits = 3,
       if (change) cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|r|}\n")
       else cat("\\begin{tabular}{|l|r|r|r|r|}\n")
     } else {
-      if (change) cat(latexTabular(info = 1, results = 9))
-      else cat(latexTabular(info = 1, results = 4))
+      if (change) cat(latexTabular(10, info = 1))
+      else cat(latexTabular(5, info = 1))
       cat("\n")
     }
     # print table header
@@ -367,7 +367,7 @@ print.regressionSPSS <- function(x, digits = 3,
     if (count == 0) cat("\n")
     if (legacy) cat("\\begin{tabular}{|ll|r|r|r|r|r|}\n")
     else {
-      cat(latexTabular(info = 2, results = 5))
+      cat(latexTabular(7, info = 2))
       cat("\n")
     }
     # print table header
@@ -433,7 +433,7 @@ print.regressionSPSS <- function(x, digits = 3,
     if (count == 0) cat("\n")
     if (legacy) cat("\\begin{tabular}{|ll|r|r|r|r|r|}\n")
     else {
-      cat(latexTabular(info = 2, results = 5))
+      cat(latexTabular(7, info = 2))
       cat("\n")
     }
     # print table header
