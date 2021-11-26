@@ -59,21 +59,31 @@ Eredivisie$AgeSq <- Eredivisie$Age^2
 
 \begin{center}
 <<echo=FALSE, results="asis">>=
-foo <- regression(logMarketValue ~ Age + AgeSq,
+fit <- regression(logMarketValue ~ Age + AgeSq,
                   logMarketValue ~ Age + AgeSq + Contract + Foreign,
                   data = Eredivisie)
-# print(foo, statistics = "estimates", theme = "legacy")
-# print(foo, statistics = "estimates", theme = "modern")
-foo
+# print(fit, statistics = "estimates", theme = "legacy")
+# print(fit, statistics = "estimates", theme = "modern")
+fit
 @
 \end{center}
 
 \begin{center}
 <<echo=FALSE, results="asis">>=
-foo <- ANOVA(Eredivisie, "logMarketValue", group = "Position")
-# print(foo, statistics = "variance", theme = "legacy")
-# print(foo, statistics = "variance", theme = "modern")
-foo
+oneway <- ANOVA(Eredivisie, "logMarketValue", group = "Position")
+# print(oneway, statistics = "variance", theme = "legacy")
+# print(oneway, statistics = "variance", theme = "modern")
+oneway
+@
+\end{center}
+
+\begin{center}
+<<echo=FALSE, results="asis">>=
+twoway <- ANOVA(Eredivisie, "logMarketValue",
+                c(group = "Position", "Foreign"))
+# print(twoway, statistics = "descriptives", theme = "legacy")
+# print(twoway, statistics = "descriptives", theme = "modern")
+twoway
 @
 \end{center}
 
