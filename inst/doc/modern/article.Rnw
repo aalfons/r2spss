@@ -12,6 +12,10 @@
 % \definecolor{lightgraySPSS}{RGB}{250,250,252}
 % \definecolor{darkgraySPSS}{gray}{0.66}
 % \definecolor{blueSPSS}{RGB}{39,73,96}
+%
+% \newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+% \newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+% \newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 % ----------------------------------------------------------------------------
 \usepackage{r2spss}
 
@@ -58,8 +62,18 @@ Eredivisie$AgeSq <- Eredivisie$Age^2
 foo <- regression(logMarketValue ~ Age + AgeSq,
                   logMarketValue ~ Age + AgeSq + Contract + Foreign,
                   data = Eredivisie)
-print(foo, statistics = "estimates", theme = "legacy")
-print(foo, statistics = "estimates", theme = "modern")
+# print(foo, statistics = "estimates", theme = "legacy")
+# print(foo, statistics = "estimates", theme = "modern")
+foo
+@
+\end{center}
+
+\begin{center}
+<<echo=FALSE, results="asis">>=
+foo <- ANOVA(Eredivisie, "logMarketValue", group = "Position")
+# print(foo, statistics = "variance", theme = "legacy")
+# print(foo, statistics = "variance", theme = "modern")
+foo
 @
 \end{center}
 

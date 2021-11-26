@@ -1,0 +1,75 @@
+\documentclass[pdfpagelabels=false, usepdftitle=false]{beamer}
+
+\usetheme{ESE}
+
+% additional packages
+\usepackage{r2spss}
+
+
+\title{Testing r2spss}
+
+% \subtitle{}
+
+% - Use the \inst{?} command only if the authors have different affiliation.
+\author{
+  Andreas~Alfons
+}
+
+% - Use the \inst command only if there are several affiliations.
+% - Keep it simple, no one is interested in your street address.
+\institute[EUR]{Erasmus School of Economics, Erasmus University Rotterdam}
+
+\date{November~18, 2021}
+
+
+% ---------------------
+% begin of presentation
+% ---------------------
+
+\begin{document}
+
+
+\ESEtitleframe  % note that we *do not* use \titlepage
+
+
+% -------------
+% knitr options
+% -------------
+
+<<include=FALSE>>=
+library("knitr")
+options(prompt="R> ", continue = "+  ", width = 75, useFancyQuotes = FALSE)
+opts_chunk$set(fig.path = "figures/figure-", fig.width = 4.5, fig.height = 4.5,
+               out.width = "0.5\\textwidth", fig.align = "center",
+               fig.lp = "fig:", fig.pos = "h!", tidy = FALSE, prompt = TRUE,
+               highlight = FALSE)
+@
+
+
+% ---------------------------
+% example with package r2spss
+% ---------------------------
+
+<<echo=FALSE, results="hide", message=FALSE, warning=FALSE>>=
+library("r2spss")
+data("Eredivisie")
+# log-transform market values
+Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+# squared values of age
+Eredivisie$AgeSq <- Eredivisie$Age^2
+@
+
+
+\begin{frame}[fragile]{ANOVA}
+\begin{center}
+{\small
+<<echo=FALSE, results="asis">>=
+foo <- ANOVA(Eredivisie, "logMarketValue", group = "Position")
+print(foo, statistics = "variance", theme = "modern")
+@
+}
+\end{center}
+\end{frame}
+
+
+\end{document}
