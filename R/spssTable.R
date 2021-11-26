@@ -92,9 +92,9 @@ spssTable.data.frame <- function(object, main = NULL, sub = NULL,
   }
 
   ## write \begin{tabular} statement
-  cat(latexTabular(columns, info, alignment = alignment$table,
-                   border = border, theme = theme))
-  cat("\n")
+  cat(latexBeginTabular(columns, info, alignment = alignment$table,
+                        border = border, theme = theme),
+      "\n", sep = "")
 
   ## if supplied, write main and sub title
   if (writeMain) {
@@ -162,10 +162,10 @@ spssTable.data.frame <- function(object, main = NULL, sub = NULL,
 #               appearance of recent SPSS version ("modern") or older ones
 #               ("legacy").
 
-latexTabular <- function(columns, info = 1, alignment, border,
+latexBeginTabular <- function(columns, info = 1, alignment, border,
                          theme = "modern") {
-  if (theme == "legacy") legacyTabular(columns, info, alignment, border)
-  else modernTabular(columns, info, alignment, border)
+  if (theme == "legacy") legacyBeginTabular(columns, info, alignment, border)
+  else modernBeginTabular(columns, info, alignment, border)
 }
 
 
@@ -176,7 +176,7 @@ latexTabular <- function(columns, info = 1, alignment, border,
 # color 'lightgraySPSS'.  By default, there will be lines in between those
 # columns in color 'darkgraySPSS', but not after the last column.
 
-modernTabular <- function(columns, info = 1, alignment, border) {
+modernBeginTabular <- function(columns, info = 1, alignment, border) {
   # number columns containing the actual results
   results <- columns - info
   # specify borders
@@ -196,7 +196,7 @@ modernTabular <- function(columns, info = 1, alignment, border) {
 # border with the first remaining column, as well as between the remaining
 # columns and after the last column.
 
-legacyTabular <- function(columns, info = 1, alignment, border) {
+legacyBeginTabular <- function(columns, info = 1, alignment, border) {
   # number columns containing the actual results
   results <- columns - info
   # specify borders
