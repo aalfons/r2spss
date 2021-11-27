@@ -15,8 +15,8 @@ latexTableSPSS <- function(object, ...) UseMethod("latexTableSPSS")
 latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
                                       header = TRUE, label = NULL,
                                       rowNames = TRUE, info = NULL,
-                                      alignment = NULL, border = NULL,
-                                      footnotes = NULL,
+                                      alignment = NULL, width = NULL,
+                                      border = NULL, footnotes = NULL,
                                       theme = c("modern", "legacy"),
                                       ...) {
 
@@ -87,8 +87,14 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
   if (is.null(alignment)) {
     alignment <- list(header = rep.int(c("l", "c"), c(info, results)),
                       table = rep.int(c("l", "r"), c(info, results)))
+  } else {
+    # TODO: perform checks
   }
-  # TODO: perform checks
+  # check column width specifications
+  if (is.null(width)) width <- rep.int("", columns)
+  else {
+    # TODO: perform checks
+  }
   # check theme
   theme <- match.arg(theme)
   legacy <- theme == "legacy"
@@ -110,7 +116,7 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
 
   ## write \begin{tabular} statement
   cat(latexBeginTabular(columns, info, alignment = alignment$table,
-                        border = border, theme = theme),
+                        width = width, border = border, theme = theme),
       "\n", sep = "")
 
   ## if supplied, write main and sub title
@@ -213,10 +219,21 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
 #               appearance of recent SPSS version ("modern") or older ones
 #               ("legacy").
 
-latexBeginTabular <- function(columns, info = 1, alignment, border,
-                         theme = "modern") {
-  if (theme == "legacy") legacyBeginTabular(columns, info, alignment, border)
-  else modernBeginTabular(columns, info, alignment, border)
+latexBeginTabular <- function(columns, info = 1, alignment, width, border,
+                              theme = "modern") {
+  # update alignment specifier also incorporating column width
+  # (if a width is specified, text wrapping is used by specifying the custom
+  # column type that has an upper case letter)
+  alignment <- ifelse(width == "", alignment,
+                      paste0(toupper(alignment), "{", width, "}"))
+  # call workhorse function of the specified theme
+  if (theme == "legacy") {
+    legacyBeginTabular(columns, info = info, alignment = alignment,
+                       border = border)
+  } else {
+    modernBeginTabular(columns, info = info, alignment = alignment,
+                       border = border)
+  }
 }
 
 

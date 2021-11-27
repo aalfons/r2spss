@@ -452,10 +452,12 @@ print.ANOVASPSS <- function(x, digits = 3,
                        adjusted = "Median and with adjusted df",
                        trimmed = "trimmed mean")
         rowLabels <- paste("Based on", rowLabels[row.names(levene)])
+        # define column widths
+        width <- c("", "0.3\\linewidth", rep.int("", ncol(levene)))
         # write table
         latexTableSPSS(levene, main = "Tests of Homogeneity of Variances",
                        header = header, label = x$variable,
-                       rowNames = rowLabels, info = 0,
+                       rowNames = rowLabels, info = 0, width = width,
                        theme = "modern", digits = digits,
                        checkInt = grepl("df", names(levene)))
       }
