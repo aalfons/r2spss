@@ -254,66 +254,83 @@ print.ANOVASPSS <- function(x, digits = 3,
     formatted <- formatSPSS(x$descriptives, digits=digits)
     # print LaTeX table
     if (x$type == "one-way") {
-      # initialize LaTeX table
-      if (legacy) cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|}\n")
-      else {
-        cat(latexTabular(9, info = 1))
-        cat("\n")
-      }
-      # print table header
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{9}{c}{\\textbf{Descriptives}} \\\\\n")
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{9}{l}{", x$variable, "} \\\\\n", sep="")
-      if (legacy) {
-        cat("\\hline\n")
-        cat(" & & & & & \\multicolumn{2}{c|}{", format(100*x$conf.level, digits=digits), "\\% Confidence} & & \\\\\n", sep="")
-        cat(" & & & & & \\multicolumn{2}{c|}{Interval for Mean} & & \\\\\n")
-        cat("\\cline{6-7}\n")
-        cat(" & & & \\multicolumn{1}{c|}{Std.} & \\multicolumn{1}{c|}{Std.} & \\multicolumn{1}{c|}{Lower} & \\multicolumn{1}{c|}{Upper} & & \\\\\n")
-        cat(" & \\multicolumn{1}{c|}{N} & \\multicolumn{1}{c|}{Mean} & \\multicolumn{1}{c|}{Deviation} & \\multicolumn{1}{c|}{Error} & \\multicolumn{1}{c|}{Bound} & \\multicolumn{1}{c|}{Bound} & \\multicolumn{1}{c|}{Minimum} & \\multicolumn{1}{c|}{Maximum} \\\\\n")
-      } else {
-        cat(latexMulticolumn("", 1, "l"), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn(paste0(format(100*x$conf.level, digits=digits), "\\% Confidence"), 2, right = TRUE), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("", 1), "\\\\\n")
-        cat(latexMulticolumn("", 1, "l"), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("Interval for Mean", 2, right = TRUE), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("", 1), "\\\\\n")
-        cat(latexMulticolumn("", 1, "l"), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("Std.", 1, right = TRUE), "&",
-            latexMulticolumn("Std.", 1, right = TRUE), "&",
-            latexMulticolumn("Lower", 1, right = TRUE), "&",
-            latexMulticolumn("Upper", 1, right = TRUE), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("", 1), "\\\\\n")
-        cat(latexMulticolumn("", 1, "l"), "&",
-            latexMulticolumn("N", 1, right = TRUE), "&",
-            latexMulticolumn("Mean", 1, right = TRUE), "&",
-            latexMulticolumn("Deviation", 1, right = TRUE), "&",
-            latexMulticolumn("Error", 1, right = TRUE), "&",
-            latexMulticolumn("Bound", 1, right = TRUE), "&",
-            latexMulticolumn("Bound", 1, right = TRUE), "&",
-            latexMulticolumn("Minimum", 1, right = TRUE), "&",
-            latexMulticolumn("Maximum", 1), "\\\\\n")
-      }
-      cat("\\hline\n")
-      # print table
-      for (rn in rownames(formatted)) {
-        cat(rn, "&", paste0(formatted[rn, ], collapse=" & "), "\\\\\n")
-      }
-      cat("\\hline\n")
+
+      # # initialize LaTeX table
+      # if (legacy) cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|}\n")
+      # else {
+      #   cat(latexTabular(9, info = 1))
+      #   cat("\n")
+      # }
+      # # print table header
+      # cat("\\noalign{\\smallskip}\n")
+      # cat("\\multicolumn{9}{c}{\\textbf{Descriptives}} \\\\\n")
+      # cat("\\noalign{\\smallskip}\n")
+      # cat("\\multicolumn{9}{l}{", x$variable, "} \\\\\n", sep="")
+      # if (legacy) {
+      #   cat("\\hline\n")
+      #   cat(" & & & & & \\multicolumn{2}{c|}{", format(100*x$conf.level, digits=digits), "\\% Confidence} & & \\\\\n", sep="")
+      #   cat(" & & & & & \\multicolumn{2}{c|}{Interval for Mean} & & \\\\\n")
+      #   cat("\\cline{6-7}\n")
+      #   cat(" & & & \\multicolumn{1}{c|}{Std.} & \\multicolumn{1}{c|}{Std.} & \\multicolumn{1}{c|}{Lower} & \\multicolumn{1}{c|}{Upper} & & \\\\\n")
+      #   cat(" & \\multicolumn{1}{c|}{N} & \\multicolumn{1}{c|}{Mean} & \\multicolumn{1}{c|}{Deviation} & \\multicolumn{1}{c|}{Error} & \\multicolumn{1}{c|}{Bound} & \\multicolumn{1}{c|}{Bound} & \\multicolumn{1}{c|}{Minimum} & \\multicolumn{1}{c|}{Maximum} \\\\\n")
+      # } else {
+      #   cat(latexMulticolumn("", 1, "l"), "&",
+      #       latexMulticolumn("", 1, right = TRUE), "&",
+      #       latexMulticolumn("", 1, right = TRUE), "&",
+      #       latexMulticolumn("", 1, right = TRUE), "&",
+      #       latexMulticolumn("", 1, right = TRUE), "&",
+      #       latexMulticolumn(paste0(format(100*x$conf.level, digits=digits), "\\% Confidence"), 2, right = TRUE), "&",
+      #       latexMulticolumn("", 1, right = TRUE), "&",
+      #       latexMulticolumn("", 1), "\\\\\n")
+      #   cat(latexMulticolumn("", 1, "l"), "&",
+      #       latexMulticolumn("", 1, right = TRUE), "&",
+      #       latexMulticolumn("", 1, right = TRUE), "&",
+      #       latexMulticolumn("", 1, right = TRUE), "&",
+      #       latexMulticolumn("", 1, right = TRUE), "&",
+      #       latexMulticolumn("Interval for Mean", 2, right = TRUE), "&",
+      #       latexMulticolumn("", 1, right = TRUE), "&",
+      #       latexMulticolumn("", 1), "\\\\\n")
+      #   cat(latexMulticolumn("", 1, "l"), "&",
+      #       latexMulticolumn("", 1, right = TRUE), "&",
+      #       latexMulticolumn("", 1, right = TRUE), "&",
+      #       latexMulticolumn("Std.", 1, right = TRUE), "&",
+      #       latexMulticolumn("Std.", 1, right = TRUE), "&",
+      #       latexMulticolumn("Lower", 1, right = TRUE), "&",
+      #       latexMulticolumn("Upper", 1, right = TRUE), "&",
+      #       latexMulticolumn("", 1, right = TRUE), "&",
+      #       latexMulticolumn("", 1), "\\\\\n")
+      #   cat(latexMulticolumn("", 1, "l"), "&",
+      #       latexMulticolumn("N", 1, right = TRUE), "&",
+      #       latexMulticolumn("Mean", 1, right = TRUE), "&",
+      #       latexMulticolumn("Deviation", 1, right = TRUE), "&",
+      #       latexMulticolumn("Error", 1, right = TRUE), "&",
+      #       latexMulticolumn("Bound", 1, right = TRUE), "&",
+      #       latexMulticolumn("Bound", 1, right = TRUE), "&",
+      #       latexMulticolumn("Minimum", 1, right = TRUE), "&",
+      #       latexMulticolumn("Maximum", 1), "\\\\\n")
+      # }
+      # cat("\\hline\n")
+      # # print table
+      # for (rn in rownames(formatted)) {
+      #   cat(rn, "&", paste0(formatted[rn, ], collapse=" & "), "\\\\\n")
+      # }
+      # cat("\\hline\n")
+
+      # construct list defining header layout
+      header <- c("", names(x$descriptives))
+      lower <- which(header == "Lower Bound")
+      upper <- which(header == "Upper Bound")
+      header <- gsub(" ", "\n", header, fixed = TRUE)  # add line breaks
+      ciHeader <- list(header[lower:upper])
+      names(ciHeader) <- paste0(format(100*x$conf.level, digits=digits),
+                                "\\% Confidence\nInterval for Mean")
+      header <- c(as.list(header[seq_len(lower-1)]), ciHeader,
+                  as.list(header[-seq_len(upper)]))
+      # write LaTeX table
+      latexTableSPSS(x$descriptives, main = "Descriptives", sub = x$variable,
+                     header = header, rowNames = TRUE, info = 0, theme = theme,
+                     digits = digits)
+
     } else if (x$type == "two-way") {
       formatted[duplicated(formatted[, 1]), 1] <- ""
       # initialize LaTeX table
@@ -349,10 +366,12 @@ print.ANOVASPSS <- function(x, digits = 3,
         cat(paste0(formatted[i, ], collapse=" & "), "\\\\\n")
         if (i %% (x$j+1) == 0) cat("\\hline\n")
       }
+
+      # finalize LaTeX table
+      cat("\\noalign{\\smallskip}\n")
+      cat("\\end{tabular}\n")
+
     } else stop("type of ANOVA not supported")
-    # finalize LaTeX table
-    cat("\\noalign{\\smallskip}\n")
-    cat("\\end{tabular}\n")
     cat("\n")
     count <- count + 1
   }
@@ -367,7 +386,7 @@ print.ANOVASPSS <- function(x, digits = 3,
                            "df1" = as.integer(levene$Df[1]),
                            "df2" = levene$Df[2],
                            "Sig." = levene[1, "Pr(>F)"],
-                           check.names = FALSE, row.names = NULL)
+                           row.names = NULL, check.names = FALSE)
       # formatted <- formatSPSS(levene, digits=digits)
     } else {
       # formatted <- lapply(x$levene, function(levene) {
@@ -387,7 +406,7 @@ print.ANOVASPSS <- function(x, digits = 3,
                    "df1" = as.integer(levene$Df[1]),
                    "df2" = levene$Df[2],
                    "Sig." = levene[1, "Pr(>F)"],
-                   check.names = FALSE, row.names = NULL)
+                   row.names = NULL, check.names = FALSE)
       })
       levene <- do.call(rbind, levene)
 
@@ -438,7 +457,7 @@ print.ANOVASPSS <- function(x, digits = 3,
       # }
       # cat("\\hline\n")
 
-      # write table
+      # write LaTeX table
       if (legacy) {
         latexTableSPSS(levene, main = "Test of Homogeneity of Variances",
                        rowNames = FALSE, info = 0, theme = "legacy",
@@ -581,9 +600,9 @@ print.ANOVASPSS <- function(x, digits = 3,
                          "Mean Square" = c(x$test[, "Mean Sq"], NA_real_),
                          "F" = c(x$test[, "F value"], NA_real_),
                          "Sig." = c(x$test[, "Pr(>F)"], NA_real_),
-                         check.names = FALSE, row.names = FALSE)
+                         row.names = NULL, check.names = FALSE)
       row.names(test) <- c(row.names(x$test), "Total")
-      # write table
+      # write LaTeX table
       latexTableSPSS(test, main = "ANOVA", sub = x$variable, rowNames = TRUE,
                      digits = digits, theme = theme)
 

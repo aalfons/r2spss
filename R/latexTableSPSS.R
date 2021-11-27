@@ -72,9 +72,11 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
     header <- c(if(addLabel) "", if (addRowNames) "", names(object))
   } else {
     writeHeader <- TRUE
-    if (is.list(header)) stop("not implemented yet")
-    else if (is.character(header)) {
-      writeHeader <- TRUE
+    if (is.list(header)) {
+      if (length(unlist(header, use.names = FALSE)) != columns) {
+        stop(sprintf("'header' must have in total %d elements", columns))
+      }
+    } else if (is.character(header)) {
       if (length(header) != columns) {
         stop(sprintf("'header' must have length %d", columns))
       }
@@ -130,34 +132,73 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
   ## if supplied, write table header
   if (writeHeader) {
     if (legacy) cat("\\hline\n")
-    # TODO: For now, only a simple header layout with one row of cells is
-    #       supported.
-    # obtain matrix of header cells based on layout and line breaks
-    # note: strsplit() transforms "" to character()
-    headerText <- strsplit(header, "\n", fixed = TRUE)
-    headerRows <- vapply(headerText, length, numeric(1))
-    nHeaderRows <- max(headerRows)
-    if (nHeaderRows <= 1) headerText <- matrix(header, nrow = 1)
-    else {
-      headerText <- mapply(function(text, rows) {
-        c(rep.int("", nHeaderRows - rows), text)
-      }, text = headerText, rows = headerRows, USE.NAMES = FALSE)
-    }
-    # other specifications of the header cells
-    headerColumns <- c(if (addLabel) 1, if (addRowNames) 1, rep.int(1, d[2]))
-    headerAlignment <- alignment$header
+    # parse header layout
     leftBorder <- c(border[1], rep.int(FALSE, columns-1))
     rightBorder <- border[-1]
-    # write rows of header cells
-    for (i in seq.int(nHeaderRows)) {
-      headerCells <- mapply(latexHeaderCell, text = headerText[i, ],
-                            columns = headerColumns,
-                            alignment = headerAlignment,
-                            left = leftBorder, right = rightBorder,
-                            MoreArgs = list(theme = theme),
-                            USE.NAMES = FALSE)
-      cat(paste(headerCells, collapse = " & "), "\\\\\n")
+    headerList <- parseHeaderLayout(header, alignment = alignment$header,
+                                    left = leftBorder,
+                                    right = rightBorder)
+    # loop over levels in header layout
+    for (level in headerList) {
+      # obtain matrix of header cells based on line breaks
+      # note: strsplit() transforms "" to character()
+      headerText <- strsplit(level$header, "\n", fixed = TRUE)
+      headerRows <- vapply(headerText, length, numeric(1))
+      nHeaderRows <- max(headerRows)
+      if (nHeaderRows <= 1) headerText <- matrix(level$header, nrow = 1)
+      else {
+        headerText <- mapply(function(text, rows) {
+          c(rep.int("", nHeaderRows - rows), text)
+        }, text = headerText, rows = headerRows, USE.NAMES = FALSE)
+      }
+      # write rows of header cells
+      for (i in seq_len(nHeaderRows)) {
+        headerCells <- mapply(latexHeaderCell, text = headerText[i, ],
+                              columns = level$columns,
+                              alignment = level$alignment,
+                              left = level$left, right = level$right,
+                              MoreArgs = list(theme = theme),
+                              USE.NAMES = FALSE)
+        cat(paste(headerCells, collapse = " & "), "\\\\\n")
+      }
+      # for legacy theme, add partial lines under merged cells
+      merged <- level$merged
+      if (legacy && !is.null(merged)) {
+        for (j in seq_len(nrow(merged))) {
+            cat("\\cline{", merged[j, "first"], "-", merged[j, "last"], "}\n",
+                sep = "")
+        }
+      }
     }
+
+    # # obtain matrix of header cells based on layout and line breaks
+    # # note: strsplit() transforms "" to character()
+    # headerText <- strsplit(header, "\n", fixed = TRUE)
+    # headerRows <- vapply(headerText, length, numeric(1))
+    # nHeaderRows <- max(headerRows)
+    # if (nHeaderRows <= 1) headerText <- matrix(header, nrow = 1)
+    # else {
+    #   headerText <- mapply(function(text, rows) {
+    #     c(rep.int("", nHeaderRows - rows), text)
+    #   }, text = headerText, rows = headerRows, USE.NAMES = FALSE)
+    # }
+    # # other specifications of the header cells
+    # headerColumns <- c(if (addLabel) 1, if (addRowNames) 1, rep.int(1, d[2]))
+    # headerAlignment <- alignment$header
+    # leftBorder <- c(border[1], rep.int(FALSE, columns-1))
+    # rightBorder <- border[-1]
+    #
+    # # write rows of header cells
+    # for (i in seq.int(nHeaderRows)) {
+    #   headerCells <- mapply(latexHeaderCell, text = headerText[i, ],
+    #                         columns = headerColumns,
+    #                         alignment = headerAlignment,
+    #                         left = leftBorder, right = rightBorder,
+    #                         MoreArgs = list(theme = theme),
+    #                         USE.NAMES = FALSE)
+    #   cat(paste(headerCells, collapse = " & "), "\\\\\n")
+    # }
+
     cat("\\hline\n")
   }
 
@@ -327,4 +368,57 @@ legacyHeaderCell <- function(text = "", columns = 1, alignment = "c",
   spec <- paste0(left, alignment, right)
   # create \multicolumn statement
   sprintf("\\multicolumn{%d}{%s}{%s}", columns, spec, text)
+}
+
+
+## If header is given as a list, parse the structure and return a list with the
+## necessary information for each level to write the header cells of the latex
+## table.  Otherwise the list contains only one component, which contains all
+## the information for the only level of header cells.
+parseHeaderLayout <- function(header, alignment, left, right) {
+  if (is.list(header)) {
+    ## obtain first (top) level of header layout
+    # text and number of columns for each first level element
+    firstHeader <- names(header)
+    if (is.null(firstHeader)) firstHeader <- rep.int("", length(header))
+    firstColumns <- vapply(header, length, numeric(1), USE.NAMES = FALSE)
+    # obtain alignment of each first level element
+    group <- rep.int(seq_along(firstColumns), times = firstColumns)
+    alignmentList <- split(alignment, group)
+    firstAlignment <- vapply(alignmentList, function(align) {
+      if (length(align) == 1) align
+      else {
+        unique <- unique(align)
+        if (length(unique) == 1) unique
+        else "c"
+      }
+    }, character(1), USE.NAMES = FALSE)
+    # obtain first and last index of each first level element
+    indexList <- split(seq_len(sum(firstColumns)), group)
+    indices <- t(mapply(function(i, l) c(first = i[1], last = i[l]),
+                      i = indexList, l = firstColumns, USE.NAMES = FALSE))
+    # determine which cells are merged (lines to draw for legacy theme)
+    keep <- indices[, "last"] > indices[, "first"]
+    # first level layout
+    firstLevel <- list(header = firstHeader,
+                       columns = firstColumns,
+                       alignment = firstAlignment,
+                       left = left[indices[, "first"]],
+                       right = right[indices[, "last"]],
+                       merged = indices[keep, , drop = FALSE])
+    ## obtain second (bottom) level of header layout
+    secondHeader <- unlist(header, recursive = FALSE, use.names = FALSE)
+    if (is.list(secondHeader)) {
+      stop("header layout must not have more than two levels")
+    }
+    secondLevel <- list(header = secondHeader,
+                        columns = rep.int(1, length(secondHeader)),
+                        alignment = alignment, left = left, right = right)
+    ## return header layout
+    list(first = firstLevel, second = secondLevel)
+  } else {
+    ## only one header level
+    list(first = list(header = header, columns = rep.int(1, length(header)),
+                      alignment = alignment, left = left, right = right))
+  }
 }
