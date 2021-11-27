@@ -295,43 +295,43 @@ print.regressionSPSS <- function(x, digits = 3,
     } else {
       cat("\\noalign{\\smallskip}\n")
       if (change) {
-        cat(latexMulticolumn("", 1, "l"), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("Std. Error", 1, right = TRUE), "&",
-            latexMulticolumn("Change Statistics", 5), "\\\\\n")
-        cat(latexMulticolumn("", 1, "l"), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("Adjusted", 1, right = TRUE), "&",
-            latexMulticolumn("of the", 1, right = TRUE), "&",
-            latexMulticolumn("R Square", 1, right = TRUE), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("Sig. F", 1), "\\\\\n")
-        cat(latexMulticolumn("Model", 1, "l"), "&",
-            latexMulticolumn("R", 1, right = TRUE), "&",
-            latexMulticolumn("R Square", 1, right = TRUE), "&",
-            latexMulticolumn("R Square", 1, right = TRUE), "&",
-            latexMulticolumn("Estimate", 1, right = TRUE), "&",
-            latexMulticolumn("Change", 1, right = TRUE), "&",
-            latexMulticolumn("F Change", 1, right = TRUE), "&",
-            latexMulticolumn("df1", 1, right = TRUE), "&",
-            latexMulticolumn("df2", 1, right = TRUE), "&",
-            latexMulticolumn("Change", 1), "\\\\\n")
+        cat(.latexMulticolumn("", 1, "l"), "&",
+            .latexMulticolumn("", 1, right = TRUE), "&",
+            .latexMulticolumn("", 1, right = TRUE), "&",
+            .latexMulticolumn("", 1, right = TRUE), "&",
+            .latexMulticolumn("Std. Error", 1, right = TRUE), "&",
+            .latexMulticolumn("Change Statistics", 5), "\\\\\n")
+        cat(.latexMulticolumn("", 1, "l"), "&",
+            .latexMulticolumn("", 1, right = TRUE), "&",
+            .latexMulticolumn("", 1, right = TRUE), "&",
+            .latexMulticolumn("Adjusted", 1, right = TRUE), "&",
+            .latexMulticolumn("of the", 1, right = TRUE), "&",
+            .latexMulticolumn("R Square", 1, right = TRUE), "&",
+            .latexMulticolumn("", 1, right = TRUE), "&",
+            .latexMulticolumn("", 1, right = TRUE), "&",
+            .latexMulticolumn("", 1, right = TRUE), "&",
+            .latexMulticolumn("Sig. F", 1), "\\\\\n")
+        cat(.latexMulticolumn("Model", 1, "l"), "&",
+            .latexMulticolumn("R", 1, right = TRUE), "&",
+            .latexMulticolumn("R Square", 1, right = TRUE), "&",
+            .latexMulticolumn("R Square", 1, right = TRUE), "&",
+            .latexMulticolumn("Estimate", 1, right = TRUE), "&",
+            .latexMulticolumn("Change", 1, right = TRUE), "&",
+            .latexMulticolumn("F Change", 1, right = TRUE), "&",
+            .latexMulticolumn("df1", 1, right = TRUE), "&",
+            .latexMulticolumn("df2", 1, right = TRUE), "&",
+            .latexMulticolumn("Change", 1), "\\\\\n")
       } else {
-        cat(latexMulticolumn("", 1, "l"), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("", 1, right = TRUE), "&",
-            latexMulticolumn("Adjusted", 1, right = TRUE), "&",
-            latexMulticolumn("Std. Error of", 1), "\\\\\n")
-        cat(latexMulticolumn("Model", 1, "l"), "&",
-            latexMulticolumn("R", 1, right = TRUE), "&",
-            latexMulticolumn("R Square", 1, right = TRUE), "&",
-            latexMulticolumn("R Square", 1, right = TRUE), "&",
-            latexMulticolumn("the Estimate", 1), "\\\\\n")
+        cat(.latexMulticolumn("", 1, "l"), "&",
+            .latexMulticolumn("", 1, right = TRUE), "&",
+            .latexMulticolumn("", 1, right = TRUE), "&",
+            .latexMulticolumn("Adjusted", 1, right = TRUE), "&",
+            .latexMulticolumn("Std. Error of", 1), "\\\\\n")
+        cat(.latexMulticolumn("Model", 1, "l"), "&",
+            .latexMulticolumn("R", 1, right = TRUE), "&",
+            .latexMulticolumn("R Square", 1, right = TRUE), "&",
+            .latexMulticolumn("R Square", 1, right = TRUE), "&",
+            .latexMulticolumn("the Estimate", 1), "\\\\\n")
       }
     }
     cat("\\hline\n")
@@ -379,20 +379,20 @@ print.regressionSPSS <- function(x, digits = 3,
       cat("\\multicolumn{1}{|c}{Model} & & \\multicolumn{1}{c|}{Squares} & \\multicolumn{1}{c|}{df} & \\multicolumn{1}{c|}{Mean Square} & \\multicolumn{1}{c|}{F} & \\multicolumn{1}{c|}{Sig.} \\\\\n")
     } else {
       cat("\\noalign{\\smallskip}\n")
-      cat(latexMulticolumn("", 1, "l"), "&",
-          latexMulticolumn("", 1, "l"), "&",
-          latexMulticolumn("Sum of", 1, right = TRUE), "&",
-          latexMulticolumn("", 1, right = TRUE), "&",
-          latexMulticolumn("", 1, right = TRUE), "&",
-          latexMulticolumn("", 1, right = TRUE), "&",
-          latexMulticolumn("", 1), "\\\\\n")
-      cat(latexMulticolumn("Model", 1, "l"), "&",
-          latexMulticolumn("", 1, "l"), "&",
-          latexMulticolumn("Squares", 1, right = TRUE), "&",
-          latexMulticolumn("df", 1, right = TRUE), "&",
-          latexMulticolumn("Mean Square", 1, right = TRUE), "&",
-          latexMulticolumn("F", 1, right = TRUE), "&",
-          latexMulticolumn("Sig.", 1), "\\\\\n")
+      cat(.latexMulticolumn("", 1, "l"), "&",
+          .latexMulticolumn("", 1, "l"), "&",
+          .latexMulticolumn("Sum of", 1, right = TRUE), "&",
+          .latexMulticolumn("", 1, right = TRUE), "&",
+          .latexMulticolumn("", 1, right = TRUE), "&",
+          .latexMulticolumn("", 1, right = TRUE), "&",
+          .latexMulticolumn("", 1), "\\\\\n")
+      cat(.latexMulticolumn("Model", 1, "l"), "&",
+          .latexMulticolumn("", 1, "l"), "&",
+          .latexMulticolumn("Squares", 1, right = TRUE), "&",
+          .latexMulticolumn("df", 1, right = TRUE), "&",
+          .latexMulticolumn("Mean Square", 1, right = TRUE), "&",
+          .latexMulticolumn("F", 1, right = TRUE), "&",
+          .latexMulticolumn("Sig.", 1), "\\\\\n")
     }
     cat("\\hline\n")
     for (i in seq_along(anovas)) {
@@ -447,25 +447,25 @@ print.regressionSPSS <- function(x, digits = 3,
       cat("\\multicolumn{1}{|c}{Model} & & \\multicolumn{1}{c|}{B} & \\multicolumn{1}{c|}{Std. Error} & \\multicolumn{1}{c|}{Beta} & \\multicolumn{1}{c|}{t} & \\multicolumn{1}{c|}{Sig.} \\\\\n")
     } else {
       cat("\\noalign{\\smallskip}\n")
-      cat(latexMulticolumn("", 1, "l"), "&",
-          latexMulticolumn("", 1, "l"), "&",
-          latexMulticolumn("Unstandardized", 2, right = TRUE), "&",
-          latexMulticolumn("Standardized", 1, right = TRUE), "&",
-          latexMulticolumn("", 1, right = TRUE), "&",
-          latexMulticolumn("", 1), "\\\\\n")
-      cat(latexMulticolumn("", 1, "l"), "&",
-          latexMulticolumn("", 1, "l"), "&",
-          latexMulticolumn("Coefficients", 2, right = TRUE), "&",
-          latexMulticolumn("Coefficients", 1, right = TRUE), "&",
-          latexMulticolumn("", 1, right = TRUE), "&",
-          latexMulticolumn("", 1), "\\\\\n")
-      cat(latexMulticolumn("Model", 1, "l"), "&",
-          latexMulticolumn("", 1, "l"), "&",
-          latexMulticolumn("B", 1, right = TRUE), "&",
-          latexMulticolumn("Std. Error", 1, right = TRUE), "&",
-          latexMulticolumn("Beta", 1, right = TRUE), "&",
-          latexMulticolumn("t", 1, right = TRUE), "&",
-          latexMulticolumn("Sig.", 1), "\\\\\n")
+      cat(.latexMulticolumn("", 1, "l"), "&",
+          .latexMulticolumn("", 1, "l"), "&",
+          .latexMulticolumn("Unstandardized", 2, right = TRUE), "&",
+          .latexMulticolumn("Standardized", 1, right = TRUE), "&",
+          .latexMulticolumn("", 1, right = TRUE), "&",
+          .latexMulticolumn("", 1), "\\\\\n")
+      cat(.latexMulticolumn("", 1, "l"), "&",
+          .latexMulticolumn("", 1, "l"), "&",
+          .latexMulticolumn("Coefficients", 2, right = TRUE), "&",
+          .latexMulticolumn("Coefficients", 1, right = TRUE), "&",
+          .latexMulticolumn("", 1, right = TRUE), "&",
+          .latexMulticolumn("", 1), "\\\\\n")
+      cat(.latexMulticolumn("Model", 1, "l"), "&",
+          .latexMulticolumn("", 1, "l"), "&",
+          .latexMulticolumn("B", 1, right = TRUE), "&",
+          .latexMulticolumn("Std. Error", 1, right = TRUE), "&",
+          .latexMulticolumn("Beta", 1, right = TRUE), "&",
+          .latexMulticolumn("t", 1, right = TRUE), "&",
+          .latexMulticolumn("Sig.", 1), "\\\\\n")
     }
     cat("\\hline\n")
     for (i in seq_along(coefficients)) {

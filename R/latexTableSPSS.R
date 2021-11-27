@@ -118,16 +118,17 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
 
   ## write \begin{tabular} statement
   cat(latexBeginTabular(columns, info, alignment = alignment$table,
-                        width = width, border = border, theme = theme),
-      "\n", sep = "")
+                        width = width, border = border, theme = theme))
 
   ## if supplied, write main and sub title
   if (writeMain) {
     cat("\\noalign{\\smallskip}\n")
-    cat("\\multicolumn{", columns, "}{c}{\\textbf{", main, "}} \\\\\n", sep="")
+    cat(latexTitle(main, columns = columns, alignment = "c"), sep = "")
     cat("\\noalign{\\smallskip}\n")
   }
-  if (writeSub) cat("\\multicolumn{", columns, "}{l}{", sub, "} \\\\\n", sep="")
+  if (writeSub) {
+    cat(latexMulticolumn(sub, columns = columns, alignment = "l"), sep = "")
+  }
 
   ## if supplied, write table header
   if (writeHeader) {
@@ -200,7 +201,12 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
   # write line below table body
   cat("\\hline\n")
 
-  ## TODO: if supplied, write footnotes
+  ## if supplied, write footnotes
+  if (writeFootnotes) {
+    for (footnote in footnotes) {
+      cat(latexMulticolumn(footnote, columns = columns, alignment = "l"))
+    }
+  }
 
   ## write \end{tabular} statement
   cat("\\noalign{\\smallskip}\n")
@@ -264,7 +270,7 @@ modernBeginTabular <- function(columns, info = 1, alignment, border) {
   # full specifications per column except left border of first column
   specs <- paste0(font, background, alignment, border[-1])
   # create \begin{tabular} statement
-  paste0("\\begin{tabular}{", border[1], paste0(specs, collapse = ""), "}")
+  paste0("\\begin{tabular}{", border[1], paste0(specs, collapse = ""), "}\n")
 }
 
 # Columns with auxiliary information on the results will receive a border
@@ -280,7 +286,94 @@ legacyBeginTabular <- function(columns, info = 1, alignment, border) {
   # full specifications per column except left border of first column
   specs <- paste0(alignment, border[-1])
   # create \begin{tabular} statement
-  paste0("\\begin{tabular}{", border[1], paste0(specs, collapse = ""), "}")
+  paste0("\\begin{tabular}{", border[1], paste0(specs, collapse = ""), "}\n")
+}
+
+
+# function to create LaTeX \multicolumn statement for the main title
+# (multiple statements if any line breaks are specified)
+# to alignment and borders
+# text ........ character string giving the text to be written inside the
+#               merged cell.
+# columns ..... number of subsequent columns to merge.
+# alignment ... character string containing an alignment specifier for the
+#               merged cell.  The default is "c" for centered.
+latexTitle <- function(text, columns = 1, alignment = "c") {
+  # split text string according to line breaks
+  text <- strsplit(text, split = "\n", fixed = TRUE)[[1]]
+  # create LaTeX statement
+  paste0("\\multicolumn{", columns, "}{", alignment,
+         "}{\\textbf{", text, "}} \\\\\n")
+}
+
+
+# function to create LaTeX \multicolumn statements
+# (multiple statements if any line breaks are specified)
+# to alignment and borders
+# text ........ character string giving the text to be written inside the
+#               merged cells.
+# columns ..... number of subsequent columns to merge.
+# alignment ... character string containing an alignment specifier for the
+#               merged cell.  The default is "l" for left-aligned.
+latexMulticolumn <- function(text, columns = 1, alignment = "l") {
+  # split text string according to line breaks
+  text <- strsplit(text, split = "\n", fixed = TRUE)[[1]]
+  # create LaTeX statement
+  paste0("\\multicolumn{", columns, "}{", alignment,
+         "}{", text, "} \\\\\n")
+}
+
+
+## If header is given as a list, parse the structure and return a list with the
+## necessary information for each level to write the header cells of the latex
+## table.  Otherwise the list contains only one component, which contains all
+## the information for the only level of header cells.
+parseHeaderLayout <- function(header, alignment, left, right) {
+  if (is.list(header)) {
+    ## obtain first (top) level of header layout
+    # text and number of columns for each first level element
+    firstHeader <- names(header)
+    if (is.null(firstHeader)) firstHeader <- rep.int("", length(header))
+    firstColumns <- vapply(header, length, numeric(1), USE.NAMES = FALSE)
+    # obtain alignment of each first level element
+    group <- rep.int(seq_along(firstColumns), times = firstColumns)
+    alignmentList <- split(alignment, group)
+    firstAlignment <- vapply(alignmentList, function(align) {
+      if (length(align) == 1) align
+      else {
+        unique <- unique(align)
+        if (length(unique) == 1) unique
+        else "c"
+      }
+    }, character(1), USE.NAMES = FALSE)
+    # obtain first and last index of each first level element
+    indexList <- split(seq_len(sum(firstColumns)), group)
+    indices <- t(mapply(function(i, l) c(first = i[1], last = i[l]),
+                        i = indexList, l = firstColumns, USE.NAMES = FALSE))
+    # determine which cells are merged (lines to draw for legacy theme)
+    keep <- indices[, "last"] > indices[, "first"]
+    # first level layout
+    firstLevel <- list(header = firstHeader,
+                       columns = firstColumns,
+                       alignment = firstAlignment,
+                       left = left[indices[, "first"]],
+                       right = right[indices[, "last"]],
+                       merged = indices[keep, , drop = FALSE])
+    ## obtain second (bottom) level of header layout
+    secondHeader <- unlist(header, recursive = FALSE, use.names = FALSE)
+    if (is.list(secondHeader)) {
+      stop("header layout must not have more than two levels")
+    }
+    secondLevel <- list(header = secondHeader,
+                        columns = rep.int(1, length(secondHeader)),
+                        alignment = alignment, left = left, right = right)
+    ## return header layout
+    list(first = firstLevel, second = secondLevel)
+  } else {
+    ## only one header level
+    list(first = list(header = header, columns = rep.int(1, length(header)),
+                      alignment = alignment, left = left, right = right))
+  }
 }
 
 
@@ -301,8 +394,12 @@ legacyBeginTabular <- function(columns, info = 1, alignment, border) {
 latexHeaderCell <- function(text = "", columns = 1, alignment = "c",
                             left = FALSE, right = FALSE, theme = "modern") {
   if (theme == "legacy") {
-    legacyHeaderCell(text, columns, alignment, left, right)
-  } else modernHeaderCell(text, columns, alignment, left, right)
+    legacyHeaderCell(text, columns = columns, alignment = alignment,
+                     left = left, right = right)
+  } else {
+    modernHeaderCell(text, columns = columns, alignment = alignment,
+                     left = left, right = right)
+  }
 }
 
 
@@ -335,57 +432,4 @@ legacyHeaderCell <- function(text = "", columns = 1, alignment = "c",
   spec <- paste0(left, alignment, right)
   # create \multicolumn statement
   sprintf("\\multicolumn{%d}{%s}{%s}", columns, spec, text)
-}
-
-
-## If header is given as a list, parse the structure and return a list with the
-## necessary information for each level to write the header cells of the latex
-## table.  Otherwise the list contains only one component, which contains all
-## the information for the only level of header cells.
-parseHeaderLayout <- function(header, alignment, left, right) {
-  if (is.list(header)) {
-    ## obtain first (top) level of header layout
-    # text and number of columns for each first level element
-    firstHeader <- names(header)
-    if (is.null(firstHeader)) firstHeader <- rep.int("", length(header))
-    firstColumns <- vapply(header, length, numeric(1), USE.NAMES = FALSE)
-    # obtain alignment of each first level element
-    group <- rep.int(seq_along(firstColumns), times = firstColumns)
-    alignmentList <- split(alignment, group)
-    firstAlignment <- vapply(alignmentList, function(align) {
-      if (length(align) == 1) align
-      else {
-        unique <- unique(align)
-        if (length(unique) == 1) unique
-        else "c"
-      }
-    }, character(1), USE.NAMES = FALSE)
-    # obtain first and last index of each first level element
-    indexList <- split(seq_len(sum(firstColumns)), group)
-    indices <- t(mapply(function(i, l) c(first = i[1], last = i[l]),
-                      i = indexList, l = firstColumns, USE.NAMES = FALSE))
-    # determine which cells are merged (lines to draw for legacy theme)
-    keep <- indices[, "last"] > indices[, "first"]
-    # first level layout
-    firstLevel <- list(header = firstHeader,
-                       columns = firstColumns,
-                       alignment = firstAlignment,
-                       left = left[indices[, "first"]],
-                       right = right[indices[, "last"]],
-                       merged = indices[keep, , drop = FALSE])
-    ## obtain second (bottom) level of header layout
-    secondHeader <- unlist(header, recursive = FALSE, use.names = FALSE)
-    if (is.list(secondHeader)) {
-      stop("header layout must not have more than two levels")
-    }
-    secondLevel <- list(header = secondHeader,
-                        columns = rep.int(1, length(secondHeader)),
-                        alignment = alignment, left = left, right = right)
-    ## return header layout
-    list(first = firstLevel, second = secondLevel)
-  } else {
-    ## only one header level
-    list(first = list(header = header, columns = rep.int(1, length(header)),
-                      alignment = alignment, left = left, right = right))
-  }
 }

@@ -56,8 +56,8 @@ latexTabular <- function(info = 1, results = 1, alignment = NULL,
 #               color 'darkgraySPSS'.  The default is FALSE.
 # right ....... logical vector indicating whether to draw a right border in
 #               color 'darkgraySPSS'.  The default is FALSE.
-latexMulticolumn <- function(text, columns = 1, alignment = "c",
-                             left = FALSE, right = FALSE) {
+.latexMulticolumn <- function(text, columns = 1, alignment = "c",
+                              left = FALSE, right = FALSE) {
   # if requested, define left and right borders
   left <- if (left) "!{\\color{darkgraySPSS}\\vrule}" else ""
   right <- if (right) "!{\\color{darkgraySPSS}\\vrule}" else ""
