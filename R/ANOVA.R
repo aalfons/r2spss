@@ -251,71 +251,8 @@ print.ANOVASPSS <- function(x, digits = 3,
   ## print LaTeX table for descriptives
   if ("descriptives" %in% statistics) {
     cat("\n")
-    formatted <- formatSPSS(x$descriptives, digits=digits)
     # print LaTeX table
     if (x$type == "one-way") {
-
-      # # initialize LaTeX table
-      # if (legacy) cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|}\n")
-      # else {
-      #   cat(latexTabular(9, info = 1))
-      #   cat("\n")
-      # }
-      # # print table header
-      # cat("\\noalign{\\smallskip}\n")
-      # cat("\\multicolumn{9}{c}{\\textbf{Descriptives}} \\\\\n")
-      # cat("\\noalign{\\smallskip}\n")
-      # cat("\\multicolumn{9}{l}{", x$variable, "} \\\\\n", sep="")
-      # if (legacy) {
-      #   cat("\\hline\n")
-      #   cat(" & & & & & \\multicolumn{2}{c|}{", format(100*x$conf.level, digits=digits), "\\% Confidence} & & \\\\\n", sep="")
-      #   cat(" & & & & & \\multicolumn{2}{c|}{Interval for Mean} & & \\\\\n")
-      #   cat("\\cline{6-7}\n")
-      #   cat(" & & & \\multicolumn{1}{c|}{Std.} & \\multicolumn{1}{c|}{Std.} & \\multicolumn{1}{c|}{Lower} & \\multicolumn{1}{c|}{Upper} & & \\\\\n")
-      #   cat(" & \\multicolumn{1}{c|}{N} & \\multicolumn{1}{c|}{Mean} & \\multicolumn{1}{c|}{Deviation} & \\multicolumn{1}{c|}{Error} & \\multicolumn{1}{c|}{Bound} & \\multicolumn{1}{c|}{Bound} & \\multicolumn{1}{c|}{Minimum} & \\multicolumn{1}{c|}{Maximum} \\\\\n")
-      # } else {
-      #   cat(latexMulticolumn("", 1, "l"), "&",
-      #       latexMulticolumn("", 1, right = TRUE), "&",
-      #       latexMulticolumn("", 1, right = TRUE), "&",
-      #       latexMulticolumn("", 1, right = TRUE), "&",
-      #       latexMulticolumn("", 1, right = TRUE), "&",
-      #       latexMulticolumn(paste0(format(100*x$conf.level, digits=digits), "\\% Confidence"), 2, right = TRUE), "&",
-      #       latexMulticolumn("", 1, right = TRUE), "&",
-      #       latexMulticolumn("", 1), "\\\\\n")
-      #   cat(latexMulticolumn("", 1, "l"), "&",
-      #       latexMulticolumn("", 1, right = TRUE), "&",
-      #       latexMulticolumn("", 1, right = TRUE), "&",
-      #       latexMulticolumn("", 1, right = TRUE), "&",
-      #       latexMulticolumn("", 1, right = TRUE), "&",
-      #       latexMulticolumn("Interval for Mean", 2, right = TRUE), "&",
-      #       latexMulticolumn("", 1, right = TRUE), "&",
-      #       latexMulticolumn("", 1), "\\\\\n")
-      #   cat(latexMulticolumn("", 1, "l"), "&",
-      #       latexMulticolumn("", 1, right = TRUE), "&",
-      #       latexMulticolumn("", 1, right = TRUE), "&",
-      #       latexMulticolumn("Std.", 1, right = TRUE), "&",
-      #       latexMulticolumn("Std.", 1, right = TRUE), "&",
-      #       latexMulticolumn("Lower", 1, right = TRUE), "&",
-      #       latexMulticolumn("Upper", 1, right = TRUE), "&",
-      #       latexMulticolumn("", 1, right = TRUE), "&",
-      #       latexMulticolumn("", 1), "\\\\\n")
-      #   cat(latexMulticolumn("", 1, "l"), "&",
-      #       latexMulticolumn("N", 1, right = TRUE), "&",
-      #       latexMulticolumn("Mean", 1, right = TRUE), "&",
-      #       latexMulticolumn("Deviation", 1, right = TRUE), "&",
-      #       latexMulticolumn("Error", 1, right = TRUE), "&",
-      #       latexMulticolumn("Bound", 1, right = TRUE), "&",
-      #       latexMulticolumn("Bound", 1, right = TRUE), "&",
-      #       latexMulticolumn("Minimum", 1, right = TRUE), "&",
-      #       latexMulticolumn("Maximum", 1), "\\\\\n")
-      # }
-      # cat("\\hline\n")
-      # # print table
-      # for (rn in rownames(formatted)) {
-      #   cat(rn, "&", paste0(formatted[rn, ], collapse=" & "), "\\\\\n")
-      # }
-      # cat("\\hline\n")
-
       # construct list defining header layout
       header <- c("", names(x$descriptives))
       lower <- which(header == "Lower Bound")
@@ -330,8 +267,8 @@ print.ANOVASPSS <- function(x, digits = 3,
       latexTableSPSS(x$descriptives, main = "Descriptives", sub = x$variable,
                      header = header, rowNames = TRUE, info = 0, theme = theme,
                      digits = digits)
-
     } else if (x$type == "two-way") {
+      formatted <- formatSPSS(x$descriptives, digits=digits)
       formatted[duplicated(formatted[, 1]), 1] <- ""
       # initialize LaTeX table
       if (legacy) cat("\\begin{tabular}{|ll|r|r|r|}\n")
@@ -366,11 +303,9 @@ print.ANOVASPSS <- function(x, digits = 3,
         cat(paste0(formatted[i, ], collapse=" & "), "\\\\\n")
         if (i %% (x$j+1) == 0) cat("\\hline\n")
       }
-
       # finalize LaTeX table
       cat("\\noalign{\\smallskip}\n")
       cat("\\end{tabular}\n")
-
     } else stop("type of ANOVA not supported")
     cat("\n")
     count <- count + 1
@@ -380,6 +315,7 @@ print.ANOVASPSS <- function(x, digits = 3,
   if ("variance" %in% statistics) {
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
+    # put Levene test results into SPSS format
     if (legacy) {
       levene <- x$levene$mean
       levene <- data.frame("Levene Statistic" = levene[1, "F value"],
@@ -387,20 +323,7 @@ print.ANOVASPSS <- function(x, digits = 3,
                            "df2" = levene$Df[2],
                            "Sig." = levene[1, "Pr(>F)"],
                            row.names = NULL, check.names = FALSE)
-      # formatted <- formatSPSS(levene, digits=digits)
     } else {
-      # formatted <- lapply(x$levene, function(levene) {
-      #   levene <- data.frame("Levene Statistic"=levene[1, "F value"],
-      #              df1=as.integer(levene$Df[1]), df2=levene$Df[2],
-      #              "Sig."=levene[1, "Pr(>F)"],
-      #              check.names=FALSE, row.names=NULL)
-      #   formatSPSS(levene, digits=digits)
-      # })
-      # labels <- c(mean = "Mean", median = "Median",
-      #             adjusted = "Median and with adjusted df",
-      #             trimmed = "trimmed mean")
-
-      # put Levene test results into SPSS format
       levene <- lapply(x$levene, function(levene) {
         data.frame("Levene Statistic" = levene[1, "F value"],
                    "df1" = as.integer(levene$Df[1]),
@@ -409,54 +332,9 @@ print.ANOVASPSS <- function(x, digits = 3,
                    row.names = NULL, check.names = FALSE)
       })
       levene <- do.call(rbind, levene)
-
     }
     # print LaTeX table
     if (x$type == "one-way") {
-
-      # # initialize LaTeX table
-      # if (legacy) cat("\\begin{tabular}{|r|r|r|r|}\n")
-      # else {
-      #   align <- c("l", "L{0.3\\linewidth}", "r", "r", "r", "r")
-      #   cat(latexTabular(6, info = 2, alignment = align))
-      #   cat("\n")
-      # }
-      # # print table header
-      # cat("\\noalign{\\smallskip}\n")
-      # if (legacy) cat("\\multicolumn{4}{c}{\\textbf{Test of Homogeneity of Variances}} \\\\\n")
-      # else cat("\\multicolumn{6}{c}{\\textbf{Tests of Homogeneity of Variances}} \\\\\n")
-      # cat("\\noalign{\\smallskip}\n")
-      # if (legacy) {
-      #   cat("\\multicolumn{4}{l}{", x$variable, "} \\\\\n", sep="")
-      #   cat("\\hline\n")
-      #   cat("\\multicolumn{1}{|c|}{Levene Statistic} & \\multicolumn{1}{c|}{df1} & \\multicolumn{1}{c|}{df2} & \\multicolumn{1}{c|}{Sig.} \\\\\n")
-      # } else {
-      #   cat(latexMulticolumn("", 1, "l"), "&",
-      #       latexMulticolumn("", 1, "l"), "&",
-      #       latexMulticolumn("Levene", 1, right = TRUE), "&",
-      #       latexMulticolumn("", 1, right = TRUE), "&",
-      #       latexMulticolumn("", 1, right = TRUE), "&",
-      #       latexMulticolumn("", 1), "\\\\\n")
-      #   cat(latexMulticolumn("", 1, "l"), "&",
-      #       latexMulticolumn("", 1, "l"), "&",
-      #       latexMulticolumn("Statistic", 1, right = TRUE), "&",
-      #       latexMulticolumn("df1", 1, right = TRUE), "&",
-      #       latexMulticolumn("df2", 1, right = TRUE), "&",
-      #       latexMulticolumn("Sig.", 1), "\\\\\n")
-      # }
-      # cat("\\hline\n")
-      # # print table
-      # if (legacy) cat(paste(formatted, collapse=" & "), "\\\\\n")
-      # else {
-      #   for (method in names(formatted)) {
-      #     # print current version of Levene's test
-      #     cat(if (method == "mean") x$variable else "",
-      #         "& Based on", labels[method], "&",
-      #         paste(formatted[[method]], collapse=" & "), "\\\\\n")
-      #   }
-      # }
-      # cat("\\hline\n")
-
       # write LaTeX table
       if (legacy) {
         latexTableSPSS(levene, main = "Test of Homogeneity of Variances",
@@ -480,8 +358,20 @@ print.ANOVASPSS <- function(x, digits = 3,
                        theme = "modern", digits = digits,
                        checkInt = grepl("df", names(levene)))
       }
-
     } else if (x$type == "two-way") {
+      if (legacy) formatted <- formatSPSS(levene, digits=digits, pValue = FALSE)
+      else {
+        formatted <- lapply(x$levene, function(levene) {
+          levene <- data.frame("Levene Statistic"=levene[1, "F value"],
+                     df1=as.integer(levene$Df[1]), df2=levene$Df[2],
+                     "Sig."=levene[1, "Pr(>F)"],
+                     check.names=FALSE, row.names=NULL)
+          formatSPSS(levene, digits=digits)
+        })
+        labels <- c(mean = "Mean", median = "Median",
+                    adjusted = "Median and with adjusted df",
+                    trimmed = "trimmed mean")
+      }
       # initialize LaTeX table
       if (legacy) cat("\\begin{tabular}{|r|r|r|r|}\n")
       else {
@@ -549,11 +439,9 @@ print.ANOVASPSS <- function(x, digits = 3,
             " + ", x$group[2], " + ", x$group[1], " * ", x$group[2],
             "} \\\\\n", sep="")
       }
-
       # finalize LaTeX table
       cat("\\noalign{\\smallskip}\n")
       cat("\\end{tabular}\n")
-
     } else stop("type of ANOVA not supported")
     cat("\n")
   }
@@ -564,35 +452,6 @@ print.ANOVASPSS <- function(x, digits = 3,
     else cat("\\medskip\n")
     # print LaTeX table
     if (x$type == "one-way") {
-      # if (legacy) cat("\\begin{tabular}{|l|r|r|r|r|r|}\n")
-      # else {
-      #   cat(latexTabular(6, info = 1))
-      #   cat("\n")
-      # }
-      # # print table header
-      # cat("\\noalign{\\smallskip}\n")
-      # cat("\\multicolumn{6}{c}{\\textbf{ANOVA}} \\\\\n")
-      # cat("\\noalign{\\smallskip}\n")
-      # cat("\\multicolumn{6}{l}{", x$variable, "} \\\\\n", sep="")
-      # if (legacy) {
-      #   cat("\\hline\n")
-      #   cat(" & \\multicolumn{1}{|c|}{Sum of Squares} & \\multicolumn{1}{c|}{df} & \\multicolumn{1}{c|}{Mean Square} & \\multicolumn{1}{c|}{F} & \\multicolumn{1}{c|}{Sig.} \\\\\n")
-      # } else {
-      #   cat(latexMulticolumn("", 1, "l"), "&",
-      #       latexMulticolumn("Sum of Squares", 1, right = TRUE), "&",
-      #       latexMulticolumn("df", 1, right = TRUE), "&",
-      #       latexMulticolumn("Mean Square", 1, right = TRUE), "&",
-      #       latexMulticolumn("F", 1, right = TRUE), "&",
-      #       latexMulticolumn("Sig.", 1), "\\\\\n")
-      # }
-      # cat("\\hline\n")
-      # # print table
-      # for (rn in rownames(formatted)) {
-      #   cat(rn, "&", paste0(formatted[rn, ], collapse=" & "), "\\\\\n")
-      # }
-      # cat("Total &", formatSPSS(sum(x$test[, "Sum Sq"]), digits=digits), "&", sum(x$test$Df), "& & & \\\\\n")
-      # cat("\\hline\n")
-
       # put ANOVA table into SPSS format
       test <- data.frame("Sum of Squares" = c(x$test[, "Sum Sq"],
                                               sum(x$test[, "Sum Sq"])),
@@ -650,11 +509,9 @@ print.ANOVASPSS <- function(x, digits = 3,
       }
       cat("\\hline\n")
       cat("\\multicolumn{6}{l}{a. R Squared = ", formatSPSS(RSq, digits=digits), " (Adjusted R Squared = ", formatSPSS(AdjRSq, digits=digits), ")} \\\\\n", sep="")
-
       # finalize LaTeX table
       cat("\\noalign{\\smallskip}\n")
       cat("\\end{tabular}\n")
-
     } else stop("type of ANOVA not supported")
     cat("\n")
   }

@@ -175,38 +175,16 @@ print.chisqTestSPSS <- function(x, digits = c(1, 3),
     expected <- x$expected
     cat("\n")
     if (x$type == "goodness-of-fit") {
-      observed <- c(observed, Total=x$n)
-      expected <- c(expected, Total=NA)
-      frequencies <- data.frame("Observed N"=observed, "Expected N"=expected,
-                                Residual=observed-expected, check.names=FALSE)
-      # formatted <- formatSPSS(frequencies, digits=digits[1])
-      # # initialize LaTeX table
-      # if (legacy) cat("\\begin{tabular}{|l|r|r|r|}\n")
-      # else {
-      #   cat(latexTabular(4, info = 1))
-      #   cat("\n")
-      # }
-      # # print table header
-      # cat("\\noalign{\\smallskip}\n")
-      # cat("\\multicolumn{4}{c}{\\textbf{", x$variables, "}} \\\\\n", sep="")
-      # if (legacy) {
-      #   cat("\\noalign{\\smallskip}\\hline\n")
-      #   cat(" &", paste0(paste0("\\multicolumn{1}{|c|}{", colnames(formatted), "}"), collapse=" & "), "\\\\\n")
-      # } else {
-      #   #
-      #   # cat(latexMulticolumn("", 1, "l"), "&",
-      #   #     latexMulticolumn("", 1, right = TRUE), "&",
-      #   #     "\\\\\n")
-      # }
-      # cat("\\hline\n")
-      # # print table
-      # for (rn in rownames(formatted)) {
-      #   cat(rn, "&", paste0(formatted[rn, ], collapse=" & "), "\\\\\n")
-      # }
-
+      # create table of frequencies in SPSS format
+      observed <- c(observed, Total = x$n)
+      expected <- c(expected, Total = NA_real_)
+      frequencies <- data.frame("Observed N" = observed,
+                                "Expected N" = expected,
+                                Residual = observed - expected,
+                                check.names = FALSE)
+      # write LaTeX table
       latexTableSPSS(frequencies, main = x$variables, rowNames = TRUE,
                      info = 0, theme = theme, digits = digits[1])
-
     } else if (x$type == "independence") {
       # add totals
       observed <- cbind(observed, Total=rowSums(observed))

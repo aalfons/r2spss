@@ -131,6 +131,7 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
 
   ## if supplied, write table header
   if (writeHeader) {
+    # for legacy theme, write line above header
     if (legacy) cat("\\hline\n")
     # parse header layout
     leftBorder <- c(border[1], rep.int(FALSE, columns-1))
@@ -170,39 +171,11 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
         }
       }
     }
-
-    # # obtain matrix of header cells based on layout and line breaks
-    # # note: strsplit() transforms "" to character()
-    # headerText <- strsplit(header, "\n", fixed = TRUE)
-    # headerRows <- vapply(headerText, length, numeric(1))
-    # nHeaderRows <- max(headerRows)
-    # if (nHeaderRows <= 1) headerText <- matrix(header, nrow = 1)
-    # else {
-    #   headerText <- mapply(function(text, rows) {
-    #     c(rep.int("", nHeaderRows - rows), text)
-    #   }, text = headerText, rows = headerRows, USE.NAMES = FALSE)
-    # }
-    # # other specifications of the header cells
-    # headerColumns <- c(if (addLabel) 1, if (addRowNames) 1, rep.int(1, d[2]))
-    # headerAlignment <- alignment$header
-    # leftBorder <- c(border[1], rep.int(FALSE, columns-1))
-    # rightBorder <- border[-1]
-    #
-    # # write rows of header cells
-    # for (i in seq.int(nHeaderRows)) {
-    #   headerCells <- mapply(latexHeaderCell, text = headerText[i, ],
-    #                         columns = headerColumns,
-    #                         alignment = headerAlignment,
-    #                         left = leftBorder, right = rightBorder,
-    #                         MoreArgs = list(theme = theme),
-    #                         USE.NAMES = FALSE)
-    #   cat(paste(headerCells, collapse = " & "), "\\\\\n")
-    # }
-
+    # write line to separate header from table body
     cat("\\hline\n")
   }
 
-  ## format and write table
+  ## format and write table body
   # format everything nicely
   if (legacy) {
     args <- list(...)
@@ -210,14 +183,7 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
     if (is.null(args$pValue)) args$pValue <- FALSE
     formatted <- do.call(formatSPSS, args)
   } else formatted <- formatSPSS(object, ...)
-  # write table
-  # (note that the formatted object is a matrix, but it has row names since the
-  # original object is a data.frame, which always have row names)
-  # for (rn in rownames(formatted)) {
-  #   cat(if (addRowNames) paste(rn, "&"),
-  #       paste0(formatted[rn, ], collapse = " & "),
-  #       "\\\\\n")
-  # }
+  # write table body
   for (i in seq.int(nrow(formatted))) {
     if (i == 1) {
       cat(if (addLabel) paste(label, "&"),
@@ -231,6 +197,7 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
           "\\\\\n")
     }
   }
+  # write line below table body
   cat("\\hline\n")
 
   ## TODO: if supplied, write footnotes
