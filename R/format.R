@@ -56,7 +56,14 @@ formatSPSS.integer <- function(x, ...) {
 #'
 #' @export
 
-formatSPSS.numeric <- function(x, digits = 3, pValue = FALSE, ...) {
+formatSPSS.numeric <- function(x, digits = 3, pValue = FALSE, checkInt = FALSE,
+                               tol = .Machine$double.eps^0.5, ...) {
+  # initializations
+  pValue <- isTRUE(pValue)
+  checkInt <- isTRUE(checkInt)
+  if (pValue && checkInt) {
+    stop("'pValue' and 'checkInt' may not both be TRUE")
+  }
   # define format with specified number of digits
   n <- length(x)
   digits <- rep_len(digits, n)
@@ -64,10 +71,15 @@ formatSPSS.numeric <- function(x, digits = 3, pValue = FALSE, ...) {
   # use empty string for NA
   finite <- is.finite(x)
   fmt <- ifelse(finite, fmt, "")
+  # if requested check for integers and change their format accordingly
+  if (checkInt) {
+    isInt <- finite & abs(x - as.integer(x)) < tol
+    fmt <- ifelse(isInt, "%.0f", fmt)
+  }
   # convert numbers to strings
   formatted <- sprintf(fmt, x)
   # if requested format p-value
-  if (isTRUE(pValue)) {
+  if (pValue) {
     zeros <- rep.int(0, n)
     below <- finite & formatted == sprintf(fmt, zeros)
     formatted[below] <- gsub("^<0.", "$<$.", paste0("<", 10^(-digits[below])))
@@ -83,23 +95,20 @@ formatSPSS.numeric <- function(x, digits = 3, pValue = FALSE, ...) {
 #' @rdname formatSPSS
 #' @export
 
-formatSPSS.matrix <- function(x, digits = 3, pValue = NULL, ...) {
-  # # format as vector and add original attributes
-  # formatted <- formatSPSS(as.vector(x), ...)
-  # attributes(formatted) <- attributes(x)
+formatSPSS.matrix <- function(x, digits = 3, pValue = NULL, checkInt = FALSE,
+                              tol = .Machine$double.eps^0.5, ...) {
   # initializations
   d <- dim(x)
   colNames <- colnames(x)
   if (is.null(pValue)) {
     if (is.null(colNames)) pValue <- rep.int(FALSE, d[2])
-    else {
-      pValue <- grepl("Sig.", colNames, fixed = TRUE) |
-        grepl("Pr(", colNames, fixed = TRUE)
-    }
+    else pValue <- grepl("Sig.", colNames, fixed = TRUE)
   } else pValue <- rep_len(pValue, d[2])
+  checkInt <- rep_len(checkInt, d[2])
   # format each column and add original attributes
   formatted <- vapply(seq_len(d[2]), function(j) {
-    formatSPSS(x[, j], digits = digits, pValue = pValue[j])
+    formatSPSS(x[, j], digits = digits, pValue = pValue[j],
+               checkInt = checkInt[j], tol = tol)
   }, character(d[1]))
   attributes(formatted) <- attributes(x)
   # return formatted matrix
@@ -110,20 +119,19 @@ formatSPSS.matrix <- function(x, digits = 3, pValue = NULL, ...) {
 #' @rdname formatSPSS
 #' @export
 
-formatSPSS.data.frame <- function(x, digits = 3, pValue = NULL, ...) {
-  # # format each variable
-  # formatted <- lapply(x, formatSPSS, ...)
-  # formatted <- do.call(cbind, formatted)
+formatSPSS.data.frame <- function(x, digits = 3,
+                                  pValue = NULL, checkInt = FALSE,
+                                  tol = .Machine$double.eps^0.5, ...) {
   # initializations
   d <- dim(x)
   colNames <- names(x)
-  if (is.null(pValue)) {
-    pValue <- grepl("Sig.", colNames, fixed = TRUE) |
-      grepl("Pr(", colNames, fixed = TRUE)
-  } else pValue <- rep_len(pValue, d[2])
+  if (is.null(pValue)) pValue <- grepl("Sig.", colNames, fixed = TRUE)
+  else pValue <- rep_len(pValue, d[2])
+  checkInt <- rep_len(checkInt, d[2])
   # format each column
-  formatted <- mapply(function(v, p) formatSPSS(v, digits = digits, pValue = p),
-                      v = x, p = pValue, SIMPLIFY = FALSE, USE.NAMES = TRUE)
+  formatted <- mapply(function(v, pv, ci) {
+    formatSPSS(v, digits = digits, pValue = pv, checkInt = ci, tol = tol)
+  }, v = x, pv = pValue, ci = checkInt, SIMPLIFY = FALSE, USE.NAMES = TRUE)
   formatted <- do.call(cbind, formatted)
   # add row names
   rownames(formatted) <- row.names(x)

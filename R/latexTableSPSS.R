@@ -14,9 +14,9 @@ latexTableSPSS <- function(object, ...) UseMethod("latexTableSPSS")
 
 latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
                                       header = TRUE, label = NULL,
-                                      row.names = TRUE, info = NULL,
-                                      digits = 3, alignment = NULL,
-                                      border = NULL, footnotes = NULL,
+                                      rowNames = TRUE, info = NULL,
+                                      alignment = NULL, border = NULL,
+                                      footnotes = NULL,
                                       theme = c("modern", "legacy"),
                                       ...) {
 
@@ -31,6 +31,8 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
   ## headers are requested.
 
   ## initializations
+  d <- dim(object)
+  if (d[1] == 0) stop("table to be written has no rows")
   # check main and sub title
   writeMain <- !is.null(main)
   if (writeMain && (!is.character(main) || length(main) != 1)) {
@@ -40,30 +42,45 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
   if (writeSub && (!is.character(sub) || length(sub) != 1)) {
     stop("'sub' must be a single character string")
   }
-  # check header
-  if (is.logical(header)) {
-    writeHeader <- isTRUE(header)
-    header <- names(object)
-  } else {
-    writeHeader <- TRUE
-    if (is.list(header)) stop("not implemented yet")
-    else if (is.character(header)) stop("not implemented yet")
-    else stop("'header' must be a logical, a list, or a character vector")
-  }
   # check whether a label should be written
   addLabel <- !is.null(label)
   if (addLabel && (!is.character(label) || length(label) != 1)) {
     stop("'label' must be a single character string")
   }
   # check whether row names should be written
-  row.names <- isTRUE(row.names)
+  if (is.logical(rowNames)) {
+    addRowNames <- isTRUE(rowNames)
+    rowNames <- row.names(object)
+  } else {
+    addRowNames <- TRUE
+    if (is.character(rowNames)) {
+      addRowNames <- TRUE
+      if (length(rowNames) != d[1]) {
+        stop(sprintf("'rowNames' must have length %d", d[1]))
+      }
+    } else stop("'rowNames' must be TRUE/FALSE or a character vector")
+  }
   # check columns that contain auxiliary information
-  if (is.null(info)) info <- if (row.names) 0 else 1
-  info <- info + addLabel + row.names
+  if (is.null(info)) info <- if (addRowNames) 0 else 1
+  info <- info + addLabel + addRowNames
   # compute total number of columns
-  d <- dim(object)
-  columns <- d[2] + addLabel + row.names
+  columns <- d[2] + addLabel + addRowNames
   if (columns == 0) stop("table to be written must have at least one column")
+  # check header
+  if (is.logical(header)) {
+    writeHeader <- isTRUE(header)
+    header <- c(if(addLabel) "", if (addRowNames) "", names(object))
+  } else {
+    writeHeader <- TRUE
+    if (is.list(header)) stop("not implemented yet")
+    else if (is.character(header)) {
+      writeHeader <- TRUE
+      if (length(header) != columns) {
+        stop(sprintf("'header' must have length %d", columns))
+      }
+    }
+    else stop("'header' must be TRUE/FALSE, a list, or a character vector")
+  }
   # compute number of columns actually containing results
   results <- columns - info
   # check column alignment specifiers
@@ -108,30 +125,64 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
   if (writeHeader) {
     if (legacy) cat("\\hline\n")
     # TODO: For now, only a simple header layout with one row of cells is
-    #       supported.  In addition, only row names are supported, but not
-    #       yet an additional label.
-    headerCells <- mapply(latexHeaderCell, text = c(if (row.names) "", header),
-                          columns = c(if (row.names) 1, rep.int(1, d[2])),
-                          alignment = alignment$header,
-                          left = c(border[1], rep.int(FALSE, columns-1)),
-                          right = border[-1], MoreArgs = list(theme = theme),
-                          USE.NAMES = FALSE)
-    cat(paste(headerCells, collapse = " & "), "\\\\\n")
+    #       supported.
+    # obtain matrix of header cells based on layout and line breaks
+    # note: strsplit() transforms "" to character()
+    headerText <- strsplit(header, "\n", fixed = TRUE)
+    headerRows <- vapply(headerText, length, numeric(1))
+    nHeaderRows <- max(headerRows)
+    if (nHeaderRows <= 1) headerText <- matrix(header, nrow = 1)
+    else {
+      headerText <- mapply(function(text, rows) {
+        c(rep.int("", nHeaderRows - rows), text)
+      }, text = headerText, rows = headerRows, USE.NAMES = FALSE)
+    }
+    # other specifications of the header cells
+    headerColumns <- c(if (addLabel) 1, if (addRowNames) 1, rep.int(1, d[2]))
+    headerAlignment <- alignment$header
+    leftBorder <- c(border[1], rep.int(FALSE, columns-1))
+    rightBorder <- border[-1]
+    # write rows of header cells
+    for (i in seq.int(nHeaderRows)) {
+      headerCells <- mapply(latexHeaderCell, text = headerText[i, ],
+                            columns = headerColumns,
+                            alignment = headerAlignment,
+                            left = leftBorder, right = rightBorder,
+                            MoreArgs = list(theme = theme),
+                            USE.NAMES = FALSE)
+      cat(paste(headerCells, collapse = " & "), "\\\\\n")
+    }
     cat("\\hline\n")
   }
 
   ## format and write table
   # format everything nicely
   if (legacy) {
-    formatted <- formatSPSS(object, digits = digits, pValue = FALSE)
-  } else formatted <- formatSPSS(object, digits = digits)
+    args <- list(...)
+    args$x <- object
+    if (is.null(args$pValue)) args$pValue <- FALSE
+    formatted <- do.call(formatSPSS, args)
+  } else formatted <- formatSPSS(object, ...)
   # write table
   # (note that the formatted object is a matrix, but it has row names since the
   # original object is a data.frame, which always have row names)
-  for (rn in rownames(formatted)) {
-    cat(if (row.names) paste(rn, "&"),
-        paste0(formatted[rn, ], collapse = " & "),
-        "\\\\\n")
+  # for (rn in rownames(formatted)) {
+  #   cat(if (addRowNames) paste(rn, "&"),
+  #       paste0(formatted[rn, ], collapse = " & "),
+  #       "\\\\\n")
+  # }
+  for (i in seq.int(nrow(formatted))) {
+    if (i == 1) {
+      cat(if (addLabel) paste(label, "&"),
+          if (addRowNames) paste(rowNames[i], "&"),
+          paste0(formatted[i, ], collapse = " & "),
+          "\\\\\n")
+    } else {
+      cat(if (addLabel) " &",
+          if (addRowNames) paste(rowNames[i], "&"),
+          paste0(formatted[i, ], collapse = " & "),
+          "\\\\\n")
+    }
   }
   cat("\\hline\n")
 

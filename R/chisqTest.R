@@ -204,8 +204,8 @@ print.chisqTestSPSS <- function(x, digits = c(1, 3),
       #   cat(rn, "&", paste0(formatted[rn, ], collapse=" & "), "\\\\\n")
       # }
 
-      latexTableSPSS(frequencies, main = x$variables, row.names = TRUE,
-                     digits = digits[1], theme = theme)
+      latexTableSPSS(frequencies, main = x$variables, rowNames = TRUE,
+                     info = 0, theme = theme, digits = digits[1])
 
     } else if (x$type == "independence") {
       # add totals
