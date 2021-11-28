@@ -167,6 +167,7 @@ print.chisqTestSPSS <- function(x, digits = c(1, 3),
   statistics <- match.arg(statistics, several.ok=TRUE)
   theme <- match.arg(theme)
   legacy <- theme == "legacy"
+  fmt <- paste0("%.", digits[1], "f")  # number format for expected counts
 
   ## print LaTeX table for frequencies
   if ("frequencies" %in% statistics) {
@@ -187,38 +188,34 @@ print.chisqTestSPSS <- function(x, digits = c(1, 3),
                      info = 0, theme = theme, digits = digits[1])
     } else if (x$type == "independence") {
       # add totals
-      observed <- cbind(observed, Total=rowSums(observed))
-      observed <- rbind(observed, Total=colSums(observed))
-      expected <- cbind(expected, Total=rowSums(expected))
-      expected <- rbind(expected, Total=colSums(expected))
-      # format frequencies
-      storage.mode(observed) <- "integer"
-      observed <- formatSPSS(observed)
-      expected <- formatSPSS(expected, digits=digits[1])
-      # initialize LaTeX table
-      cat("\\begin{tabular}{|lll|", paste0(rep.int("r", x$c), collapse="|"), "|r|}\n", sep="")
-      # print table header
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{", x$c+4, "}{c}{\\textbf{", x$variable[1], " * ", x$variable[2], " Crosstabulation}} \\\\\n", sep="")
-      cat("\\noalign{\\smallskip}\\hline\n")
-      cat(" & & & \\multicolumn{", x$c, "}{|c|}{", x$variable[2], "} & \\\\\n", sep="")
-      cat("\\cline{4-", x$c+3, "}\n", sep="")
-      cat(" & & &", paste0(paste0("\\multicolumn{1}{|c|}{", colnames(observed), "}"), collapse=" & "), "\\\\\n")
-      cat("\\hline\n")
-      cat(x$variables[1])
-      for (i in seq_len(x$r)) {
-        cat(" &", rownames(observed)[i], "& Count &", paste0(observed[i,], collapse=" & "), "\\\\\n")
-        cat(" & & Expected Count &", paste0(expected[i,], collapse=" & "), "\\\\\n")
-        if (i < x$r) cat("\\cline{2-", x$c+4, "}\n", sep="")
-      }
-      cat("\\hline\n")
-      cat(rownames(observed)[x$r+1], "& & Count &", paste0(observed[x$r+1,], collapse=" & "), "\\\\\n")
-      cat(" & & Expected Count &", paste0(expected[x$r+1,], collapse=" & "), "\\\\\n")
-
-      # finalize LaTeX table
-      cat("\\hline\\noalign{\\smallskip}\n")
-      cat("\\end{tabular}\n")
-
+      observed <- cbind(observed, Total = rowSums(observed))
+      observed <- rbind(observed, Total = colSums(observed))
+      expected <- cbind(expected, Total = rowSums(expected))
+      expected <- rbind(expected, Total = colSums(expected))
+      # create cross table in SPSS format
+      rowNames <- rownames(observed)
+      countLabels <- c("Count", "Expected Count")
+      crosstab <- lapply(rowNames, function(i) {
+        if (i == rowNames[1]) label <- c(x$variables[1], "")
+        else if (i == "Total") label <- c(i, "")
+        else label <- c("", "")
+        row <- if (i == "Total") c("", "") else c(i, "")
+        counts <- rbind(as.character(observed[i, ]),
+                        sprintf(fmt, expected[i, ]))
+        data.frame(Label = label, Row = row, Type = countLabels, counts,
+                   check.names = FALSE, stringsAsFactors = FALSE)
+      })
+      crosstab <- do.call(rbind, crosstab)
+      # construct main title
+      main <- paste(x$variable[1], "*", x$variable[2], "Crosstabulation")
+      # construct list defining header layout
+      header <- list("", "", "", Foreign = colnames(x$observed), "Total")
+      # define positions for minor grid lines
+      minor <- data.frame(row = 2 * seq_len(x$r-1), first = 2,
+                          last = c(ncol(crosstab)))
+      # print LaTeX table
+      latexTableSPSS(crosstab, main = main, header = header, rowNames = FALSE,
+                     info = 3, major = 2*x$r, minor = minor, theme = theme)
     } else stop("type of test not supported")
     cat("\n")
     count <- count + 1
@@ -230,54 +227,47 @@ print.chisqTestSPSS <- function(x, digits = c(1, 3),
     nTooSmall <- sum(x$expected < 5)
     pTooSmall <- nTooSmall / length(x$expected)
     smallest <- min(x$expected)
+    # print LaTeX table
     if (count == 0) cat("\n")
     if (x$type == "goodness-of-fit") {
-      # initialize LaTeX table
-      cat("\\begin{tabular}{|l|r|}\n")
-      # print table header
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{2}{c}{\\textbf{Test Statistics}} \\\\\n")
-      cat("\\noalign{\\smallskip}\\hline\n")
-      cat(" & \\multicolumn{1}{|c|}{", x$variables, "} \\\\\n")
-      cat("\\hline\n")
-      cat("Chi-Square & \\,\\,\\,\\, ", formatSPSS(x$chisq$statistic, digits=digits[2]), "$^{\\text{a}}$ \\\\\n", sep="")
-      cat("df &", x$chisq$parameter, "\\\\\n")
-      cat(" Asymp. Sig. \\,\\,\\,\\, &", formatSPSS(x$chisq$p.value, digits=digits[2]), "\\\\\n")
-      cat("\\hline\n")
-      cat("\\multicolumn{2}{l}{a. ", nTooSmall, " cells (", format(pTooSmall, digits=digits[1]), "\\%) have expected} \\\\\n", sep="")
-      cat("\\multicolumn{2}{l}{\\phantom{a. }frequencies less than 5. The} \\\\\n", sep="")
-      cat("\\multicolumn{2}{l}{\\phantom{a. }minimum expected cell} \\\\\n", sep="")
-      cat("\\multicolumn{2}{l}{\\phantom{a. }frequency is ", formatSPSS(smallest, digits=digits[1]), ".} \\\\\n", sep="")
-    } else if (x$type == "independence") {
-      rn <- c("Pearson Chi-Square", "Likelihood Ratio")
-      test <- data.frame(Value=c(x$chisq$statistic, x$lr$statistic),
-                         df=as.integer(c(x$chisq$parameter, x$lr$parameter)),
-                         "Asymp. Sig. (2-sided)"=c(x$chisq$p.value, x$lr$p.value),
-                         check.names=FALSE, row.names=rn)
-      formatted <- formatSPSS(test, digits=digits[2])
-      formatted["Pearson Chi-Square", "Value"] <-
-        paste0(formatted["Pearson Chi-Square", "Value"], "$^{\\text{a}}$")
-      # initialize LaTeX table
-      cat("\\begin{tabular}{|l|r|r|r|}\n")
-      # print table header
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{4}{c}{\\textbf{Chi-Square Tests}} \\\\\n")
-      cat("\\noalign{\\smallskip}\\hline\n")
-      cat(" & & & \\multicolumn{1}{|c|}{Asymp. Sig.} \\\\\n")
-      cat(" & \\multicolumn{1}{|c|}{Value} & \\multicolumn{1}{|c|}{df} & \\multicolumn{1}{|c|}{(2-sided)} \\\\\n")
-      cat("\\hline\n")
+      # put test results into SPSS format
+      rn <- c("Chi-Square", "df", "Asymp. Sig.")
+      chisq <- data.frame(unlist(x$chisq), row.names = rn)
+      names(chisq) <- x$variables
+      # define footnote
+      footnote <- paste0(nTooSmall, " cells (", sprintf(fmt, pTooSmall),
+                         "\\%) have expected\nfrequencies less than 5. The\nminimum expected cell\nfrequency is ",
+                         formatSPSS(smallest, digits = digits[1]), ".")
+      footnotes <- data.frame(marker = "a", row = 1, column = 1,
+                              text = footnote)
       # print table
-      for (rn in rownames(formatted)) {
-        cat(rn, "&", paste0(formatted[rn,], collapse=" & "), "\\\\\n")
-      }
-      cat("N of Valid Cases &", x$n, "& & \\\\\n")
-      cat("\\hline\n")
-      cat("\\multicolumn{4}{l}{a. ", nTooSmall, " cells (", format(pTooSmall, digits=digits[1]), "\\%) have expected count less than 5.} \\\\\n", sep="")
-      cat("\\multicolumn{4}{l}{\\phantom{a. }The minimum expected count is ", formatSPSS(smallest, digits=digits[1]), ".} \\\\\n", sep="")
+      latexTableSPSS(chisq, main = "Test Statistics", rowNames = TRUE,
+                     info = 0, theme = theme, footnotes = footnotes,
+                     digits = digits[2], pValue = !legacy, checkInt = TRUE)
+    } else if (x$type == "independence") {
+      # put test results into SPSS format
+      rn <- c("Pearson Chi-Square", "Likelihood Ratio", "N of Valid Cases")
+      chisq <- data.frame("Value" = c(x$chisq$statistic, x$lr$statistic, x$n),
+                          "df" = as.integer(c(x$chisq$parameter, x$lr$parameter,
+                                              NA_integer_)),
+                          "Asymp. Sig. (2-sided)" = c(x$chisq$p.value,
+                                                      x$lr$p.value,
+                                                      NA_real_),
+                          check.names = FALSE, row.names = rn)
+      # define header with line breaks
+      header <- c("", gsub("Sig.", "Sig.\n", names(chisq), fixed = TRUE))
+      # define footnote
+      footnote <- paste0(nTooSmall, " cells (", sprintf(fmt, pTooSmall),
+                         "\\%) have expected count less than 5.\nThe minimum expected count is ",
+                         formatSPSS(smallest, digits = digits[1]), ".")
+      footnotes <- data.frame(marker = "a", row = 1, column = 1,
+                              text = footnote)
+      # print table
+      latexTableSPSS(chisq, main = "Chi-Square Tests", header = header,
+                     rowNames = TRUE, info = 0, theme = theme,
+                     footnotes = footnotes, digits = digits[2],
+                     checkInt = c(TRUE, FALSE, FALSE))
     } else stop("type of test not supported")
-    # finalize LaTeX table
-    cat("\\noalign{\\smallskip}\n")
-    cat("\\end{tabular}\n")
     cat("\n")
   }
 }

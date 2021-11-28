@@ -39,6 +39,9 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
   ## determines whether to draw the minor grid lines (which SPSS does, but
   ## which can be distract away from the information in exams or assignments).
 
+  ## FIXME: horizontal lines should be in color 'darkgraySPSS' for modern theme,
+  ##        but I haven't figured out yet how to specify this.
+
   ## initializations
   d <- dim(object)
   if (d[1] == 0) stop("table to be written has no rows")
@@ -139,8 +142,8 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
     }
   }
   # check major grid lines
-  writeMajor <- !is.null(major)
-  if (writeMajor) {
+  drawMajor <- !is.null(major)
+  if (drawMajor) {
     if (!is.numeric(major) || length(major) == 0) {
       stop("'footnotes' must be a character vector of nonzero length")
     }
@@ -153,8 +156,33 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
     }
   }
   # check minor grid lines
-  writeMinor <- !is.null(minor)
-  # TODO: perform checks
+  drawMinor <- !is.null(minor)
+  if (drawMinor) {
+    if (is.data.frame(minor)) {
+      # draw only partial lines
+      partialMinor <- TRUE
+      # perform checks
+      targetNames <- c("row", "first", "last")
+      if (!all(targetNames %in% names(minor))) {
+        stop("minor' must have columns ",
+             paste(paste0("'", targetNames, "'"), collapse = ", "))
+      }
+    } else {
+      # draw lines across full table
+      partialMinor <- FALSE
+      # perform checks
+      if (!is.numeric(minor)) {
+        stop("'footnotes' must be an integer vector or data.frame")
+      }
+      minor <- sort(as.integer(minor))
+      keep <- (minor > 0) & (minor < d[1])
+      if (!all(keep)) {
+        minor <- minor[keep]
+        warning("some indices for minor grid lines are out of bounds; ",
+                "those have been discarded")
+      }
+    }
+  }
 
   ## write \begin{tabular} statement
   cat(latexBeginTabular(columns, info, alignment = alignment$table,
@@ -182,7 +210,7 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
 
   ## if supplied, write table header
   if (writeHeader) {
-    # for legacy theme, write line above header
+    # for legacy theme, draw line above header
     if (legacy) cat("\\hline\n")
     # parse header layout
     leftBorder <- c(border[1], rep.int(FALSE, columns-1))
@@ -222,7 +250,7 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
         }
       }
     }
-    # write line to separate header from table body
+    # draw line to separate header from table body
     cat("\\hline\n")
   }
 
@@ -259,10 +287,20 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
           paste0(formatted[i, ], collapse = " & "),
           "\\\\\n")
     }
-    # if requested, write major grid line
-    if (i %in% major) cat("\\hline\n")
+    # if requested, draw major grid line
+    if (drawMajor && (i %in% major)) cat("\\hline\n")
+    # if requested, draw minor grid line
+    if (drawMinor) {
+      if (partialMinor) {
+        which <- match(i, minor$row)
+        if (!is.na(which)) {
+          cat("\\cline{", minor[which, "first"], "-", minor[which, "last"],
+              "}\n", sep = "")
+        }
+      } else if (i %in% minor) cat("\\hline\n")
+    }
   }
-  # write line below table body
+  # draw line below table body
   cat("\\hline\n")
 
   ## if supplied, write footnotes

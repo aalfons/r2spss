@@ -57,13 +57,20 @@ formatSPSS.integer <- function(x, ...) {
 #' @export
 
 formatSPSS.numeric <- function(x, digits = 3, pValue = FALSE, checkInt = FALSE,
-                               tol = .Machine$double.eps^0.5, ...) {
+                               # tol = .Machine$double.eps^0.5,
+                               ...) {
   # initializations
   pValue <- isTRUE(pValue)
   checkInt <- isTRUE(checkInt)
-  if (pValue && checkInt) {
-    stop("'pValue' and 'checkInt' may not both be TRUE")
-  }
+  # -----
+  # the check below is too restrictive, for example the chi-squared
+  # goodness-of-fit test has the degrees of freedom and the p-value
+  # in the same column
+  # -----
+  # if (pValue && checkInt) {
+  #   stop("'pValue' and 'checkInt' may not both be TRUE")
+  # }
+  # -----
   # define format with specified number of digits
   n <- length(x)
   digits <- rep_len(digits, n)
@@ -73,15 +80,25 @@ formatSPSS.numeric <- function(x, digits = 3, pValue = FALSE, checkInt = FALSE,
   fmt <- ifelse(finite, fmt, "")
   # if requested check for integers and change their format accordingly
   if (checkInt) {
-    isInt <- finite & abs(x - as.integer(x)) < tol
+    # -----
+    # Argument 'checkInt' is used when degrees of freedom are put in the same
+    # column as other numeric information, or when the column containing the
+    # degrees of freedom uses an approximation in one of the rows.  So it
+    # shouldn't be necessary to work with tolerances, which could mess things
+    # up, e.g., when a p-value in the same column is really close to 0 or 1.
+    # -----
+    # isInt <- finite & abs(x - as.integer(x)) < tol
+    # -----
+    isInt <- finite & (x == as.integer(x))
+    # -----
     fmt <- ifelse(isInt, "%.0f", fmt)
-  }
+  } else isInt <- rep.int(FALSE, n)
   # convert numbers to strings
   formatted <- sprintf(fmt, x)
   # if requested format p-value
   if (pValue) {
     zeros <- rep.int(0, n)
-    below <- finite & formatted == sprintf(fmt, zeros)
+    below <- finite & !isInt & (formatted == sprintf(fmt, zeros))
     formatted[below] <- gsub("^<0.", "$<$.", paste0("<", 10^(-digits[below])))
   }
   # replace leading zeros
@@ -96,7 +113,8 @@ formatSPSS.numeric <- function(x, digits = 3, pValue = FALSE, checkInt = FALSE,
 #' @export
 
 formatSPSS.matrix <- function(x, digits = 3, pValue = NULL, checkInt = FALSE,
-                              tol = .Machine$double.eps^0.5, ...) {
+                              # tol = .Machine$double.eps^0.5,
+                              ...) {
   # initializations
   d <- dim(x)
   colNames <- colnames(x)
@@ -107,8 +125,10 @@ formatSPSS.matrix <- function(x, digits = 3, pValue = NULL, checkInt = FALSE,
   checkInt <- rep_len(checkInt, d[2])
   # format each column and add original attributes
   formatted <- vapply(seq_len(d[2]), function(j) {
+    # formatSPSS(x[, j], digits = digits, pValue = pValue[j],
+    #            checkInt = checkInt[j], tol = tol)
     formatSPSS(x[, j], digits = digits, pValue = pValue[j],
-               checkInt = checkInt[j], tol = tol)
+               checkInt = checkInt[j])
   }, character(d[1]))
   attributes(formatted) <- attributes(x)
   # return formatted matrix
@@ -121,7 +141,8 @@ formatSPSS.matrix <- function(x, digits = 3, pValue = NULL, checkInt = FALSE,
 
 formatSPSS.data.frame <- function(x, digits = 3,
                                   pValue = NULL, checkInt = FALSE,
-                                  tol = .Machine$double.eps^0.5, ...) {
+                                  # tol = .Machine$double.eps^0.5,
+                                  ...) {
   # initializations
   d <- dim(x)
   colNames <- names(x)
@@ -130,7 +151,8 @@ formatSPSS.data.frame <- function(x, digits = 3,
   checkInt <- rep_len(checkInt, d[2])
   # format each column
   formatted <- mapply(function(v, pv, ci) {
-    formatSPSS(v, digits = digits, pValue = pv, checkInt = ci, tol = tol)
+    # formatSPSS(v, digits = digits, pValue = pv, checkInt = ci, tol = tol)
+    formatSPSS(v, digits = digits, pValue = pv, checkInt = ci)
   }, v = x, pv = pValue, ci = checkInt, SIMPLIFY = FALSE, USE.NAMES = TRUE)
   formatted <- do.call(cbind, formatted)
   # add row names
