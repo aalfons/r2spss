@@ -89,8 +89,7 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
       if (length(header) != columns) {
         stop(sprintf("'header' must have length %d", columns))
       }
-    }
-    else stop("'header' must be TRUE/FALSE, a list, or a character vector")
+    } else stop("'header' must be TRUE/FALSE, a list, or a character vector")
   }
   # compute number of columns actually containing results
   results <- columns - info
@@ -117,12 +116,27 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
     } else border <- c(rep.int(FALSE, info+1), rep.int(TRUE, results-1), FALSE)
   }
   # check whether footnotes should be written
-  # TODO: this could also be a list with one component that indicates the
-  # position of the footnote marker (e.g, "main", "sub", or an index pair) and
-  # another component that is a character vector containing the footnotes
   writeFootnotes <- !is.null(footnotes)
-  if (writeFootnotes && (!is.character(footnotes) || length(footnotes) == 0)) {
-    stop("'footnotes' must be a character vector of nonzero length")
+  if (writeFootnotes) {
+    if (is.data.frame(footnotes)) {
+      targetNames <- c("marker", "row", "column", "text")
+      if (!all(targetNames %in% names(footnotes))) {
+        stop("footnotes' must have columns ",
+             paste(paste0("'", targetNames, "'"), collapse = ", "))
+      }
+      # reorder footnotes according to markers
+      # (and remove footnotes whose marker is NA)
+      footnotes <- footnotes[order(footnotes$marker, na.last = NA), ]
+      # parse footnote markers to check where they need to be inserted into
+      # table (if any)
+      insertFootnotes <- parseFootnoteMarkers(footnotes$row, footnotes$column,
+                                              marker = footnotes$marker)
+    } else {
+      insertFootnotes <- list()  # no footnote markers in table
+      if (!is.character(footnotes)) {
+        stop("'footnotes' must be a character vector or data.frame")
+      }
+    }
   }
   # check major grid lines
   writeMajor <- !is.null(major)
@@ -133,6 +147,7 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
     major <- sort(as.integer(major))
     keep <- (major > 0) & (major < d[1])
     if (!all(keep)) {
+      major <- major[keep]
       warning("some indices for major grid lines are out of bounds; ",
               "those have been discarded")
     }
@@ -147,11 +162,21 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
 
   ## if supplied, write main and sub title
   if (writeMain) {
+    # if supplied, insert footnote markers
+    if (writeFootnotes && !is.null(insertFootnotes$main)) {
+      main <- paste0(main, insertFootnotes$main)
+    }
+    # write main title
     cat("\\noalign{\\smallskip}\n")
     cat(latexTitle(main, columns = columns, alignment = "c"), sep = "")
     cat("\\noalign{\\smallskip}\n")
   }
   if (writeSub) {
+    # if supplied, insert footnote markers
+    if (writeFootnotes && !is.null(insertFootnotes$sub)) {
+      sub <- paste0(sub, insertFootnotes$sub)
+    }
+    # write main title
     cat(latexMulticolumn(sub, columns = columns, alignment = "l"), sep = "")
   }
 
@@ -209,6 +234,17 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
     if (is.null(args$pValue)) args$pValue <- FALSE
     formatted <- do.call(formatSPSS, args)
   } else formatted <- formatSPSS(object, ...)
+  # if supplied, insert footnote markers
+  if (writeFootnotes) {
+    markers <- insertFootnotes$body
+    if (!is.null(markers)) {
+      for (i in seq_len(nrow(markers))) {
+        k <- markers[i, "row"]
+        l <- markers[i, "column"]
+        formatted[k, l] <- paste0(formatted[k, l], markers[i, "marker"])
+      }
+    }
+  }
   # write table body
   for (i in seq.int(nrow(formatted))) {
     # write current row
@@ -231,8 +267,17 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
 
   ## if supplied, write footnotes
   if (writeFootnotes) {
-    for (footnote in footnotes) {
-      cat(latexMulticolumn(footnote, columns = columns, alignment = "l"))
+    if (is.data.frame(footnotes)) {
+      # writing footnotes is more elaborate if markers are supplied
+      for (i in seq_len(nrow(footnotes))) {
+        footnote <- parseFootnoteText(footnotes$text[i], footnotes$marker[i])
+        cat(latexMulticolumn(footnote, columns = columns, alignment = "l"))
+      }
+    } else if (is.character(footnotes)) {
+      # simply write footnotes with \mulitcolumn statements
+      for (footnote in footnotes) {
+        cat(latexMulticolumn(footnote, columns = columns, alignment = "l"))
+      }
     }
   }
 
@@ -241,8 +286,6 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
   cat("\\end{tabular}\n")
 
 }
-
-
 
 
 ## function to create a \begin{tabular} statement that also defines the
@@ -318,7 +361,7 @@ legacyBeginTabular <- function(columns, info = 1, alignment, border) {
 }
 
 
-# function to create LaTeX \multicolumn statement for the main title
+## function to create LaTeX \multicolumn statement for the main title
 # (multiple statements if any line breaks are specified)
 # to alignment and borders
 # text ........ character string giving the text to be written inside the
@@ -335,7 +378,7 @@ latexTitle <- function(text, columns = 1, alignment = "c") {
 }
 
 
-# function to create LaTeX \multicolumn statements
+## function to create LaTeX \multicolumn statements
 # (multiple statements if any line breaks are specified)
 # to alignment and borders
 # text ........ character string giving the text to be written inside the
@@ -405,7 +448,7 @@ parseHeaderLayout <- function(header, alignment, left, right) {
 }
 
 
-# function to create a header cell, which in many cases contains a
+## function to create a header cell, which in many cases contains a
 # \multicolumn statement that also defines the appearance with respect
 # to alignment and borders
 # text ........ character string giving the text to be written inside the
@@ -460,4 +503,62 @@ legacyHeaderCell <- function(text = "", columns = 1, alignment = "c",
   spec <- paste0(left, alignment, right)
   # create \multicolumn statement
   sprintf("\\multicolumn{%d}{%s}{%s}", columns, spec, text)
+}
+
+
+## function to combine footnote markers that are in the same position and to
+## add LaTeX formatting
+parseFootnoteMarkers <- function(row, column, marker) {
+  # remove empty markers
+  keep <- which(marker != "")
+  if (length(keep) == 0) return(list())
+  row <- row[keep]
+  column <- column[keep]
+  marker <- marker[keep]
+  # prefix and suffix of LaTeX statement
+  prefix <- "$^{\\text{"
+  suffix <- "}}$"
+  # format markers for main title
+  keep <- which(row == "main")
+  if (length(keep) == 0) main <- NULL
+  else main <- paste0(prefix, paste(marker[keep], collapse = ","), suffix)
+  # format markers for sub title
+  keep <- which(row == "sub")
+  if (length(keep) == 0) sub <- NULL
+  else sub <- paste0(prefix, paste(marker[keep], collapse = ","), suffix)
+  # format markers for table body
+  keep <- which(!(row %in% c("main", "sub")))
+  if (length(keep) == 0) body <- NULL
+  else {
+    # keep only markers for table body
+    row <- as.integer(row[keep])
+    column <- as.integer(column[keep])
+    marker <- marker[keep]
+    # find unique index pairs
+    body <- unique(data.frame(row, column))
+    markers <- mapply(function(i, j) {
+      paste(marker[row == i & column == j], collapse = ",")
+    }, i = body$row, j = body$column, USE.NAMES = FALSE)
+    body$marker <- paste0(prefix, markers, suffix)
+  }
+  # return list of markers to be inserted in each section
+  list(main = main, sub = sub, body = body)
+
+}
+
+## function to format text of footnotes
+parseFootnoteText <- function(text = "", marker = "") {
+  # we only need to do something if the marker is a non-empty string
+  if (marker != "") {
+    # prefix to add before footnote text
+    prefix <- paste0(marker, ". ")
+    # if there are line breaks, the subsequent lines should be indented
+    # accordingly, which can be done with \phantom{}
+    phantom <- paste0("\\phantom{", prefix, "}")
+    text <- gsub("\n", paste0("\n", phantom), text, fixed = TRUE)
+    # add prefix before footnote
+    text <- paste0(prefix, text)
+  }
+  # return parsed footnote
+  text
 }
