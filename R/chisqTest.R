@@ -182,7 +182,7 @@ print.chisqTestSPSS <- function(x, digits = c(1, 3),
                                 "Expected N" = expected,
                                 Residual = observed - expected,
                                 check.names = FALSE)
-      # write LaTeX table
+      # print LaTeX table
       latexTableSPSS(frequencies, main = x$variables, rowNames = TRUE,
                      info = 0, theme = theme, digits = digits[1])
     } else if (x$type == "independence") {

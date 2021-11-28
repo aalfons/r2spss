@@ -263,49 +263,69 @@ print.ANOVASPSS <- function(x, digits = 3,
                                 "\\% Confidence\nInterval for Mean")
       header <- c(as.list(header[seq_len(lower-1)]), ciHeader,
                   as.list(header[-seq_len(upper)]))
-      # write LaTeX table
+      # print LaTeX table
       latexTableSPSS(x$descriptives, main = "Descriptives", sub = x$variable,
                      header = header, rowNames = TRUE, info = 0, theme = theme,
                      digits = digits)
     } else if (x$type == "two-way") {
-      formatted <- formatSPSS(x$descriptives, digits=digits)
-      formatted[duplicated(formatted[, 1]), 1] <- ""
-      # initialize LaTeX table
-      if (legacy) cat("\\begin{tabular}{|ll|r|r|r|}\n")
-      else {
-        cat(latexTabular(5, info = 2))
-        cat("\n")
-      }
-      # print table header
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{5}{c}{\\textbf{Descriptive Statistics}} \\\\\n")
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{5}{l}{Dependent variable: ", x$variable, "} \\\\\n", sep="")
-      if (legacy) {
-        cat("\\hline\n")
-        cat(" & & & \\multicolumn{1}{c|}{Std.} & \\\\\n")
-        cat(x$group[1], "&", x$group[2], "& \\multicolumn{1}{c|}{Mean} & \\multicolumn{1}{c|}{Deviation} & \\multicolumn{1}{c|}{N} \\\\\n")
-      } else {
-        cat(.latexMulticolumn("", 1, "l"), "&",
-            .latexMulticolumn("", 1, "l"), "&",
-            .latexMulticolumn("", 1, right = TRUE), "&",
-            .latexMulticolumn("Std.", 1, right = TRUE), "&",
-            .latexMulticolumn("", 1), "\\\\\n")
-        cat(.latexMulticolumn(x$group[1], 1, "l"), "&",
-            .latexMulticolumn(x$group[2], 1, "l"), "&",
-            .latexMulticolumn("Mean", 1, right = TRUE), "&",
-            .latexMulticolumn("Deviation", 1, right = TRUE), "&",
-            .latexMulticolumn("N", 1), "\\\\\n")
-      }
-      cat("\\hline\n")
-      # print table
-      for (i in seq_len(nrow(formatted))) {
-        cat(paste0(formatted[i, ], collapse=" & "), "\\\\\n")
-        if (i %% (x$j+1) == 0) cat("\\hline\n")
-      }
-      # finalize LaTeX table
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\end{tabular}\n")
+      # extract relevant information
+      descriptives <- x$descriptives
+      first <- x$group[1]
+      nLevels <- c(nlevels(descriptives[, first]),
+                   nlevels(descriptives[, x$group[2]]))
+      # print values of first grouping variable only on first occurrence
+      descriptives[, first] <- ifelse(duplicated(descriptives[, first]),
+                                      "", as.character(descriptives[, first]))
+      # define header with line breaks
+      header <- names(descriptives)
+      header[header == "Std. Deviation"] <- "Std.\nDeviation"
+      # define positions for major grid lines
+      major <- seq(from = nLevels[2], by = nLevels[2],
+                   length.out = nLevels[1] - 1)
+      # print LaTeX table
+      latexTableSPSS(descriptives, main = "Descriptive Statistics",
+                     sub = paste("Dependent variable:", x$variable),
+                     header = header, rowNames = FALSE, info = 2,
+                     major = major, theme = theme, digits = digits)
+
+      # formatted <- formatSPSS(x$descriptives, digits=digits)
+      # formatted[duplicated(formatted[, 1]), 1] <- ""
+      # # initialize LaTeX table
+      # if (legacy) cat("\\begin{tabular}{|ll|r|r|r|}\n")
+      # else {
+      #   cat(latexTabular(5, info = 2))
+      #   cat("\n")
+      # }
+      # # print table header
+      # cat("\\noalign{\\smallskip}\n")
+      # cat("\\multicolumn{5}{c}{\\textbf{Descriptive Statistics}} \\\\\n")
+      # cat("\\noalign{\\smallskip}\n")
+      # cat("\\multicolumn{5}{l}{Dependent variable: ", x$variable, "} \\\\\n", sep="")
+      # if (legacy) {
+      #   cat("\\hline\n")
+      #   cat(" & & & \\multicolumn{1}{c|}{Std.} & \\\\\n")
+      #   cat(x$group[1], "&", x$group[2], "& \\multicolumn{1}{c|}{Mean} & \\multicolumn{1}{c|}{Deviation} & \\multicolumn{1}{c|}{N} \\\\\n")
+      # } else {
+      #   cat(.latexMulticolumn("", 1, "l"), "&",
+      #       .latexMulticolumn("", 1, "l"), "&",
+      #       .latexMulticolumn("", 1, right = TRUE), "&",
+      #       .latexMulticolumn("Std.", 1, right = TRUE), "&",
+      #       .latexMulticolumn("", 1), "\\\\\n")
+      #   cat(.latexMulticolumn(x$group[1], 1, "l"), "&",
+      #       .latexMulticolumn(x$group[2], 1, "l"), "&",
+      #       .latexMulticolumn("Mean", 1, right = TRUE), "&",
+      #       .latexMulticolumn("Deviation", 1, right = TRUE), "&",
+      #       .latexMulticolumn("N", 1), "\\\\\n")
+      # }
+      # cat("\\hline\n")
+      # # print table
+      # for (i in seq_len(nrow(formatted))) {
+      #   cat(paste0(formatted[i, ], collapse=" & "), "\\\\\n")
+      #   if (i %% (x$j+1) == 0) cat("\\hline\n")
+      # }
+      # # finalize LaTeX table
+      # cat("\\noalign{\\smallskip}\n")
+      # cat("\\end{tabular}\n")
     } else stop("type of ANOVA not supported")
     cat("\n")
     count <- count + 1
@@ -344,7 +364,7 @@ print.ANOVASPSS <- function(x, digits = 3,
       # define column widths
       width <- c("", "0.3\\linewidth", rep.int("", ncol(levene)))
     }
-    # write LaTeX table
+    # print LaTeX table
     if (x$type == "one-way") {
       if (legacy) {
         latexTableSPSS(levene, main = "Test of Homogeneity of Variances",
@@ -365,7 +385,7 @@ print.ANOVASPSS <- function(x, digits = 3,
         # define footnotes
         footnotes <- c("Tests the null hypothesis that the\nerror variance of the dependent\nvariable is equal across groups.",
                        paste0("a. Design: Intercept + ", x$group[1], " +\n\\phantom{a. }", x$group[2], " + ", x$group[1], " * ", x$group[2]))
-        # write table
+        # print table
         latexTableSPSS(levene, main = main, sub = sub, rowNames = FALSE,
                        info = 0, theme = "legacy", footnotes = footnotes,
                        digits = digits)
@@ -376,102 +396,17 @@ print.ANOVASPSS <- function(x, digits = 3,
         footnotes <- c("Tests the null hypothesis that the error variance of the dependent variable\nis equal across groups.",
                        paste("a. Dependent variable:", x$variable),
                        paste0("b. Design: Intercept + ", x$group[1], " + ", x$group[2], " + ", x$group[1], " * ", x$group[2]))
-        # write table
+        # print table
         latexTableSPSS(levene, main = main, header = header,
                        label = x$variable, rowNames = rowLabels, info = 0,
                        width = width, footnotes = footnotes, theme = "modern",
                        digits = digits, checkInt = grepl("df", names(levene)))
       }
-
-
-      # if (legacy) formatted <- formatSPSS(levene, digits=digits, pValue = FALSE)
-      # else {
-      #   formatted <- lapply(x$levene, function(levene) {
-      #     levene <- data.frame("Levene Statistic"=levene[1, "F value"],
-      #                df1=as.integer(levene$Df[1]), df2=levene$Df[2],
-      #                "Sig."=levene[1, "Pr(>F)"],
-      #                check.names=FALSE, row.names=NULL)
-      #     formatSPSS(levene, digits=digits)
-      #   })
-      #   labels <- c(mean = "Mean", median = "Median",
-      #               adjusted = "Median and with adjusted df",
-      #               trimmed = "trimmed mean")
-      # }
-      # # initialize LaTeX table
-      # if (legacy) cat("\\begin{tabular}{|r|r|r|r|}\n")
-      # else {
-      #   align <- c("l", "L{0.3\\linewidth}", "r", "r", "r", "r")
-      #   cat(latexTabular(6, info = 2, alignment = align))
-      #   cat("\n")
-      # }
-      # # print table header
-      # cat("\\noalign{\\smallskip}\n")
-      # if (legacy) {
-      #   cat("\\multicolumn{4}{c}{\\textbf{Levene's Test of Equality of}} \\\\\n")
-      #   cat("\\multicolumn{4}{c}{\\textbf{Error Variances}$^{\\text{a}}$} \\\\\n")
-      # } else {
-      #   cat("\\multicolumn{6}{c}{\\textbf{Levene's Test of Equality of Error Variances}$^{\\text{a,b}}$} \\\\\n")
-      # }
-      # cat("\\noalign{\\smallskip}\n")
-      # if (legacy) {
-      #   cat("\\multicolumn{4}{l}{Dependent variable: ", x$variable, "} \\\\\n", sep="")
-      #   cat("\\hline\n")
-      #   cat("\\multicolumn{1}{|c|}{\\,\\,\\,\\, F \\,\\,\\,\\,} & \\multicolumn{1}{c|}{\\,\\, df1 \\,\\,} & \\multicolumn{1}{c|}{\\,\\, df2 \\,\\,} & \\multicolumn{1}{c|}{\\,\\, Sig. \\,\\,} \\\\\n")
-      # } else {
-      #   cat(.latexMulticolumn("", 1, "l"), "&",
-      #       .latexMulticolumn("", 1, "l"), "&",
-      #       .latexMulticolumn("Levene", 1, right = TRUE), "&",
-      #       .latexMulticolumn("", 1, right = TRUE), "&",
-      #       .latexMulticolumn("", 1, right = TRUE), "&",
-      #       .latexMulticolumn("", 1), "\\\\\n")
-      #   cat(.latexMulticolumn("", 1, "l"), "&",
-      #       .latexMulticolumn("", 1, "l"), "&",
-      #       .latexMulticolumn("Statistic", 1, right = TRUE), "&",
-      #       .latexMulticolumn("df1", 1, right = TRUE), "&",
-      #       .latexMulticolumn("df2", 1, right = TRUE), "&",
-      #       .latexMulticolumn("Sig.", 1), "\\\\\n")
-      # }
-      # cat("\\hline\n")
-      # # print table
-      # if (legacy) cat(paste0(formatted, collapse=" & "), "\\\\\n")
-      # else {
-      #   for (method in names(formatted)) {
-      #     # print current version of Levene's test
-      #     cat(if (method == "mean") x$variable else "",
-      #         "& Based on", labels[method], "&",
-      #         paste(formatted[[method]], collapse=" & "), "\\\\\n")
-      #   }
-      # }
-      # cat("\\hline\n")
-      # if (legacy) {
-      #   cat("\\multicolumn{4}{l}{Tests the null hypothesis that the} \\\\\n")
-      #   cat("\\multicolumn{4}{l}{error variance of the dependent} \\\\\n")
-      #   cat("\\multicolumn{4}{l}{variable is equal across groups.} \\\\\n")
-      # } else {
-      #   cat("\\multicolumn{6}{l}{Tests the null hypothesis that the error variance of the dependent} \\\\\n")
-      #   cat("\\multicolumn{6}{l}{variable is equal across groups.} \\\\\n")
-      # }
-      # cat("\\noalign{\\smallskip}\n")
-      # if (legacy) {
-      #   cat("\\multicolumn{4}{l}{a. Design: Intercept + ", x$group[1],
-      #       " +} \\\\\n", sep="")
-      #   cat("\\multicolumn{4}{l}{\\phantom{a. }", x$group[2], " + ",
-      #       x$group[1], " * ", x$group[2], "} \\\\\n", sep="")
-      # } else {
-      #   cat("\\multicolumn{6}{l}{a. Dependent variable: ", x$variable,
-      #       "} \\\\\n", sep="")
-      #   cat("\\multicolumn{6}{l}{b. Design: Intercept + ", x$group[1],
-      #       " + ", x$group[2], " + ", x$group[1], " * ", x$group[2],
-      #       "} \\\\\n", sep="")
-      # }
-      # # finalize LaTeX table
-      # cat("\\noalign{\\smallskip}\n")
-      # cat("\\end{tabular}\n")
     } else stop("type of ANOVA not supported")
     cat("\n")
   }
 
-  ## print LaTeX table for ANOVA table
+  ## print LaTeX table for ANOVA
   if ("test" %in% statistics) {
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
@@ -486,7 +421,7 @@ print.ANOVASPSS <- function(x, digits = 3,
                          "Sig." = c(x$test[, "Pr(>F)"], NA_real_),
                          row.names = NULL, check.names = FALSE)
       row.names(test) <- c(row.names(x$test), "Total")
-      # write LaTeX table
+      # print LaTeX table
       latexTableSPSS(test, main = "ANOVA", sub = x$variable, rowNames = TRUE,
                      digits = digits, theme = theme)
 

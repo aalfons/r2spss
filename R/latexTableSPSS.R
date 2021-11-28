@@ -17,6 +17,7 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
                                       rowNames = TRUE, info = NULL,
                                       alignment = NULL, width = NULL,
                                       border = NULL, footnotes = NULL,
+                                      major = NULL, minor = NULL,
                                       theme = c("modern", "legacy"),
                                       ...) {
 
@@ -29,6 +30,14 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
   ## TRUE, FALSE, "begin", and "end".  Alignment specifiers and border
   ## indicators should only be checked if this is TRUE or "begin", or if
   ## headers are requested.
+  ##
+  ## Even better may be to add arguments for where to print major and minor
+  ## grid lines.  For the first it can be a simple integer vector giving the
+  ## line number.  For the latter it can also be a matrix with line number, as
+  ## well as the indices of the first and last column.  This is a much better
+  ## solution, as it would allow to add an argument to other functions that
+  ## determines whether to draw the minor grid lines (which SPSS does, but
+  ## which can be distract away from the information in exams or assignments).
 
   ## initializations
   d <- dim(object)
@@ -115,6 +124,22 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
   if (writeFootnotes && (!is.character(footnotes) || length(footnotes) == 0)) {
     stop("'footnotes' must be a character vector of nonzero length")
   }
+  # check major grid lines
+  writeMajor <- !is.null(major)
+  if (writeMajor) {
+    if (!is.numeric(major) || length(major) == 0) {
+      stop("'footnotes' must be a character vector of nonzero length")
+    }
+    major <- sort(as.integer(major))
+    keep <- (major > 0) & (major < d[1])
+    if (!all(keep)) {
+      warning("some indices for major grid lines are out of bounds; ",
+              "those have been discarded")
+    }
+  }
+  # check minor grid lines
+  writeMinor <- !is.null(minor)
+  # TODO: perform checks
 
   ## write \begin{tabular} statement
   cat(latexBeginTabular(columns, info, alignment = alignment$table,
@@ -186,6 +211,7 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
   } else formatted <- formatSPSS(object, ...)
   # write table body
   for (i in seq.int(nrow(formatted))) {
+    # write current row
     if (i == 1) {
       cat(if (addLabel) paste(label, "&"),
           if (addRowNames) paste(rowNames[i], "&"),
@@ -197,6 +223,8 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
           paste0(formatted[i, ], collapse = " & "),
           "\\\\\n")
     }
+    # if requested, write major grid line
+    if (i %in% major) cat("\\hline\n")
   }
   # write line below table body
   cat("\\hline\n")
