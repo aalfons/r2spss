@@ -15,32 +15,11 @@ formatSPSS(x, ...)
 
 \method{formatSPSS}{integer}(x, ...)
 
-\method{formatSPSS}{numeric}(
-  x,
-  digits = 3,
-  pValue = FALSE,
-  checkInt = FALSE,
-  tol = .Machine$double.eps^0.5,
-  ...
-)
+\method{formatSPSS}{numeric}(x, digits = 3, pValue = FALSE, checkInt = FALSE, ...)
 
-\method{formatSPSS}{matrix}(
-  x,
-  digits = 3,
-  pValue = NULL,
-  checkInt = FALSE,
-  tol = .Machine$double.eps^0.5,
-  ...
-)
+\method{formatSPSS}{matrix}(x, digits = 3, pValue = NULL, checkInt = FALSE, ...)
 
-\method{formatSPSS}{data.frame}(
-  x,
-  digits = 3,
-  pValue = NULL,
-  checkInt = FALSE,
-  tol = .Machine$double.eps^0.5,
-  ...
-)
+\method{formatSPSS}{data.frame}(x, digits = 3, pValue = NULL, checkInt = FALSE, ...)
 }
 \arguments{
 \item{x}{an \R object, typically numeric.  Currently methods are
