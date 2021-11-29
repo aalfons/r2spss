@@ -229,6 +229,7 @@ print.chisqTestSPSS <- function(x, digits = c(1, 3),
     smallest <- min(x$expected)
     # print LaTeX table
     if (count == 0) cat("\n")
+    else cat("\\medskip\n")
     if (x$type == "goodness-of-fit") {
       # put test results into SPSS format
       rn <- c("Chi-Square", "df", "Asymp. Sig.")
@@ -242,7 +243,7 @@ print.chisqTestSPSS <- function(x, digits = c(1, 3),
                               text = footnote)
       # print table
       latexTableSPSS(chisq, main = "Test Statistics", rowNames = TRUE,
-                     info = 0, theme = theme, footnotes = footnotes,
+                     info = 0, footnotes = footnotes, theme = theme,
                      digits = digits[2], pValue = !legacy, checkInt = TRUE)
     } else if (x$type == "independence") {
       # put test results into SPSS format
@@ -264,8 +265,8 @@ print.chisqTestSPSS <- function(x, digits = c(1, 3),
                               text = footnote)
       # print table
       latexTableSPSS(chisq, main = "Chi-Square Tests", header = header,
-                     rowNames = TRUE, info = 0, theme = theme,
-                     footnotes = footnotes, digits = digits[2],
+                     rowNames = TRUE, info = 0, footnotes = footnotes,
+                     theme = theme, digits = digits[2],
                      checkInt = c(TRUE, FALSE, FALSE))
     } else stop("type of test not supported")
     cat("\n")

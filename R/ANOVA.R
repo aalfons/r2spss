@@ -351,7 +351,7 @@ print.ANOVASPSS <- function(x, digits = 3,
                                 column = rep(NA_integer_, 2), text = footnotes)
         # print table
         latexTableSPSS(levene, main = main, sub = sub, rowNames = FALSE,
-                       info = 0, theme = "legacy", footnotes = footnotes,
+                       info = 0, footnotes = footnotes, theme = "legacy",
                        digits = digits)
       } else {
         # define main title
@@ -391,7 +391,7 @@ print.ANOVASPSS <- function(x, digits = 3,
       row.names(test) <- c(row.names(x$test), "Total")
       # print LaTeX table
       latexTableSPSS(test, main = "ANOVA", sub = x$variable, rowNames = TRUE,
-                     info = 0, digits = digits, theme = theme)
+                     info = 0, theme = theme, digits = digits)
     } else if (x$type == "two-way") {
       # put ANOVA table into SPSS format
       test <- x$test
@@ -413,7 +413,7 @@ print.ANOVASPSS <- function(x, digits = 3,
       latexTableSPSS(test, main = "Tests of Between-Subject Effects",
                      sub = paste("Dependent Variable:", x$variable),
                      header = header, rowNames = TRUE, info = 0,
-                     footnotes = footnotes, digits = digits, theme = theme)
+                     footnotes = footnotes, theme = theme, digits = digits)
     } else stop("type of ANOVA not supported")
     cat("\n")
   }

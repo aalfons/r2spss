@@ -97,58 +97,49 @@ kruskalTest <- function(data, variable, group) {
 
 print.kruskalTestSPSS <- function(x, digits = 2:3,
                                   statistics = c("ranks", "test"),
-                                  ...) {
+                                  theme = c("modern", "legacy"), ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok=TRUE)
+  theme <- match.arg(theme)
+  legacy <- theme == "legacy"
 
   ## print LaTeX table for ranks
   if ("ranks" %in% statistics) {
-    formatted <- formatSPSS(x$statistics, digits=digits[1])
+    # put table into SPSS format
+    p <- ncol(x$statistics)
+    N <- sum(x$statistics$N)
+    ranks <- rbind(x$statistics, Total = c(N, rep.int(NA, p)))
+    # define header
+    header <- c("", x$group, names(ranks))
     # print LaTeX table
-    cat("\n")
-    cat("\\begin{tabular}{|ll|r|r|}\n")
-    cat("\\noalign{\\smallskip}\n")
-    cat("\\multicolumn{4}{c}{\\textbf{Ranks}} \\\\\n")
-    cat("\\noalign{\\smallskip}\\hline\n")
-    cat(" &", x$group, "& \\multicolumn{1}{|c|}{N} & \\multicolumn{1}{|c|}{Mean Rank} \\\\\n")
-    cat("\\hline\n")
-    cat(x$variable)
-    for (rn in rownames(formatted)) {
-      cat(" &", rn, "&", paste0(formatted[rn, ], collapse=" & "), "\\\\\n")
-    }
-    cat(" & Total &", sum(x$statistics$N), "& \\\\\n")
-    cat("\\hline\\noalign{\\smallskip}\n")
-    # finalize LaTeX table
-    cat("\\end{tabular}\n")
+    latexTableSPSS(ranks, main = "Ranks", header = header,
+                   label = x$variable, rowNames = TRUE, info = 0,
+                   theme = theme, digits = digits[1])
     cat("\n")
     count <- count + 1
   }
 
   ## print LaTeX table for test
   if ("test" %in% statistics) {
-
-    ## collect output for test
-    test <- c(x$test$statistic, x$test$p.value)
-    formatted <- formatSPSS(test, digits=digits[2])
-
-    ## print LaTeX table
     if (count == 0) cat("\n")
-    cat("\\begin{tabular}{|l|r|}\n")
-    cat("\\noalign{\\smallskip}\n")
-    cat("\\multicolumn{2}{c}{\\textbf{Test Statistics}$^{\\text{a,b}}$} \\\\\n")
-    cat("\\noalign{\\smallskip}\\hline\n")
-    cat(" & \\multicolumn{1}{|c|}{", x$variable, "} \\\\\n", sep="")
-    cat("\\hline\n")
-    cat("Chi-Square &", formatted[1], "\\\\\n")
-    cat("df &", x$test$parameter, "\\\\\n")
-    cat("Asymp. Sig. &", formatted[2], "\\\\\n")
-    cat("\\hline\\noalign{\\smallskip}\n")
-    cat("\\multicolumn{2}{l}{a. Kruskal Wallis Test} \\\\\n")
-    cat("\\multicolumn{2}{l}{b. Grouping Variable: ", x$group, "} \\\\\n", sep="")
-    # finalize LaTeX table
-    cat("\\end{tabular}\n")
+    else cat("\\medskip\n")
+    # put test results into SPSS format
+    rn <- c(if (legacy) "Chi-Square" else "Kruskal-Wallis H",
+            "df", "Asymp. Sig.")
+    test <- data.frame(unlist(x$test), row.names = rn)
+    names(test) <- x$variable
+    # define footnotes
+    footnotes <- c("Kruskal Wallis Test",
+                   paste("Grouping Variable:", x$group))
+    footnotes <- data.frame(marker = c("a", "b"), row = rep.int("main", 2),
+                            column = rep.int(NA_integer_, 2),
+                            text = footnotes)
+    # print table
+    latexTableSPSS(test, main = "Test Statistics", rowNames = TRUE,
+                   info = 0, footnotes = footnotes, theme = theme,
+                   digits = digits[2], pValue = !legacy, checkInt = TRUE)
     cat("\n")
   }
 }

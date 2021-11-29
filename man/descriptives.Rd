@@ -7,7 +7,7 @@
 \usage{
 descriptives(data, variables)
 
-\method{print}{descriptivesSPSS}(x, digits = 2, ...)
+\method{print}{descriptivesSPSS}(x, digits = 2, theme = c("modern", "legacy"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}

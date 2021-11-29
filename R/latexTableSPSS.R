@@ -39,8 +39,10 @@ latexTableSPSS.data.frame <- function(object, main = NULL, sub = NULL,
   ## determines whether to draw the minor grid lines (which SPSS does, but
   ## which can be distract away from the information in exams or assignments).
 
-  ## FIXME: horizontal lines should be in color 'darkgraySPSS' for modern theme,
-  ##        but I haven't figured out yet how to specify this.
+  ## FIXME: major and minor lines should be in color 'darkgraySPSS' for modern
+  ##        theme, but I haven't figured out yet how to specify this.  The
+  ##        lines above and below the table body should remain the default
+  ##        color (typically black).
 
   ## initializations
   d <- dim(object)

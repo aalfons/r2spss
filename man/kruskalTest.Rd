@@ -7,7 +7,13 @@
 \usage{
 kruskalTest(data, variable, group)
 
-\method{print}{kruskalTestSPSS}(x, digits = 2:3, statistics = c("ranks", "test"), ...)
+\method{print}{kruskalTestSPSS}(
+  x,
+  digits = 2:3,
+  statistics = c("ranks", "test"),
+  theme = c("modern", "legacy"),
+  ...
+)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
