@@ -84,30 +84,19 @@ descriptives <- function(data, variables) {
 #'
 #' @export
 
-print.descriptivesSPSS <- function(x, digits = 2, ...) {
-  # format descriptives
-  d <- ifelse(x$classes == "integer", 0, digits)
-  formatted <- cbind(
-    formatSPSS(x$descriptives[, "N"]),
-    formatSPSS(x$descriptives[, c("Minimum", "Maximum")], digits=d),
-    formatSPSS(x$descriptives[, c("Mean", "Std. Deviation")], digits=digits)
-  )
-  # initialize LaTeX table
-  cat("\\begin{tabular}{|l|r|r|r|r|r|}\n")
-  # print table header
-  cat("\\noalign{\\smallskip}\n")
-  cat("\\multicolumn{6}{c}{\\textbf{Descriptive Statistics}} \\\\\n")
-  cat("\\noalign{\\smallskip}\\hline\n")
-  cat(" & & & & & \\multicolumn{1}{|c|}{Std.} \\\\\n")
-  cat(" & \\multicolumn{1}{|c|}{N} & \\multicolumn{1}{|c|}{Minimum} & \\multicolumn{1}{|c|}{Maximum} & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Deviation} \\\\\n")
-  cat("\\hline\n")
-  # print descriptives for each variable
-  for (variable in rownames(formatted)) {
-    cat(variable, "&", paste0(formatted[variable, ], collapse=" & "), "\\\\\n")
-  }
-  # print complete cases
-  cat("Valid N (listwise) &", x$n, "& & & & \\\\\n")
-  # finalize LaTeX table
-  cat("\\hline\\noalign{\\smallskip}\n")
-  cat("\\end{tabular}\n")
+print.descriptivesSPSS <- function(x, digits = 2,
+                                   theme = c("modern", "legacy"),
+                                   ...) {
+  # put results into SPSS format
+  p <- ncol(x$descriptives)
+  descriptives <- rbind(x$descriptives,
+                        "Valid N (listwise)" = c(x$n, rep.int(NA, p)))
+  # define header with line breaks
+  colNames <- names(descriptives)
+  header <- c("", gsub("Std. ", "Std.\n", colNames, fixed = TRUE))
+  # print LaTeX table
+  latexTableSPSS(descriptives, main = "Descriptive Statistics",
+                 header = header, rowNames = TRUE, info = 0,
+                 theme = theme, digits = digits,
+                 checkInt = colNames %in% c("Minimum", "Maximum"))
 }
