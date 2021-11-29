@@ -38,6 +38,12 @@ Newer versions of SPSS: output more fancy but also more cluttered (e.g., headers
 -->
 
 
+# Customization and extensions
+
+<!-- 
+Objects returned by functions in `r2spss` are typically stored as returned by the corresponding `R` functions, e.g., regression results as "lm" objects.  This is such that users can manipulate those objects in R as they are used to.  The `print()` methods to generate the `LaTeX` tables consist of two building blocks: function `toSPSS()` to convert the results into SPSS syle tables, and `latexTableSPSS()` to generate the corresponding `LaTeX` tables.  These can be used to customize the output or to create SPSS-like output for functionality not implemented in package `r2spss`.
+-->
+
 # Acknowledgements
 
 Andreas Alfons is partially supported by a grant of the Dutch Research Council 
