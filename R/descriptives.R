@@ -109,23 +109,6 @@ toSPSS.descriptivesSPSS <- function(object, digits = 2, ...) {
 #'
 #' @export
 
-# print.descriptivesSPSS <- function(x, digits = 2,
-#                                    theme = c("modern", "legacy"),
-#                                    ...) {
-#   # put table of results into SPSS format
-#   p <- ncol(x$descriptives)
-#   descriptives <- rbind(x$descriptives,
-#                         "Valid N (listwise)" = c(x$n, rep.int(NA, p)))
-#   # define header with line breaks
-#   colNames <- names(descriptives)
-#   header <- c("", gsub("Std. ", "Std.\n", colNames, fixed = TRUE))
-#   # print LaTeX table
-#   latexTableSPSS(descriptives, main = "Descriptive Statistics",
-#                  header = header, rowNames = TRUE, info = 0,
-#                  theme = theme, digits = digits,
-#                  checkInt = colNames %in% c("Minimum", "Maximum"))
-# }
-
 print.descriptivesSPSS <- function(x, theme = c("modern", "legacy"), ...) {
   # put table of results into SPSS format
   spss <- toSPSS(x, ...)

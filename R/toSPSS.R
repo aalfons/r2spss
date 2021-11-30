@@ -5,7 +5,7 @@
 
 
 ## generic function to convert R objects into an object of class
-## "setupTableSPSS", which contains all the necessary information for printing
+## "SPSSTable", which contains all the necessary information for printing
 ## the specific table in the style of SPSS output.  This allows for easy
 ## customization of the SPSS-like output, e.g., to blank out information on the
 ## degrees of freedom for use in an exam question.

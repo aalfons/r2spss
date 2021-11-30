@@ -114,29 +114,6 @@ formatSPSS.numeric <- function(object, digits = 3, pValue = FALSE,
 #' @rdname formatSPSS
 #' @export
 
-# formatSPSS.matrix <- function(object, digits = 3, pValue = NULL,
-#                               checkInt = FALSE,
-#                               # tol = .Machine$double.eps^0.5,
-#                               ...) {
-#   # initializations
-#   d <- dim(object)
-#   colNames <- colnames(object)
-#   if (is.null(pValue)) {
-#     if (is.null(colNames)) pValue <- rep.int(FALSE, d[2])
-#     else pValue <- grepl("Sig.", colNames, fixed = TRUE)
-#   } else pValue <- rep_len(pValue, d[2])
-#   checkInt <- rep_len(checkInt, d[2])
-#   # format each column and add original attributes
-#   formatted <- vapply(seq_len(d[2]), function(j) {
-#     # formatSPSS(object[, j], digits = digits, pValue = pValue[j],
-#     #            checkInt = checkInt[j], tol = tol)
-#     formatSPSS(object[, j], digits = digits, pValue = pValue[j],
-#                checkInt = checkInt[j])
-#   }, character(d[1]))
-#   attributes(formatted) <- attributes(object)
-#   # return formatted matrix
-#   formatted
-# }
 formatSPSS.matrix <- function(object, digits = 3, pValue = FALSE,
                               checkInt = FALSE, ...) {
   # initializations
@@ -158,26 +135,6 @@ formatSPSS.matrix <- function(object, digits = 3, pValue = FALSE,
 #' @rdname formatSPSS
 #' @export
 
-# formatSPSS.data.frame <- function(object, digits = 3,
-#                                   pValue = NULL, checkInt = FALSE,
-#                                   # tol = .Machine$double.eps^0.5,
-#                                   ...) {
-#   # initializations
-#   d <- dim(object)
-#   colNames <- names(object)
-#   if (is.null(pValue)) pValue <- grepl("Sig.", colNames, fixed = TRUE)
-#   else pValue <- rep_len(pValue, d[2])
-#   checkInt <- rep_len(checkInt, d[2])
-#   # format each column
-#   formatted <- mapply(function(v, pv, ci) {
-#     # formatSPSS(v, digits = digits, pValue = pv, checkInt = ci, tol = tol)
-#     formatSPSS(v, digits = digits, pValue = pv, checkInt = ci)
-#   }, v = object, pv = pValue, ci = checkInt, SIMPLIFY = FALSE, USE.NAMES = TRUE)
-#   formatted <- do.call(cbind, formatted)
-#   # add row names
-#   rownames(formatted) <- row.names(object)
-#   formatted
-# }
 formatSPSS.data.frame <- function(object, digits = 3, pValue = FALSE,
                                   checkInt = FALSE, ...) {
   # initializations
