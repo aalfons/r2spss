@@ -83,9 +83,9 @@ kruskalTest <- function(data, variable, group) {
 ## convert R results to all necessary information for SPSS-like table
 #' @export
 
-toSPSS.kruskalTestSPSS <- function(object, digits = NULL,
-                                   statistics = c("test", "ranks"),
-                                   version = c("modern", "legacy"), ...) {
+toSPSS.kruskalTestSPSS <- function(object, statistics = c("test", "ranks"),
+                                   version = c("modern", "legacy"),
+                                   digits = NULL, ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
@@ -155,9 +155,9 @@ toSPSS.kruskalTestSPSS <- function(object, digits = NULL,
 #'
 #' @export
 
-print.kruskalTestSPSS <- function(x, digits = 2:3,
-                                  statistics = c("ranks", "test"),
-                                  theme = c("modern", "legacy"), ...) {
+print.kruskalTestSPSS <- function(x, statistics = c("ranks", "test"),
+                                  theme = c("modern", "legacy"),
+                                  digits = 2:3, ...) {
 
   ## initializations
   count <- 0

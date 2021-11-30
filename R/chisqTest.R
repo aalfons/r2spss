@@ -145,9 +145,9 @@ chisqTest <- function(data, variables, p = NULL) {
 ## convert R results to all necessary information for SPSS-like table
 #' @export
 
-toSPSS.chisqTestSPSS <- function(object, digits = NULL,
-                                 statistics = c("test", "frequencies"),
-                                 version = c("modern", "legacy"), ...) {
+toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
+                                 version = c("modern", "legacy"),
+                                 digits = NULL, ...) {
   ## initializations
   statistics <- match.arg(statistics)
 
@@ -301,9 +301,9 @@ toSPSS.chisqTestSPSS <- function(object, digits = NULL,
 #'
 #' @export
 
-print.chisqTestSPSS <- function(x, digits = c(1, 3),
-                                statistics = c("frequencies", "test"),
-                                theme = c("modern", "legacy"), ...) {
+print.chisqTestSPSS <- function(x, statistics = c("frequencies", "test"),
+                                theme = c("modern", "legacy"),
+                                digits = c(1, 3), ...) {
 
   ## initializations
   count <- 0

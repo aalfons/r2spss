@@ -9,9 +9,9 @@ kruskalTest(data, variable, group)
 
 \method{print}{kruskalTestSPSS}(
   x,
-  digits = 2:3,
   statistics = c("ranks", "test"),
   theme = c("modern", "legacy"),
+  digits = 2:3,
   ...
 )
 }
@@ -26,14 +26,14 @@ interest.}
 \item{x}{an object of class \code{"kruskalTestSPSS"} as returned by
 function \code{kruskalTest}.}
 
+\item{statistics}{a character vector specifying which LaTeX tables should
+be printed.  Available options are \code{"ranks"} for a summary of the ranks
+and \code{"test"} for test results.  The default is to print both tables.}
+
 \item{digits}{an integer vector giving the number of digits after the comma
 to be printed in the LaTeX tables.  The first element corresponds to the
 number of digits in table with the summary of the ranks, and the second
 element corresponds to the number of digits in the table for the test.}
-
-\item{statistics}{a character vector specifying which LaTeX tables should
-be printed.  Available options are \code{"ranks"} for a summary of the ranks
-and \code{"test"} for test results.  The default is to print both tables.}
 
 \item{\dots}{currently ignored.}
 }

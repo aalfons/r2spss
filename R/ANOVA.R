@@ -228,9 +228,9 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
 ## convert R results to all necessary information for SPSS-like table
 #' @export
 
-toSPSS.ANOVASPSS <- function(object, digits = 3,
+toSPSS.ANOVASPSS <- function(object,
                              statistics = c("test", "variance", "descriptives"),
-                             version = c("modern", "legacy"), ...) {
+                             version = c("modern", "legacy"), digits = 3, ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
