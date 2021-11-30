@@ -80,6 +80,66 @@ kruskalTest <- function(data, variable, group) {
 }
 
 
+## convert R results to all necessary information for SPSS-like table
+#' @export
+
+toSPSS.kruskalTestSPSS <- function(object, digits = NULL,
+                                   statistics = c("test", "ranks"),
+                                   version = c("modern", "legacy"), ...) {
+
+  ## initializations
+  statistics <- match.arg(statistics)
+
+  ## put requested results into SPSS format
+  if (statistics == "ranks") {
+    # initializations
+    if (is.null(digits)) digits <- 2
+    # put table into SPSS format
+    p <- ncol(object$statistics)
+    N <- sum(object$statistics$N)
+    ranks <- rbind(object$statistics, Total = c(N, rep.int(NA, p)))
+    # format table nicely
+    formatted <- formatSPSS(ranks, digits = digits, ...)
+    # define header
+    header <- c("", object$group, names(ranks))
+    # construct list containing all necessary information
+    spss <- list(table = formatted, main = "Ranks", header = header,
+                 label = object$variable, rowNames = TRUE, info = 0)
+  } else if (statistics == "test") {
+    # initializations
+    if (is.null(digits)) digits <- 3
+    version <- match.arg(version)
+    legacy <- version == "legacy"
+
+    # put test results into SPSS format
+    rn <- c(if (legacy) "Chi-Square" else "Kruskal-Wallis H",
+            "df", "Asymp. Sig.")
+    test <- data.frame(unlist(object$test), row.names = rn)
+    names(test) <- object$variable
+    # format table nicely
+    args <- list(test, digits = digits, ...)
+    if (is.null(args$pValue)) args$pValue <- !legacy
+    if (is.null(args$checkInt)) args$checkInt <- TRUE
+    formatted <- do.call(formatSPSS, args)
+    # define footnotes
+    footnotes <- c("Kruskal Wallis Test",
+                   paste("Grouping Variable:", object$group))
+    footnotes <- data.frame(marker = c("a", "b"), row = rep.int("main", 2),
+                            column = rep.int(NA_integer_, 2),
+                            text = footnotes)
+    # construct list containing all necessary information
+    spss <- list(table = formatted, main = "Test Statistics",
+                 header = TRUE, rowNames = TRUE, info = 0,
+                 footnotes = footnotes, version = version)
+  } else stop ("type of 'statistics' not supported")  # shouldn't happen
+
+  # add class and return object
+  class(spss) <- "SPSSTable"
+  spss
+
+}
+
+
 #' @rdname kruskalTest
 #'
 #' @param x  an object of class \code{"kruskalTestSPSS"} as returned by
@@ -107,16 +167,12 @@ print.kruskalTestSPSS <- function(x, digits = 2:3,
 
   ## print LaTeX table for ranks
   if ("ranks" %in% statistics) {
+    cat("\n")
     # put table into SPSS format
-    p <- ncol(x$statistics)
-    N <- sum(x$statistics$N)
-    ranks <- rbind(x$statistics, Total = c(N, rep.int(NA, p)))
-    # define header
-    header <- c("", x$group, names(ranks))
+    spss <- toSPSS(x, digits = digits[1], statistics = "ranks",
+                   version = theme, ...)
     # print LaTeX table
-    latexTableSPSS(ranks, main = "Ranks", header = header,
-                   label = x$variable, rowNames = TRUE, info = 0,
-                   theme = theme, digits = digits[1])
+    toLatex(spss, theme = theme)
     cat("\n")
     count <- count + 1
   }
@@ -126,20 +182,59 @@ print.kruskalTestSPSS <- function(x, digits = 2:3,
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
     # put test results into SPSS format
-    rn <- c(if (legacy) "Chi-Square" else "Kruskal-Wallis H",
-            "df", "Asymp. Sig.")
-    test <- data.frame(unlist(x$test), row.names = rn)
-    names(test) <- x$variable
-    # define footnotes
-    footnotes <- c("Kruskal Wallis Test",
-                   paste("Grouping Variable:", x$group))
-    footnotes <- data.frame(marker = c("a", "b"), row = rep.int("main", 2),
-                            column = rep.int(NA_integer_, 2),
-                            text = footnotes)
-    # print table
-    latexTableSPSS(test, main = "Test Statistics", rowNames = TRUE,
-                   info = 0, footnotes = footnotes, theme = theme,
-                   digits = digits[2], pValue = !legacy, checkInt = TRUE)
+    spss <- toSPSS(x, digits = digits[2], statistics = "test",
+                   version = theme, ...)
+    # print LaTeX table
+    toLatex(spss, theme = theme)
     cat("\n")
   }
 }
+
+# print.kruskalTestSPSS <- function(x, digits = 2:3,
+#                                   statistics = c("ranks", "test"),
+#                                   theme = c("modern", "legacy"), ...) {
+#
+#   ## initializations
+#   count <- 0
+#   statistics <- match.arg(statistics, several.ok=TRUE)
+#   theme <- match.arg(theme)
+#   legacy <- theme == "legacy"
+#
+#   ## print LaTeX table for ranks
+#   if ("ranks" %in% statistics) {
+#     # put table into SPSS format
+#     p <- ncol(x$statistics)
+#     N <- sum(x$statistics$N)
+#     ranks <- rbind(x$statistics, Total = c(N, rep.int(NA, p)))
+#     # define header
+#     header <- c("", x$group, names(ranks))
+#     # print LaTeX table
+#     latexTableSPSS(ranks, main = "Ranks", header = header,
+#                    label = x$variable, rowNames = TRUE, info = 0,
+#                    theme = theme, digits = digits[1])
+#     cat("\n")
+#     count <- count + 1
+#   }
+#
+#   ## print LaTeX table for test
+#   if ("test" %in% statistics) {
+#     if (count == 0) cat("\n")
+#     else cat("\\medskip\n")
+#     # put test results into SPSS format
+#     rn <- c(if (legacy) "Chi-Square" else "Kruskal-Wallis H",
+#             "df", "Asymp. Sig.")
+#     test <- data.frame(unlist(x$test), row.names = rn)
+#     names(test) <- x$variable
+#     # define footnotes
+#     footnotes <- c("Kruskal Wallis Test",
+#                    paste("Grouping Variable:", x$group))
+#     footnotes <- data.frame(marker = c("a", "b"), row = rep.int("main", 2),
+#                             column = rep.int(NA_integer_, 2),
+#                             text = footnotes)
+#     # print table
+#     latexTableSPSS(test, main = "Test Statistics", rowNames = TRUE,
+#                    info = 0, footnotes = footnotes, theme = theme,
+#                    digits = digits[2], pValue = !legacy, checkInt = TRUE)
+#     cat("\n")
+#   }
+# }

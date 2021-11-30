@@ -7,7 +7,7 @@
 \usage{
 descriptives(data, variables)
 
-\method{print}{descriptivesSPSS}(x, digits = 2, theme = c("modern", "legacy"), ...)
+\method{print}{descriptivesSPSS}(x, theme = c("modern", "legacy"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -18,10 +18,10 @@ to compute descriptive statistics.}
 \item{x}{an object of class \code{"descriptivesSPSS"} as returned by
 function \code{descriptives}.}
 
+\item{\dots}{currently ignored.}
+
 \item{digits}{an integer giving the number of digits after the comma to be
 printed in the LaTeX table.}
-
-\item{\dots}{currently ignored.}
 }
 \value{
 An object of class \code{"descriptivesSPSS"} with the following components:

@@ -224,6 +224,218 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
   out
 }
 
+
+## convert R results to all necessary information for SPSS-like table
+#' @export
+
+toSPSS.ANOVASPSS <- function(object, digits = 3,
+                             statistics = c("test", "variance", "descriptives"),
+                             version = c("modern", "legacy"), ...) {
+
+  ## initializations
+  statistics <- match.arg(statistics)
+
+  ## put requested results into SPSS format
+  if (statistics == "descriptives") {
+
+    if (object$type == "one-way") {
+      # format table nicely
+      formatted <- formatSPSS(object$descriptives, digits = digits, ...)
+      # construct list defining header layout
+      header <- c("", names(object$descriptives))
+      lower <- which(header == "Lower Bound")
+      upper <- which(header == "Upper Bound")
+      header <- gsub(" ", "\n", header, fixed = TRUE)  # add line breaks
+      ciHeader <- list(header[lower:upper])
+      names(ciHeader) <- paste0(format(100*object$conf.level, digits=digits),
+                                "\\% Confidence\nInterval for Mean")
+      header <- c(as.list(header[seq_len(lower-1)]), ciHeader,
+                  as.list(header[-seq_len(upper)]))
+      # construct list containing all necessary information
+      spss <- list(table = formatted, main = "Descriptives",
+                   sub = object$variable, header = header,
+                   rowNames = TRUE, info = 0)
+    } else if (object$type == "two-way") {
+      # extract relevant information
+      descriptives <- object$descriptives
+      first <- object$group[1]
+      nLevels <- c(nlevels(descriptives[, first]),
+                   nlevels(descriptives[, object$group[2]]))
+      # print values of first grouping variable only on first occurrence
+      descriptives[, first] <- ifelse(duplicated(descriptives[, first]),
+                                      "", as.character(descriptives[, first]))
+      # format table nicely
+      formatted <- formatSPSS(descriptives, digits = digits, ...)
+      # define header with line breaks
+      header <- gsub("Std. Deviation", "Std.\nDeviation", names(descriptives),
+                     fixed = TRUE)
+      # define positions for major grid lines
+      major <- seq(from = nLevels[2], by = nLevels[2],
+                   length.out = nLevels[1] - 1)
+      # construct list containing all necessary information
+      spss <- list(table = formatted, main = "Descriptive Statistics",
+                   sub = paste("Dependent variable:", object$variable),
+                   header = header, rowNames = FALSE, info = 2,
+                   major = major)
+    } else stop("type of ANOVA not supported")
+
+  } else {
+
+    ## initializations
+    version <- match.arg(version)
+    legacy <- version == "legacy"
+
+    if (statistics == "variance") {
+
+      ## create table with Levene test results
+      if (legacy) {
+        # put Levene test results into SPSS format
+        levene <- object$levene$mean
+        levene <- data.frame("Levene Statistic" = levene[1, "F value"],
+                             "df1" = as.integer(levene$Df[1]),
+                             "df2" = levene$Df[2],
+                             "Sig." = levene[1, "Pr(>F)"],
+                             row.names = NULL, check.names = FALSE)
+        # format table nicely
+        formatted <- formatSPSS(levene, digits = digits, ...)
+      } else {
+        # put Levene test results into SPSS format
+        levene <- lapply(object$levene, function(levene) {
+          data.frame("Levene Statistic" = levene[1, "F value"],
+                     "df1" = as.integer(levene$Df[1]),
+                     "df2" = levene$Df[2],
+                     "Sig." = levene[1, "Pr(>F)"],
+                     row.names = NULL, check.names = FALSE)
+        })
+        levene <- do.call(rbind, levene)
+        # format table nicely
+        args <- list(levene, digits = digits, ...)
+        if (is.null(args$pValue)) args$pValue <- names(levene) == "Sig."
+        if (is.null(args$checkInt)) args$checkInt <- names(levene) == "df2"
+        formatted <- do.call(formatSPSS, args)
+        # define header with line breaks
+        header <- c("", "",
+                    gsub("Levene Statistic", "Levene\nStatistic", names(levene),
+                         fixed = TRUE))
+        # define nice labels for the rows
+        rowLabels <- c(mean = "Mean", median = "Median",
+                       adjusted = "Median and with adjusted df",
+                       trimmed = "trimmed mean")
+        rowLabels <- paste("Based on", rowLabels[row.names(levene)])
+        # define column widths
+        width <- c("", "0.3\\linewidth", rep.int("", ncol(levene)))
+      }
+      ## construct list containing all necessary information
+      if (object$type == "one-way") {
+        if (legacy) {
+          spss <- list(table = formatted,
+                       main = "Test of Homogeneity of Variances",
+                       header = TRUE, rowNames = FALSE, info = 0,
+                       version = "legacy")
+        } else {
+          spss <- list(table = formatted,
+                       main = "Tests of Homogeneity of Variances",
+                       header = header, label = object$variable,
+                       rowNames = rowLabels, info = 0, width = width,
+                       version = "modern")
+        }
+      } else if (object$type == "two-way") {
+        if (legacy) {
+          # define main title
+          main <- "Levene's Test of Equality of\nError Variances"
+          sub <- paste("Dependent variable:", object$variable)
+          # define footnotes
+          footnotes <- c("Tests the null hypothesis that the\nerror variance of the dependent\nvariable is equal across groups.",
+                         paste0("Design: Intercept + ", object$group[1], " +\n",
+                                object$group[2], " + ", object$group[1], " * ",
+                                object$group[2]))
+          footnotes <- data.frame(marker = c("", "a"), row = c(NA, "main"),
+                                  column = rep(NA_integer_, 2), text = footnotes)
+          # construct list
+          spss <- list(table = formatted, main = main, sub = sub, header = TRUE,
+                       rowNames = FALSE, info = 0, footnotes = footnotes,
+                       version = "legacy")
+        } else {
+          # define main title
+          main <- "Levene's Test of Equality of Error Variances"
+          # define footnotes
+          footnotes <- c("Tests the null hypothesis that the error variance of the dependent variable\nis equal across groups.",
+                         paste("Dependent variable:", object$variable),
+                         paste0("Design: Intercept + ", object$group[1], " + ",
+                                object$group[2], " + ", object$group[1], " * ",
+                                object$group[2]))
+          footnotes <- data.frame(marker = c("", "a", "b"),
+                                  row = c(NA, "main", "main"),
+                                  column = rep(NA_integer_, 3),
+                                  text = footnotes)
+          # construct list
+          spss <- list(table = formatted, main = main, header = header,
+                       label = object$variable, rowNames = rowLabels, info = 0,
+                       width = width, footnotes = footnotes, version = "modern")
+        }
+      } else stop("type of ANOVA not supported")
+
+    } else if (statistics == "test") {
+
+      ## put ANOVA table into SPSS format
+      if (object$type == "one-way") {
+        test <- data.frame("Sum of Squares" = c(object$test[, "Sum Sq"],
+                                                sum(object$test[, "Sum Sq"])),
+                           "df" = c(object$test$Df, sum(object$test$Df)),
+                           "Mean Square" = c(object$test[, "Mean Sq"], NA_real_),
+                           "F" = c(object$test[, "F value"], NA_real_),
+                           "Sig." = c(object$test[, "Pr(>F)"], NA_real_),
+                           row.names = NULL, check.names = FALSE)
+        row.names(test) <- c(row.names(object$test), "Total")
+      } else if(object$type == "two-way") {
+        test <- object$test
+        names(test) <- c("Type III Sum of Squares", "df",
+                         "Mean Square", "F", "Sig.")
+      } else stop("type of ANOVA not supported")
+      ## format table nicely
+      if (legacy) formatted <- formatSPSS(test, digits = digits, ...)
+      else {
+        args <- list(test, digits = digits, ...)
+        if (is.null(args$pValue)) args$pValue <- names(test) == "Sig."
+        formatted <- do.call(formatSPSS, args)
+      }
+      ## construct list containing all necessary information
+      if (object$type == "one-way") {
+        spss <- list(table = formatted, main = "ANOVA", sub = object$variable,
+                     header = TRUE, rowNames = TRUE, info = 0,
+                     version = version)
+      } else if (object$type == "two-way") {
+        # define header with line breaks
+        header <- c("Source",
+                    gsub("Sum of", "Sum\nof", names(test), fixed = TRUE))
+        # define footnotes
+        RSq <- 1 - object$test["Error", "Sum Sq"] / object$test["Corrected Total", "Sum Sq"]
+        AdjRSq <- 1 - object$test["Error", "Mean Sq"] /
+          (object$test["Corrected Total", "Sum Sq"] / object$test["Corrected Total", "Df"])
+        footnote <- paste0("R Squared = ", formatSPSS(RSq, digits=digits),
+                           " (Adjusted R Squared = ",
+                           formatSPSS(AdjRSq, digits=digits), ")")
+        footnotes <- data.frame(marker = "a", row = 1, column = 1,
+                                text = footnote)
+        # construct list
+        spss <- list(table = formatted,
+                     main = "Tests of Between-Subject Effects",
+                     sub = paste("Dependent Variable:", object$variable),
+                     header = header, rowNames = TRUE, info = 0,
+                     footnotes = footnotes, version = version)
+      }
+
+    } else stop ("type of 'statistics' not supported")  # shouldn't happen
+
+  }
+
+  # add class and return object
+  class(spss) <- "SPSSTable"
+  spss
+
+}
+
+
 #' @rdname ANOVA
 #'
 #' @param x  an object of class \code{"ANOVASPSS"} as returned by function
@@ -238,7 +450,7 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
 #'
 #' @export
 
-print.ANOVASPSS <- function(x, digits = 3,
+print.ANOVASPSS <- function(x,
                             statistics = c("descriptives", "variance", "test"),
                             theme = c("modern", "legacy"), ...) {
 
@@ -251,43 +463,10 @@ print.ANOVASPSS <- function(x, digits = 3,
   ## print LaTeX table for descriptives
   if ("descriptives" %in% statistics) {
     cat("\n")
+    # put frequencies into SPSS format
+    spss <- toSPSS(x, statistics = "descriptives", version = theme, ...)
     # print LaTeX table
-    if (x$type == "one-way") {
-      # construct list defining header layout
-      header <- c("", names(x$descriptives))
-      lower <- which(header == "Lower Bound")
-      upper <- which(header == "Upper Bound")
-      header <- gsub(" ", "\n", header, fixed = TRUE)  # add line breaks
-      ciHeader <- list(header[lower:upper])
-      names(ciHeader) <- paste0(format(100*x$conf.level, digits=digits),
-                                "\\% Confidence\nInterval for Mean")
-      header <- c(as.list(header[seq_len(lower-1)]), ciHeader,
-                  as.list(header[-seq_len(upper)]))
-      # print LaTeX table
-      latexTableSPSS(x$descriptives, main = "Descriptives", sub = x$variable,
-                     header = header, rowNames = TRUE, info = 0, theme = theme,
-                     digits = digits)
-    } else if (x$type == "two-way") {
-      # extract relevant information
-      descriptives <- x$descriptives
-      first <- x$group[1]
-      nLevels <- c(nlevels(descriptives[, first]),
-                   nlevels(descriptives[, x$group[2]]))
-      # print values of first grouping variable only on first occurrence
-      descriptives[, first] <- ifelse(duplicated(descriptives[, first]),
-                                      "", as.character(descriptives[, first]))
-      # define header with line breaks
-      header <- gsub("Std. Deviation", "Std.\nDeviation", names(descriptives),
-                     fixed = TRUE)
-      # define positions for major grid lines
-      major <- seq(from = nLevels[2], by = nLevels[2],
-                   length.out = nLevels[1] - 1)
-      # print LaTeX table
-      latexTableSPSS(descriptives, main = "Descriptive Statistics",
-                     sub = paste("Dependent variable:", x$variable),
-                     header = header, rowNames = FALSE, info = 2,
-                     major = major, theme = theme, digits = digits)
-    } else stop("type of ANOVA not supported")
+    toLatex(spss, theme = theme)
     cat("\n")
     count <- count + 1
   }
@@ -296,81 +475,10 @@ print.ANOVASPSS <- function(x, digits = 3,
   if ("variance" %in% statistics) {
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
-    if (legacy) {
-      # put Levene test results into SPSS format
-      levene <- x$levene$mean
-      levene <- data.frame("Levene Statistic" = levene[1, "F value"],
-                           "df1" = as.integer(levene$Df[1]),
-                           "df2" = levene$Df[2],
-                           "Sig." = levene[1, "Pr(>F)"],
-                           row.names = NULL, check.names = FALSE)
-    } else {
-      # put Levene test results into SPSS format
-      levene <- lapply(x$levene, function(levene) {
-        data.frame("Levene Statistic" = levene[1, "F value"],
-                   "df1" = as.integer(levene$Df[1]),
-                   "df2" = levene$Df[2],
-                   "Sig." = levene[1, "Pr(>F)"],
-                   row.names = NULL, check.names = FALSE)
-      })
-      levene <- do.call(rbind, levene)
-      # define header with line breaks
-      header <- c("", "",
-                  gsub("Levene Statistic", "Levene\nStatistic", names(levene),
-                       fixed = TRUE))
-      # define nice labels for the rows
-      rowLabels <- c(mean = "Mean", median = "Median",
-                     adjusted = "Median and with adjusted df",
-                     trimmed = "trimmed mean")
-      rowLabels <- paste("Based on", rowLabels[row.names(levene)])
-      # define column widths
-      width <- c("", "0.3\\linewidth", rep.int("", ncol(levene)))
-    }
+    # put frequencies into SPSS format
+    spss <- toSPSS(x, statistics = "variance", version = theme, ...)
     # print LaTeX table
-    if (x$type == "one-way") {
-      if (legacy) {
-        latexTableSPSS(levene, main = "Test of Homogeneity of Variances",
-                       rowNames = FALSE, info = 0, theme = "legacy",
-                       digits = digits)
-      } else {
-        latexTableSPSS(levene, main = "Tests of Homogeneity of Variances",
-                       header = header, label = x$variable,
-                       rowNames = rowLabels, info = 0, width = width,
-                       theme = "modern", digits = digits,
-                       checkInt = grepl("df", names(levene)))
-      }
-    } else if (x$type == "two-way") {
-      if (legacy) {
-        # define main title
-        main <- "Levene's Test of Equality of\nError Variances"
-        sub <- paste("Dependent variable:", x$variable)
-        # define footnotes
-        footnotes <- c("Tests the null hypothesis that the\nerror variance of the dependent\nvariable is equal across groups.",
-                       paste0("Design: Intercept + ", x$group[1], " +\n", x$group[2], " + ", x$group[1], " * ", x$group[2]))
-        footnotes <- data.frame(marker = c("", "a"), row = c(NA, "main"),
-                                column = rep(NA_integer_, 2), text = footnotes)
-        # print table
-        latexTableSPSS(levene, main = main, sub = sub, rowNames = FALSE,
-                       info = 0, footnotes = footnotes, theme = "legacy",
-                       digits = digits)
-      } else {
-        # define main title
-        main <- "Levene's Test of Equality of Error Variances"
-        # define footnotes
-        footnotes <- c("Tests the null hypothesis that the error variance of the dependent variable\nis equal across groups.",
-                       paste("Dependent variable:", x$variable),
-                       paste0("Design: Intercept + ", x$group[1], " + ", x$group[2], " + ", x$group[1], " * ", x$group[2]))
-        footnotes <- data.frame(marker = c("", "a", "b"),
-                                row = c(NA, "main", "main"),
-                                column = rep(NA_integer_, 3),
-                                text = footnotes)
-        # print table
-        latexTableSPSS(levene, main = main, header = header,
-                       label = x$variable, rowNames = rowLabels, info = 0,
-                       width = width, footnotes = footnotes, theme = "modern",
-                       digits = digits, checkInt = grepl("df", names(levene)))
-      }
-    } else stop("type of ANOVA not supported")
+    toLatex(spss, theme = theme)
     cat("\n")
   }
 
@@ -378,46 +486,194 @@ print.ANOVASPSS <- function(x, digits = 3,
   if ("test" %in% statistics) {
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
+    # put frequencies into SPSS format
+    spss <- toSPSS(x, statistics = "test", version = theme, ...)
     # print LaTeX table
-    if (x$type == "one-way") {
-      # put ANOVA table into SPSS format
-      test <- data.frame("Sum of Squares" = c(x$test[, "Sum Sq"],
-                                              sum(x$test[, "Sum Sq"])),
-                         "df" = c(x$test$Df, sum(x$test$Df)),
-                         "Mean Square" = c(x$test[, "Mean Sq"], NA_real_),
-                         "F" = c(x$test[, "F value"], NA_real_),
-                         "Sig." = c(x$test[, "Pr(>F)"], NA_real_),
-                         row.names = NULL, check.names = FALSE)
-      row.names(test) <- c(row.names(x$test), "Total")
-      # print LaTeX table
-      latexTableSPSS(test, main = "ANOVA", sub = x$variable, rowNames = TRUE,
-                     info = 0, theme = theme, digits = digits)
-    } else if (x$type == "two-way") {
-      # put ANOVA table into SPSS format
-      test <- x$test
-      names(test) <- c("Type III Sum of Squares", "df",
-                       "Mean Square", "F", "Sig.")
-      # define header with line breaks
-      header <- c("Source",
-                  gsub("Sum of", "Sum\nof", names(test), fixed = TRUE))
-      # define footnotes
-      RSq <- 1 - x$test["Error", "Sum Sq"] / x$test["Corrected Total", "Sum Sq"]
-      AdjRSq <- 1 - x$test["Error", "Mean Sq"] /
-        (x$test["Corrected Total", "Sum Sq"] / x$test["Corrected Total", "Df"])
-      footnote <- paste0("R Squared = ", formatSPSS(RSq, digits=digits),
-                         " (Adjusted R Squared = ",
-                         formatSPSS(AdjRSq, digits=digits), ")")
-      footnotes <- data.frame(marker = "a", row = 1, column = 1,
-                              text = footnote)
-      # print LaTeX table
-      latexTableSPSS(test, main = "Tests of Between-Subject Effects",
-                     sub = paste("Dependent Variable:", x$variable),
-                     header = header, rowNames = TRUE, info = 0,
-                     footnotes = footnotes, theme = theme, digits = digits)
-    } else stop("type of ANOVA not supported")
+    toLatex(spss, theme = theme)
     cat("\n")
   }
 }
+
+# print.ANOVASPSS <- function(x, digits = 3,
+#                             statistics = c("descriptives", "variance", "test"),
+#                             theme = c("modern", "legacy"), ...) {
+#
+#   ## initializations
+#   count <- 0
+#   statistics <- match.arg(statistics, several.ok=TRUE)
+#   theme <- match.arg(theme)
+#   legacy <- theme == "legacy"
+#
+#   ## print LaTeX table for descriptives
+#   if ("descriptives" %in% statistics) {
+#     cat("\n")
+#     # print LaTeX table
+#     if (x$type == "one-way") {
+#       # construct list defining header layout
+#       header <- c("", names(x$descriptives))
+#       lower <- which(header == "Lower Bound")
+#       upper <- which(header == "Upper Bound")
+#       header <- gsub(" ", "\n", header, fixed = TRUE)  # add line breaks
+#       ciHeader <- list(header[lower:upper])
+#       names(ciHeader) <- paste0(format(100*x$conf.level, digits=digits),
+#                                 "\\% Confidence\nInterval for Mean")
+#       header <- c(as.list(header[seq_len(lower-1)]), ciHeader,
+#                   as.list(header[-seq_len(upper)]))
+#       # print LaTeX table
+#       latexTableSPSS(x$descriptives, main = "Descriptives", sub = x$variable,
+#                      header = header, rowNames = TRUE, info = 0, theme = theme,
+#                      digits = digits)
+#     } else if (x$type == "two-way") {
+#       # extract relevant information
+#       descriptives <- x$descriptives
+#       first <- x$group[1]
+#       nLevels <- c(nlevels(descriptives[, first]),
+#                    nlevels(descriptives[, x$group[2]]))
+#       # print values of first grouping variable only on first occurrence
+#       descriptives[, first] <- ifelse(duplicated(descriptives[, first]),
+#                                       "", as.character(descriptives[, first]))
+#       # define header with line breaks
+#       header <- gsub("Std. Deviation", "Std.\nDeviation", names(descriptives),
+#                      fixed = TRUE)
+#       # define positions for major grid lines
+#       major <- seq(from = nLevels[2], by = nLevels[2],
+#                    length.out = nLevels[1] - 1)
+#       # print LaTeX table
+#       latexTableSPSS(descriptives, main = "Descriptive Statistics",
+#                      sub = paste("Dependent variable:", x$variable),
+#                      header = header, rowNames = FALSE, info = 2,
+#                      major = major, theme = theme, digits = digits)
+#     } else stop("type of ANOVA not supported")
+#     cat("\n")
+#     count <- count + 1
+#   }
+#
+#   ## print LaTeX table for Levene test
+#   if ("variance" %in% statistics) {
+#     if (count == 0) cat("\n")
+#     else cat("\\medskip\n")
+#     if (legacy) {
+#       # put Levene test results into SPSS format
+#       levene <- x$levene$mean
+#       levene <- data.frame("Levene Statistic" = levene[1, "F value"],
+#                            "df1" = as.integer(levene$Df[1]),
+#                            "df2" = levene$Df[2],
+#                            "Sig." = levene[1, "Pr(>F)"],
+#                            row.names = NULL, check.names = FALSE)
+#     } else {
+#       # put Levene test results into SPSS format
+#       levene <- lapply(x$levene, function(levene) {
+#         data.frame("Levene Statistic" = levene[1, "F value"],
+#                    "df1" = as.integer(levene$Df[1]),
+#                    "df2" = levene$Df[2],
+#                    "Sig." = levene[1, "Pr(>F)"],
+#                    row.names = NULL, check.names = FALSE)
+#       })
+#       levene <- do.call(rbind, levene)
+#       # define header with line breaks
+#       header <- c("", "",
+#                   gsub("Levene Statistic", "Levene\nStatistic", names(levene),
+#                        fixed = TRUE))
+#       # define nice labels for the rows
+#       rowLabels <- c(mean = "Mean", median = "Median",
+#                      adjusted = "Median and with adjusted df",
+#                      trimmed = "trimmed mean")
+#       rowLabels <- paste("Based on", rowLabels[row.names(levene)])
+#       # define column widths
+#       width <- c("", "0.3\\linewidth", rep.int("", ncol(levene)))
+#     }
+#     # print LaTeX table
+#     if (x$type == "one-way") {
+#       if (legacy) {
+#         latexTableSPSS(levene, main = "Test of Homogeneity of Variances",
+#                        rowNames = FALSE, info = 0, theme = "legacy",
+#                        digits = digits)
+#       } else {
+#         latexTableSPSS(levene, main = "Tests of Homogeneity of Variances",
+#                        header = header, label = x$variable,
+#                        rowNames = rowLabels, info = 0, width = width,
+#                        theme = "modern", digits = digits,
+#                        checkInt = grepl("df", names(levene)))
+#       }
+#     } else if (x$type == "two-way") {
+#       if (legacy) {
+#         # define main title
+#         main <- "Levene's Test of Equality of\nError Variances"
+#         sub <- paste("Dependent variable:", x$variable)
+#         # define footnotes
+#         footnotes <- c("Tests the null hypothesis that the\nerror variance of the dependent\nvariable is equal across groups.",
+#                        paste0("Design: Intercept + ", x$group[1], " +\n", x$group[2], " + ", x$group[1], " * ", x$group[2]))
+#         footnotes <- data.frame(marker = c("", "a"), row = c(NA, "main"),
+#                                 column = rep(NA_integer_, 2), text = footnotes)
+#         # print table
+#         latexTableSPSS(levene, main = main, sub = sub, rowNames = FALSE,
+#                        info = 0, footnotes = footnotes, theme = "legacy",
+#                        digits = digits)
+#       } else {
+#         # define main title
+#         main <- "Levene's Test of Equality of Error Variances"
+#         # define footnotes
+#         footnotes <- c("Tests the null hypothesis that the error variance of the dependent variable\nis equal across groups.",
+#                        paste("Dependent variable:", x$variable),
+#                        paste0("Design: Intercept + ", x$group[1], " + ", x$group[2], " + ", x$group[1], " * ", x$group[2]))
+#         footnotes <- data.frame(marker = c("", "a", "b"),
+#                                 row = c(NA, "main", "main"),
+#                                 column = rep(NA_integer_, 3),
+#                                 text = footnotes)
+#         # print table
+#         latexTableSPSS(levene, main = main, header = header,
+#                        label = x$variable, rowNames = rowLabels, info = 0,
+#                        width = width, footnotes = footnotes, theme = "modern",
+#                        digits = digits, checkInt = grepl("df", names(levene)))
+#       }
+#     } else stop("type of ANOVA not supported")
+#     cat("\n")
+#   }
+#
+#   ## print LaTeX table for ANOVA
+#   if ("test" %in% statistics) {
+#     if (count == 0) cat("\n")
+#     else cat("\\medskip\n")
+#     # print LaTeX table
+#     if (x$type == "one-way") {
+#       # put ANOVA table into SPSS format
+#       test <- data.frame("Sum of Squares" = c(x$test[, "Sum Sq"],
+#                                               sum(x$test[, "Sum Sq"])),
+#                          "df" = c(x$test$Df, sum(x$test$Df)),
+#                          "Mean Square" = c(x$test[, "Mean Sq"], NA_real_),
+#                          "F" = c(x$test[, "F value"], NA_real_),
+#                          "Sig." = c(x$test[, "Pr(>F)"], NA_real_),
+#                          row.names = NULL, check.names = FALSE)
+#       row.names(test) <- c(row.names(x$test), "Total")
+#       # print LaTeX table
+#       latexTableSPSS(test, main = "ANOVA", sub = x$variable, rowNames = TRUE,
+#                      info = 0, theme = theme, digits = digits)
+#     } else if (x$type == "two-way") {
+#       # put ANOVA table into SPSS format
+#       test <- x$test
+#       names(test) <- c("Type III Sum of Squares", "df",
+#                        "Mean Square", "F", "Sig.")
+#       # define header with line breaks
+#       header <- c("Source",
+#                   gsub("Sum of", "Sum\nof", names(test), fixed = TRUE))
+#       # define footnotes
+#       RSq <- 1 - x$test["Error", "Sum Sq"] / x$test["Corrected Total", "Sum Sq"]
+#       AdjRSq <- 1 - x$test["Error", "Mean Sq"] /
+#         (x$test["Corrected Total", "Sum Sq"] / x$test["Corrected Total", "Df"])
+#       footnote <- paste0("R Squared = ", formatSPSS(RSq, digits=digits),
+#                          " (Adjusted R Squared = ",
+#                          formatSPSS(AdjRSq, digits=digits), ")")
+#       footnotes <- data.frame(marker = "a", row = 1, column = 1,
+#                               text = footnote)
+#       # print LaTeX table
+#       latexTableSPSS(test, main = "Tests of Between-Subject Effects",
+#                      sub = paste("Dependent Variable:", x$variable),
+#                      header = header, rowNames = TRUE, info = 0,
+#                      footnotes = footnotes, theme = theme, digits = digits)
+#     } else stop("type of ANOVA not supported")
+#     cat("\n")
+#   }
+# }
 
 
 #' @rdname ANOVA

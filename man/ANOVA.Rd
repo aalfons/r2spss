@@ -10,7 +10,6 @@ ANOVA(data, variable, group, conf.level = 0.95)
 
 \method{print}{ANOVASPSS}(
   x,
-  digits = 3,
   statistics = c("descriptives", "variance", "test"),
   theme = c("modern", "legacy"),
   ...
@@ -31,9 +30,6 @@ the confidence interval.}
 
 \item{x}{an object of class \code{"ANOVASPSS"} as returned by function
 \code{ANOVA}.}
-
-\item{digits}{an integer giving the number of digits after the comma to be
-printed in the LaTeX tables.}
 
 \item{statistics}{a character vector specifying which LaTeX tables should
 be printed.  Available options are \code{"descriptives"} for descriptive
@@ -58,6 +54,9 @@ values are \code{"o"} (the default) for overplotted points and lines, and
 \code{"l"} for lines only.}
 
 \item{main, xlab, ylab}{the plot title and axis labels.}
+
+\item{digits}{an integer giving the number of digits after the comma to be
+printed in the LaTeX tables.}
 }
 \value{
 An object of class \code{"ANOVASPSS"} with the following components:

@@ -6,14 +6,15 @@
 #' Format Objects
 #'
 #' Format an object for printing, mostly used to print numeric data in the same
-#' way SPSS.  This is mainly for internal use in \code{\link{print}} methods.
+#' way as SPSS.  This is mainly for internal use in \code{\link{print}} methods.
 #'
-#' @param x  an \R object, typically numeric.  Currently methods are
-#' implemented for vectors, matrices and data frames.  The default method calls
+#' @param object  an \R object.  Currently methods are implemented
+#' for vectors, matrices, and data frames.  The default method calls
 #' \code{\link{as.character}}.
 #' @param \dots  additional arguments passed down to methods.
 #'
-#' @return A character vector or matrix containing the formatted object.
+#' @return A character vector, matrix, or data frame containing the formatted
+#' object.
 #'
 #' @author Andreas Alfons
 #'
@@ -26,26 +27,26 @@
 #'
 #' @export
 
-formatSPSS <- function(x, ...) UseMethod("formatSPSS")
+formatSPSS <- function(object, ...) UseMethod("formatSPSS")
 
 
 #' @rdname formatSPSS
 #' @export
 
-formatSPSS.default <- function(x, ...) as.character(x)
+formatSPSS.default <- function(object, ...) as.character(object)
 
 
 #' @rdname formatSPSS
 #' @export
 
-formatSPSS.integer <- function(x, ...) {
+formatSPSS.integer <- function(object, ...) {
   # define format for integers
-  n <- length(x)
+  n <- length(object)
   fmt <- rep.int("%d", n)
   # use empty string for NA
-  fmt <- ifelse(is.finite(x), fmt, "")
+  fmt <- ifelse(is.finite(object), fmt, "")
   # convert integers to strings
-  sprintf(fmt, x)
+  sprintf(fmt, object)
 }
 
 
@@ -56,7 +57,8 @@ formatSPSS.integer <- function(x, ...) {
 #'
 #' @export
 
-formatSPSS.numeric <- function(x, digits = 3, pValue = FALSE, checkInt = FALSE,
+formatSPSS.numeric <- function(object, digits = 3, pValue = FALSE,
+                               checkInt = FALSE,
                                # tol = .Machine$double.eps^0.5,
                                ...) {
   # initializations
@@ -72,11 +74,11 @@ formatSPSS.numeric <- function(x, digits = 3, pValue = FALSE, checkInt = FALSE,
   # }
   # -----
   # define format with specified number of digits
-  n <- length(x)
+  n <- length(object)
   digits <- rep_len(digits, n)
   fmt <- paste0("%.", digits, "f")
   # use empty string for NA
-  finite <- is.finite(x)
+  finite <- is.finite(object)
   fmt <- ifelse(finite, fmt, "")
   # if requested check for integers and change their format accordingly
   if (checkInt) {
@@ -87,14 +89,14 @@ formatSPSS.numeric <- function(x, digits = 3, pValue = FALSE, checkInt = FALSE,
     # shouldn't be necessary to work with tolerances, which could mess things
     # up, e.g., when a p-value in the same column is really close to 0 or 1.
     # -----
-    # isInt <- finite & abs(x - as.integer(x)) < tol
+    # isInt <- finite & abs(object - as.integer(object)) < tol
     # -----
-    isInt <- finite & (x == as.integer(x))
+    isInt <- finite & (object == as.integer(object))
     # -----
     fmt <- ifelse(isInt, "%.0f", fmt)
   } else isInt <- rep.int(FALSE, n)
   # convert numbers to strings
-  formatted <- sprintf(fmt, x)
+  formatted <- sprintf(fmt, object)
   # if requested format p-value
   if (pValue) {
     zeros <- rep.int(0, n)
@@ -112,25 +114,42 @@ formatSPSS.numeric <- function(x, digits = 3, pValue = FALSE, checkInt = FALSE,
 #' @rdname formatSPSS
 #' @export
 
-formatSPSS.matrix <- function(x, digits = 3, pValue = NULL, checkInt = FALSE,
-                              # tol = .Machine$double.eps^0.5,
-                              ...) {
+# formatSPSS.matrix <- function(object, digits = 3, pValue = NULL,
+#                               checkInt = FALSE,
+#                               # tol = .Machine$double.eps^0.5,
+#                               ...) {
+#   # initializations
+#   d <- dim(object)
+#   colNames <- colnames(object)
+#   if (is.null(pValue)) {
+#     if (is.null(colNames)) pValue <- rep.int(FALSE, d[2])
+#     else pValue <- grepl("Sig.", colNames, fixed = TRUE)
+#   } else pValue <- rep_len(pValue, d[2])
+#   checkInt <- rep_len(checkInt, d[2])
+#   # format each column and add original attributes
+#   formatted <- vapply(seq_len(d[2]), function(j) {
+#     # formatSPSS(object[, j], digits = digits, pValue = pValue[j],
+#     #            checkInt = checkInt[j], tol = tol)
+#     formatSPSS(object[, j], digits = digits, pValue = pValue[j],
+#                checkInt = checkInt[j])
+#   }, character(d[1]))
+#   attributes(formatted) <- attributes(object)
+#   # return formatted matrix
+#   formatted
+# }
+formatSPSS.matrix <- function(object, digits = 3, pValue = FALSE,
+                              checkInt = FALSE, ...) {
   # initializations
-  d <- dim(x)
-  colNames <- colnames(x)
-  if (is.null(pValue)) {
-    if (is.null(colNames)) pValue <- rep.int(FALSE, d[2])
-    else pValue <- grepl("Sig.", colNames, fixed = TRUE)
-  } else pValue <- rep_len(pValue, d[2])
+  d <- dim(object)
+  pValue <- rep_len(pValue, d[2])
   checkInt <- rep_len(checkInt, d[2])
-  # format each column and add original attributes
+  # format each column
   formatted <- vapply(seq_len(d[2]), function(j) {
-    # formatSPSS(x[, j], digits = digits, pValue = pValue[j],
-    #            checkInt = checkInt[j], tol = tol)
-    formatSPSS(x[, j], digits = digits, pValue = pValue[j],
+    formatSPSS(object[, j], digits = digits, pValue = pValue[j],
                checkInt = checkInt[j])
   }, character(d[1]))
-  attributes(formatted) <- attributes(x)
+  # add original attributes
+  attributes(formatted) <- attributes(object)
   # return formatted matrix
   formatted
 }
@@ -139,23 +158,38 @@ formatSPSS.matrix <- function(x, digits = 3, pValue = NULL, checkInt = FALSE,
 #' @rdname formatSPSS
 #' @export
 
-formatSPSS.data.frame <- function(x, digits = 3,
-                                  pValue = NULL, checkInt = FALSE,
-                                  # tol = .Machine$double.eps^0.5,
-                                  ...) {
+# formatSPSS.data.frame <- function(object, digits = 3,
+#                                   pValue = NULL, checkInt = FALSE,
+#                                   # tol = .Machine$double.eps^0.5,
+#                                   ...) {
+#   # initializations
+#   d <- dim(object)
+#   colNames <- names(object)
+#   if (is.null(pValue)) pValue <- grepl("Sig.", colNames, fixed = TRUE)
+#   else pValue <- rep_len(pValue, d[2])
+#   checkInt <- rep_len(checkInt, d[2])
+#   # format each column
+#   formatted <- mapply(function(v, pv, ci) {
+#     # formatSPSS(v, digits = digits, pValue = pv, checkInt = ci, tol = tol)
+#     formatSPSS(v, digits = digits, pValue = pv, checkInt = ci)
+#   }, v = object, pv = pValue, ci = checkInt, SIMPLIFY = FALSE, USE.NAMES = TRUE)
+#   formatted <- do.call(cbind, formatted)
+#   # add row names
+#   rownames(formatted) <- row.names(object)
+#   formatted
+# }
+formatSPSS.data.frame <- function(object, digits = 3, pValue = FALSE,
+                                  checkInt = FALSE, ...) {
   # initializations
-  d <- dim(x)
-  colNames <- names(x)
-  if (is.null(pValue)) pValue <- grepl("Sig.", colNames, fixed = TRUE)
-  else pValue <- rep_len(pValue, d[2])
+  d <- dim(object)
+  pValue <- rep_len(pValue, d[2])
   checkInt <- rep_len(checkInt, d[2])
   # format each column
-  formatted <- mapply(function(v, pv, ci) {
-    # formatSPSS(v, digits = digits, pValue = pv, checkInt = ci, tol = tol)
-    formatSPSS(v, digits = digits, pValue = pv, checkInt = ci)
-  }, v = x, pv = pValue, ci = checkInt, SIMPLIFY = FALSE, USE.NAMES = TRUE)
-  formatted <- do.call(cbind, formatted)
-  # add row names
-  rownames(formatted) <- row.names(x)
+  formatted <- mapply(function(v, p, c) {
+    formatSPSS(v, digits = digits, pValue = p, checkInt = c)
+  }, v = object, p = pValue, c = checkInt, SIMPLIFY = FALSE, USE.NAMES = FALSE)
+  # add original attributes
+  attributes(formatted) <- attributes(object)
+  # return formatted matrix
   formatted
 }

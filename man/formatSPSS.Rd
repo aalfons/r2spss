@@ -9,21 +9,21 @@
 \alias{formatSPSS.data.frame}
 \title{Format Objects}
 \usage{
-formatSPSS(x, ...)
+formatSPSS(object, ...)
 
-\method{formatSPSS}{default}(x, ...)
+\method{formatSPSS}{default}(object, ...)
 
-\method{formatSPSS}{integer}(x, ...)
+\method{formatSPSS}{integer}(object, ...)
 
-\method{formatSPSS}{numeric}(x, digits = 3, pValue = FALSE, checkInt = FALSE, ...)
+\method{formatSPSS}{numeric}(object, digits = 3, pValue = FALSE, checkInt = FALSE, ...)
 
-\method{formatSPSS}{matrix}(x, digits = 3, pValue = NULL, checkInt = FALSE, ...)
+\method{formatSPSS}{matrix}(object, digits = 3, pValue = FALSE, checkInt = FALSE, ...)
 
-\method{formatSPSS}{data.frame}(x, digits = 3, pValue = NULL, checkInt = FALSE, ...)
+\method{formatSPSS}{data.frame}(object, digits = 3, pValue = FALSE, checkInt = FALSE, ...)
 }
 \arguments{
-\item{x}{an \R object, typically numeric.  Currently methods are
-implemented for vectors, matrices and data frames.  The default method calls
+\item{object}{an \R object.  Currently methods are implemented
+for vectors, matrices, and data frames.  The default method calls
 \code{\link{as.character}}.}
 
 \item{\dots}{additional arguments passed down to methods.}
@@ -32,11 +32,12 @@ implemented for vectors, matrices and data frames.  The default method calls
 display.}
 }
 \value{
-A character vector or matrix containing the formatted object.
+A character vector, matrix, or data frame containing the formatted
+object.
 }
 \description{
 Format an object for printing, mostly used to print numeric data in the same
-way SPSS.  This is mainly for internal use in \code{\link{print}} methods.
+way as SPSS.  This is mainly for internal use in \code{\link{print}} methods.
 }
 \examples{
 # note how numbers in the interval (-1, 1) are printed

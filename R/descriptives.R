@@ -74,6 +74,31 @@ descriptives <- function(data, variables) {
 }
 
 
+## convert R results to all necessary information for SPSS-like table
+#' @export
+
+toSPSS.descriptivesSPSS <- function(object, digits = 2, ...) {
+  # put table of results into SPSS format
+  p <- ncol(object$descriptives)
+  descriptives <- rbind(object$descriptives,
+                        "Valid N (listwise)" = c(object$n, rep.int(NA, p)))
+  # define header with line breaks
+  colNames <- names(descriptives)
+  header <- c("", gsub("Std. ", "Std.\n", colNames, fixed = TRUE))
+  # format table nicely
+  args <- list(descriptives, digits = digits, ...)
+  if (is.null(args$checkInt)) {
+    args$checkInt <- colNames %in% c("Minimum", "Maximum")
+  }
+  formatted <- do.call(formatSPSS, args)
+  # construct return object
+  spss <- list(table = formatted, main = "Descriptive Statistics",
+               header = header, rowNames = TRUE, info = 0)
+  class(spss) <- "SPSSTable"
+  spss
+}
+
+
 #' @rdname descriptives
 #'
 #' @param x  an object of class \code{"descriptivesSPSS"} as returned by
@@ -84,19 +109,26 @@ descriptives <- function(data, variables) {
 #'
 #' @export
 
-print.descriptivesSPSS <- function(x, digits = 2,
-                                   theme = c("modern", "legacy"),
-                                   ...) {
-  # put results into SPSS format
-  p <- ncol(x$descriptives)
-  descriptives <- rbind(x$descriptives,
-                        "Valid N (listwise)" = c(x$n, rep.int(NA, p)))
-  # define header with line breaks
-  colNames <- names(descriptives)
-  header <- c("", gsub("Std. ", "Std.\n", colNames, fixed = TRUE))
+# print.descriptivesSPSS <- function(x, digits = 2,
+#                                    theme = c("modern", "legacy"),
+#                                    ...) {
+#   # put table of results into SPSS format
+#   p <- ncol(x$descriptives)
+#   descriptives <- rbind(x$descriptives,
+#                         "Valid N (listwise)" = c(x$n, rep.int(NA, p)))
+#   # define header with line breaks
+#   colNames <- names(descriptives)
+#   header <- c("", gsub("Std. ", "Std.\n", colNames, fixed = TRUE))
+#   # print LaTeX table
+#   latexTableSPSS(descriptives, main = "Descriptive Statistics",
+#                  header = header, rowNames = TRUE, info = 0,
+#                  theme = theme, digits = digits,
+#                  checkInt = colNames %in% c("Minimum", "Maximum"))
+# }
+
+print.descriptivesSPSS <- function(x, theme = c("modern", "legacy"), ...) {
+  # put table of results into SPSS format
+  spss <- toSPSS(x, ...)
   # print LaTeX table
-  latexTableSPSS(descriptives, main = "Descriptive Statistics",
-                 header = header, rowNames = TRUE, info = 0,
-                 theme = theme, digits = digits,
-                 checkInt = colNames %in% c("Minimum", "Maximum"))
+  toLatex(spss, theme = theme)
 }
