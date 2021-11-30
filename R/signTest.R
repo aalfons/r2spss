@@ -89,6 +89,79 @@ signTest <- function(data, variables, exact = FALSE) {
 }
 
 
+## convert R results to all necessary information for SPSS-like table
+#' @export
+
+toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
+                                version = c("modern", "legacy"), ...) {
+
+  ## initializations
+  statistics <- match.arg(statistics)
+  ## put requested results into SPSS format
+
+  if (statistics == "frequencies") {
+
+    # put table into SPSS format
+    N <- object$n
+    ties <- N - sum(object$statistics$N)
+    frequencies <- data.frame(Group = c(rownames(object$statistics),
+                                       "Ties", "Total"),
+                              N = c(object$statistics$N, ties, N))
+    # format table nicely
+    formatted <- formatSPSS(frequencies, ...)
+    # define label and header
+    label <- paste(object$variables, collapse = " - ")
+    header <- c("", "", "N")
+    # define footnotes
+    footnotes <- c(paste(object$variables, collapse = " < "),
+                   paste(object$variables, collapse = " > "),
+                   paste(object$variables, collapse = " = "))
+    footnotes <- data.frame(marker = c("a", "b", "c"), row = 1:3,
+                            column = rep.int(1, 3), text = footnotes)
+    # construct list containing all necessary information
+    spss <- list(table = formatted, main = "Frequencies",
+                 header = header, label = label, rowNames = FALSE,
+                 info = 1, footnotes = footnotes)
+
+  } else if (statistics == "test") {
+
+    # initializations
+    version <- match.arg(version)
+    legacy <- version == "legacy"
+    haveExact <- !is.null(object$exact)
+    # extract and format values nicely
+    rn <- c("Z", "Asymp. Sig. (2-tailed)")
+    values <- unlist(object$asymptotic)
+    pValue <- c(FALSE, !legacy)
+    if (haveExact) {
+      rn <- c(rn, sprintf("Exact Sig. (%d-tailed)", 2:1), "Point probability")
+      values <- c(values, object$exact)
+      pValue <- c(pValue, !legacy, !legacy, FALSE)
+    }
+    # format table nicely
+    args <- list(values, ...)
+    if (is.null(args$pValue)) args$pValue <- pValue
+    formatted <- do.call(formatSPSS, args)
+    # put test results into SPSS format
+    test <- data.frame(formatted, row.names = rn)
+    names(test) <- paste(object$variable, collapse = " - ")
+    # define footnotes
+    footnotes <- data.frame(marker = "a", row = "main",
+                            column = NA_integer_,
+                            text = "Sign Test")
+    # construct list containing all necessary information
+    spss <- list(table = test, main = "Test Statistics",
+                 header = TRUE, rowNames = TRUE, info = 0,
+                 footnotes = footnotes, version = version)
+
+  } else stop ("type of 'statistics' not supported")  # shouldn't happen
+
+  # add class and return object
+  class(spss) <- "SPSSTable"
+  spss
+
+}
+
 #' @rdname signTest
 #'
 #' @param x  an object of class \code{"signTestSPSS"} as returned by function
@@ -103,66 +176,34 @@ signTest <- function(data, variables, exact = FALSE) {
 #'
 #' @export
 
-print.signTestSPSS <- function(x, digits = 3,
-                               statistics = c("frequencies", "test"),
-                               ...) {
+
+print.signTestSPSS <- function(x, statistics = c("frequencies", "test"),
+                               theme = c("modern", "legacy"), ...) {
 
   ## initializations
   count <- 0
-  statistics <- match.arg(statistics, several.ok=TRUE)
+  statistics <- match.arg(statistics, several.ok = TRUE)
+  theme <- match.arg(theme)
 
   ## print LaTeX table for ranks
   if ("frequencies" %in% statistics) {
-    formatted <- formatSPSS(x$statistics)
-    rownames(formatted) <- paste0(rownames(formatted), "$^\\text{", c("a", "b"), "}$")
-    # print LaTeX table
     cat("\n")
-    cat("\\begin{tabular}{|ll|r|}\n")
-    cat("\\noalign{\\smallskip}\n")
-    cat("\\multicolumn{3}{c}{\\textbf{Frequencies}} \\\\\n")
-    cat("\\noalign{\\smallskip}\\hline\n")
-    cat(" & & \\multicolumn{1}{|c|}{N} \\\\\n")
-    cat("\\hline\n")
-    cat(x$variables[2], "-", x$variables[1], "&", rownames(formatted)[1], "&", formatted[1, "N"], "\\\\\n")
-    cat(" &", rownames(formatted)[2], "&", formatted[2, "N"], "\\\\\n")
-    cat(" & Ties$^\\text{c}$ & ", x$n - sum(x$statistics$N), " \\\\\n", sep="")
-    cat(" & Total &", x$n, "\\\\\n")
-    cat("\\hline\\noalign{\\smallskip}\n")
-    cat("\\multicolumn{3}{l}{", "a. ", x$variables[2], " < ", x$variables[1], "} \\\\\n", sep="")
-    cat("\\multicolumn{3}{l}{", "b. ", x$variables[2], " > ", x$variables[1], "} \\\\\n", sep="")
-    cat("\\multicolumn{3}{l}{", "c. ", x$variables[2], " = ", x$variables[1], "} \\\\\n", sep="")
-    # finalize LaTeX table
-    cat("\\end{tabular}\n")
+    # put table into SPSS format
+    spss <- toSPSS(x, statistics = "frequencies", version = theme, ...)
+    # print LaTeX table
+    toLatex(spss, theme = theme)
     cat("\n")
     count <- count + 1
   }
 
   ## print LaTeX table for test
   if ("test" %in% statistics) {
-
-    ## collect output for test
-    test <- c(x$asymptotic$statistic, x$asymptotic$p.value, x$exact)
-    formatted <- formatSPSS(test, digits=digits)
-
-    ## print LaTeX table
     if (count == 0) cat("\n")
-    cat("\\begin{tabular}{|l|r|}\n")
-    cat("\\noalign{\\smallskip}\n")
-    cat("\\multicolumn{2}{c}{\\textbf{Test Statistics}$^{\\text{a}}$} \\\\\n")
-    cat("\\noalign{\\smallskip}\\hline\n")
-    cat(" & \\multicolumn{1}{|c|}{", paste(x$variables[2], "-", x$variables[1]), "} \\\\\n", sep="")
-    cat("\\hline\n")
-    cat("Z &", formatted[1], "\\\\\n")
-    cat("Asymp. Sig. (2-tailed) &", formatted[2], "\\\\\n")
-    if (!is.null(x$exact)) {
-      cat("Exact Sig. (2-tailed) &", formatted[3], "\\\\\n")
-      cat("Exact Sig. (1-tailed) &", formatted[4], "\\\\\n")
-      cat("Point Probability &", formatted[5], "\\\\\n")
-    }
-    cat("\\hline\\noalign{\\smallskip}\n")
-    cat("\\multicolumn{2}{l}{a. Sign Test} \\\\\n")
-    # finalize LaTeX table
-    cat("\\end{tabular}\n")
+    else cat("\\medskip\n")
+    # put test results into SPSS format
+    spss <- toSPSS(x, statistics = "test", version = theme, ...)
+    # print LaTeX table
+    toLatex(spss, theme = theme)
     cat("\n")
   }
 }

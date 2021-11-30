@@ -110,6 +110,8 @@ toSPSS.descriptivesSPSS <- function(object, digits = 2, ...) {
 #' @export
 
 print.descriptivesSPSS <- function(x, theme = c("modern", "legacy"), ...) {
+  # initializations
+  theme <- match.arg(theme)
   # put table of results into SPSS format
   spss <- toSPSS(x, ...)
   # print LaTeX table

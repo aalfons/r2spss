@@ -10,8 +10,10 @@
 ##                 "Confidence Interval" = c("Lower\nBound", "Upper\nBound"))
 ##            Line separators break up the header into different lines
 
-#' @export
-toLatex <- function(object, ...) UseMethod("toLatex")
+## @export
+# toLatex <- function(object, ...) UseMethod("toLatex")
+
+#' @importFrom utils toLatex
 
 toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
                                label = NULL, rowNames = TRUE, info = NULL,

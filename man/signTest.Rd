@@ -7,7 +7,12 @@
 \usage{
 signTest(data, variables, exact = FALSE)
 
-\method{print}{signTestSPSS}(x, digits = 3, statistics = c("frequencies", "test"), ...)
+\method{print}{signTestSPSS}(
+  x,
+  statistics = c("frequencies", "test"),
+  theme = c("modern", "legacy"),
+  ...
+)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -22,15 +27,15 @@ normal approximation is always reported.}
 \item{x}{an object of class \code{"signTestSPSS"} as returned by function
 \code{signTest}.}
 
-\item{digits}{an integer giving the number of digits after the comma to be
-printed in the LaTeX tables.}
-
 \item{statistics}{a character vector specifying which LaTeX tables should
 be printed.  Available options are \code{"frequencies"} for a summary of the
 frequencies and \code{"test"} for test results.  The default is to print
 both tables.}
 
 \item{\dots}{currently ignored.}
+
+\item{digits}{an integer giving the number of digits after the comma to be
+printed in the LaTeX tables.}
 }
 \value{
 An object of class \code{"signTestSPSS"} with the following

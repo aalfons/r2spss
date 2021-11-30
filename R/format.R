@@ -57,52 +57,81 @@ formatSPSS.integer <- function(object, ...) {
 #'
 #' @export
 
+# formatSPSS.numeric <- function(object, digits = 3, pValue = FALSE,
+#                                checkInt = FALSE,
+#                                # tol = .Machine$double.eps^0.5,
+#                                ...) {
+#   # initializations
+#   pValue <- isTRUE(pValue)
+#   checkInt <- isTRUE(checkInt)
+#   # -----
+#   # the check below is too restrictive, for example the chi-squared
+#   # goodness-of-fit test has the degrees of freedom and the p-value
+#   # in the same column
+#   # -----
+#   # if (pValue && checkInt) {
+#   #   stop("'pValue' and 'checkInt' may not both be TRUE")
+#   # }
+#   # -----
+#   # define format with specified number of digits
+#   n <- length(object)
+#   digits <- rep_len(digits, n)
+#   fmt <- paste0("%.", digits, "f")
+#   # use empty string for NA
+#   finite <- is.finite(object)
+#   fmt <- ifelse(finite, fmt, "")
+#   # if requested check for integers and change their format accordingly
+#   if (checkInt) {
+#     # -----
+#     # Argument 'checkInt' is used when degrees of freedom are put in the same
+#     # column as other numeric information, or when the column containing the
+#     # degrees of freedom uses an approximation in one of the rows.  So it
+#     # shouldn't be necessary to work with tolerances, which could mess things
+#     # up, e.g., when a p-value in the same column is really close to 0 or 1.
+#     # -----
+#     # isInt <- finite & abs(object - as.integer(object)) < tol
+#     # -----
+#     isInt <- finite & (object == as.integer(object))
+#     # -----
+#     fmt <- ifelse(isInt, "%.0f", fmt)
+#   } else isInt <- rep.int(FALSE, n)
+#   # convert numbers to strings
+#   formatted <- sprintf(fmt, object)
+#   # if requested format p-value
+#   if (pValue) {
+#     zeros <- rep.int(0, n)
+#     below <- finite & !isInt & (formatted == sprintf(fmt, zeros))
+#     # formatted[below] <- gsub("^<0.", "$<$.", paste0("<", 10^(-digits[below])))
+#     formatted[below] <- gsub("^<0.", "<.", paste0("<", 10^(-digits[below])))
+#   }
+#   # replace leading zeros
+#   formatted <- gsub("^0.", ".", formatted)    # positive numbers
+#   formatted <- gsub("^-0.", "-.", formatted)  # negative numbers
+#   # return
+#   formatted
+# }
+
 formatSPSS.numeric <- function(object, digits = 3, pValue = FALSE,
-                               checkInt = FALSE,
-                               # tol = .Machine$double.eps^0.5,
-                               ...) {
+                               checkInt = FALSE, ...) {
   # initializations
-  pValue <- isTRUE(pValue)
-  checkInt <- isTRUE(checkInt)
-  # -----
-  # the check below is too restrictive, for example the chi-squared
-  # goodness-of-fit test has the degrees of freedom and the p-value
-  # in the same column
-  # -----
-  # if (pValue && checkInt) {
-  #   stop("'pValue' and 'checkInt' may not both be TRUE")
-  # }
-  # -----
-  # define format with specified number of digits
   n <- length(object)
   digits <- rep_len(digits, n)
+  pValue <- rep_len(sapply(pValue, isTRUE), n)
+  checkInt <- rep_len(sapply(checkInt, isTRUE), n)
+  # define format with specified number of digits
   fmt <- paste0("%.", digits, "f")
   # use empty string for NA
   finite <- is.finite(object)
   fmt <- ifelse(finite, fmt, "")
   # if requested check for integers and change their format accordingly
-  if (checkInt) {
-    # -----
-    # Argument 'checkInt' is used when degrees of freedom are put in the same
-    # column as other numeric information, or when the column containing the
-    # degrees of freedom uses an approximation in one of the rows.  So it
-    # shouldn't be necessary to work with tolerances, which could mess things
-    # up, e.g., when a p-value in the same column is really close to 0 or 1.
-    # -----
-    # isInt <- finite & abs(object - as.integer(object)) < tol
-    # -----
-    isInt <- finite & (object == as.integer(object))
-    # -----
-    fmt <- ifelse(isInt, "%.0f", fmt)
-  } else isInt <- rep.int(FALSE, n)
+  isInt <- finite & checkInt & (object == as.integer(object))
+  fmt <- ifelse(isInt, "%.0f", fmt)
   # convert numbers to strings
   formatted <- sprintf(fmt, object)
   # if requested format p-value
-  if (pValue) {
-    zeros <- rep.int(0, n)
-    below <- finite & !isInt & (formatted == sprintf(fmt, zeros))
-    formatted[below] <- gsub("^<0.", "$<$.", paste0("<", 10^(-digits[below])))
-  }
+  zeros <- rep.int(0, n)
+  below <- finite & !isInt & pValue & (formatted == sprintf(fmt, zeros))
+  formatted[below] <- gsub("^<0.", "<.", paste0("<", 10^(-digits[below])))
   # replace leading zeros
   formatted <- gsub("^0.", ".", formatted)    # positive numbers
   formatted <- gsub("^-0.", "-.", formatted)  # negative numbers

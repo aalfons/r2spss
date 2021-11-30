@@ -89,9 +89,10 @@ toSPSS.kruskalTestSPSS <- function(object, statistics = c("test", "ranks"),
 
   ## initializations
   statistics <- match.arg(statistics)
-
   ## put requested results into SPSS format
+
   if (statistics == "ranks") {
+
     # initializations
     if (is.null(digits)) digits <- 2
     # put table into SPSS format
@@ -105,12 +106,13 @@ toSPSS.kruskalTestSPSS <- function(object, statistics = c("test", "ranks"),
     # construct list containing all necessary information
     spss <- list(table = formatted, main = "Ranks", header = header,
                  label = object$variable, rowNames = TRUE, info = 0)
+
   } else if (statistics == "test") {
+
     # initializations
     if (is.null(digits)) digits <- 3
     version <- match.arg(version)
     legacy <- version == "legacy"
-
     # put test results into SPSS format
     rn <- c(if (legacy) "Chi-Square" else "Kruskal-Wallis H",
             "df", "Asymp. Sig.")
@@ -131,6 +133,7 @@ toSPSS.kruskalTestSPSS <- function(object, statistics = c("test", "ranks"),
     spss <- list(table = formatted, main = "Test Statistics",
                  header = TRUE, rowNames = TRUE, info = 0,
                  footnotes = footnotes, version = version)
+
   } else stop ("type of 'statistics' not supported")  # shouldn't happen
 
   # add class and return object
@@ -161,9 +164,8 @@ print.kruskalTestSPSS <- function(x, statistics = c("ranks", "test"),
 
   ## initializations
   count <- 0
-  statistics <- match.arg(statistics, several.ok=TRUE)
+  statistics <- match.arg(statistics, several.ok = TRUE)
   theme <- match.arg(theme)
-  legacy <- theme == "legacy"
 
   ## print LaTeX table for ranks
   if ("ranks" %in% statistics) {

@@ -456,9 +456,8 @@ print.ANOVASPSS <- function(x,
 
   ## initializations
   count <- 0
-  statistics <- match.arg(statistics, several.ok=TRUE)
+  statistics <- match.arg(statistics, several.ok = TRUE)
   theme <- match.arg(theme)
-  legacy <- theme == "legacy"
 
   ## print LaTeX table for descriptives
   if ("descriptives" %in% statistics) {

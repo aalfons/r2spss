@@ -310,7 +310,6 @@ print.chisqTestSPSS <- function(x, statistics = c("frequencies", "test"),
   digits <- rep_len(digits, 2)
   statistics <- match.arg(statistics, several.ok = TRUE)
   theme <- match.arg(theme)
-  legacy <- theme == "legacy"
 
   ## print LaTeX table for frequencies
   if ("frequencies" %in% statistics) {
