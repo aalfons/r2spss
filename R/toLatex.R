@@ -469,7 +469,7 @@ parseHeaderLayout <- function(header, alignment, left, right) {
     indices <- t(mapply(function(i, l) c(first = i[1], last = i[l]),
                         i = indexList, l = firstColumns, USE.NAMES = FALSE))
     # determine which cells are merged (lines to draw for legacy theme)
-    keep <- indices[, "last"] > indices[, "first"]
+    keep <- (indices[, "last"] > indices[, "first"]) | firstHeader != ""
     # first level layout
     firstLevel <- list(header = firstHeader,
                        columns = firstColumns,

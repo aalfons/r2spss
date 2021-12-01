@@ -84,7 +84,8 @@
 #' @export
 
 regression <- function(..., data, labels = NULL, change = FALSE) {
-  # initializations
+
+  ## initializations
   formulas <- list(...)
   if (is.null(labels)) labels <- seq_along(formulas)
   names(formulas) <- labels
@@ -134,16 +135,275 @@ regression <- function(..., data, labels = NULL, change = FALSE) {
       method = "remove"
     }
   }
-  # remove observations with missing values in the largest model
+
+  ## remove observations with missing values in the largest model
   yx <- cbind(xyList[[largest]]$y, xyList[[largest]]$x)
   names(yx)[1] <- response
   keep <- complete.cases(yx)
-  # fit linear models
+
+  ## fit linear models
   models <- lapply(formulas, lm, data=data[keep, ])
-  # return results
-  out <- list(models=models, response=response, method=method, change=change)
+  summaries <- lapply(models, summary)
+
+  ## return results
+  out <- list(models=models, summaries=summaries, response=response,
+              method=method, change=change)
   class(out) <- "regressionSPSS"
   out
+}
+
+
+## convert R results to all necessary information for SPSS-like table
+#' @export
+
+toSPSS.regressionSPSS <- function(object,
+                                  statistics = c("estimates", "anova", "summary"),
+                                  version = c("modern", "legacy"),
+                                  wrap = NULL, ...) {
+
+  ## initializations
+  statistics <- match.arg(statistics)
+  version <- match.arg(version)
+  legacy <- version == "legacy"
+  models <- object$models
+  k <- length(models)
+  summaries <- object$summaries
+  labels <- names(models)
+  # define footnote that lists the response variable
+  footnoteResponse <- paste("Dependent Variable:", object$response)
+  # define footnotes that list predictors in regression models
+  footnotesPredictors <- vapply(models, function(m) {
+    strings <- c("Predictors: (Constant)", names(coef(m))[-1])
+    paste(strings, collapse = ", ")
+  }, character(1), USE.NAMES = FALSE)
+
+
+  ## put requested results into SPSS format
+  if (statistics == "summary") {
+
+    # initializations
+    if (is.null(wrap)) wrap <- if(object$change) 90 else 50
+    # compute model fit statistics in SPSS format
+    rsq <- vapply(summaries, "[[", numeric(1), "r.squared")
+    adjrsq <- vapply(summaries, "[[", numeric(1), "adj.r.squared")
+    sigma <- vapply(summaries, "[[", numeric(1), "sigma")
+    fits <- data.frame("R" = sqrt(rsq), "R Square" = rsq,
+                       "Adjusted R Square" = adjrsq,
+                       "Std. Error of the Estimate" = sigma,
+                       row.names = labels, check.names = FALSE)
+    # if requested, compute change statistics in SPSS format
+    if (object$change) {
+      # extract degrees of freedom of each model
+      df <- vapply(summaries, function(s) as.integer(s$fstatistic[2:3]),
+                   integer(2))
+      # compute R square changes
+      rsqchange <- diff(rsq)
+      # compute full R square and degrees of freedom of the F test on the
+      # change in R square
+      if (object$method == "enter") {
+        # R square of the full model
+        rsqfull <- rsq[-1]
+        # compute degrees of freedom
+        df1 <- diff(df[1, ])
+        df2 <- df[2, -1]
+      } else {
+        # R square of the full model
+        rsqfull <- rsq[-k]
+        # compute degrees of freedom
+        df1 <- -diff(df[1, ])
+        df2 <- df[2, -k]
+      }
+      # compute F changes and p-values
+      fchange <- c(summaries[[1]]$fstatistic[1],
+                   (abs(rsqchange) / df1) / ((1 - rsqfull) / df2))
+      df1 <- c(df[1, 1], df1)
+      df2 <- c(df[2, 1], df2)
+      p <- pf(fchange, df1, df2, lower.tail=FALSE)
+      # construct data frame containing tests on change in R square
+      changes <- data.frame("R Square Change" = c(rsq[1], rsqchange),
+                            "F Change" = fchange, "df1" = df1, "df2" = df2,
+                            "Sig. F Change" = p, row.names = labels,
+                            check.names = FALSE)
+      # add to information on model fits
+      fits <- cbind(fits, changes)
+    }
+    # format table nicely
+    if (object$change && !legacy) {
+      args <- list(fits, ...)
+      if (is.null(args$pValue)) {
+        args$pValue <- grepl("Sig.", names(fits), fixed = TRUE)
+      }
+      formatted <- do.call(formatSPSS, args)
+    } else formatted <- formatSPSS(fits, ...)
+    # define header with line breaks
+    if (object$change) {
+      header <- list("Model", "R", "R Square", "Adjusted\nR Square",
+                     "Std. Error\nof the\nEstimate",
+                     "Change Statistics" = c("R Square\nChange", "F Change",
+                                             "df1", "df2", "Sig. F\nChange"))
+    } else {
+      header <- c("Model", "R", "R Square", "Adjusted\nR Square",
+                  "Std. Error of\nthe Estimate")
+    }
+    # define footnotes
+    row <- seq_len(k)
+    column <- rep.int(1, k)
+    footnotes <- wrapText(footnotesPredictors, limit = wrap)
+    footnotes <- data.frame(marker = letters[seq_len(k)], row = row,
+                            column = column, text = footnotes)
+    # construct list containing all necessary information
+    spss <- list(table = formatted, main = "Model Summary",
+                 header = header, rowNames = TRUE, info = 0,
+                 footnotes = footnotes)
+    if (object$change) spss$version <- version
+
+  } else if (statistics == "anova") {
+
+    # initializations
+    if (is.null(wrap)) wrap <- 66
+    # compute ANOVA tables in SPSS format
+    anovas <- mapply(function(m, s, l) {
+      # perform ANOVA
+      a <- anova(m)
+      class(a) <- "data.frame"
+      # aggregate information from individual variables
+      a$Type <- ifelse(row.names(a) == "Residuals", "Residual", "Regression")
+      sum <- aggregate(a[, c("Sum Sq", "Df")],
+                       a[, "Type", drop = FALSE],
+                       sum)
+      mean <- aggregate(a[, "Mean Sq", drop = FALSE],
+                        a[, "Type", drop = FALSE],
+                        mean)
+      a <- cbind(sum[, c("Sum Sq", "Df")], mean[, "Mean Sq", drop = FALSE])
+      # extract information from test
+      f <- s$fstatistic[1]
+      p <- pf(f, s$fstatistic[2], s$fstatistic[3], lower.tail = FALSE)
+      # combine everything in a data frame and add total sum of squares
+      data.frame("Model" = c(l, "", ""),
+                 "Type" = c(sum$Type, "Total"),
+                 "Sum of Squares" = c(a[, "Sum Sq"], sum(a[, "Sum Sq"])),
+                 "df" = c(a[, "Df"], sum(a[, "Df"])),
+                 "Mean Square" = c(a[, "Mean Sq"], NA_real_),
+                 "F" = c(f, NA_real_, NA_real_),
+                 "Sig." = c(p, NA_real_, NA_real_),
+                 row.names = NULL, check.names = FALSE,
+                 stringsAsFactors = FALSE)
+    }, models, summaries, labels, SIMPLIFY=FALSE, USE.NAMES = FALSE)
+    anovas <- do.call(rbind, anovas)
+    # format table nicely
+    if (legacy) formatted <- formatSPSS(anovas, ...)
+    else {
+      args <- list(anovas, ...)
+      if (is.null(args$pValue)) args$pValue <- names(anovas) == "Sig."
+      formatted <- do.call(formatSPSS, args)
+    }
+    # define header with line breaks
+    header <- gsub("Sum of ", "Sum of\n", names(anovas))
+    header[2] <- ""
+    # define footnotes
+    row <- c("main", seq(from = 1, by = 3, length.out=k))
+    column <- c(NA_integer_, rep.int(ncol(anovas), k))
+    footnotes <- wrapText(c(footnoteResponse, footnotesPredictors),
+                          limit = wrap)
+    footnotes <- data.frame(marker = letters[seq_len(k+1)], row = row,
+                            column = column, text = footnotes)
+    # construct list containing all necessary information
+    spss <- list(table = formatted, main = "ANOVA", header = header,
+                 rowNames = FALSE, info = 2, footnotes = footnotes,
+                 major = 3 * seq_len(k-1), version = version)
+
+  } else if (statistics == "estimates") {
+
+    # compute coefficient tables in SPSS format
+    coefficients <- mapply(function(m, s, l) {
+      # extract coefficients
+      coef <- coefficients(s)
+      # extract response and predictor matrix (without intercept column)
+      y <- model.response(m$model)
+      terms <- attr(m$model, "terms")
+      x <- model.matrix(terms, data = m$model)[, -1, drop = FALSE]
+      # compute standardized coefficients
+      sy <- sd(y)
+      sx <- apply(x, 2, sd)
+      beta <- c(NA_real_, coef[-1, 1] * sx / sy)
+      # rename rows and columns
+      rownames(coef)[1] <- "(Constant)"
+      colnames(coef) <- c("B", "Std. Error", "t", "Sig.")
+      # combine information on coefficients
+      data.frame(Model = c(l, rep.int("", nrow(coef)-1)),
+                 Variable = c("(Constant)", rownames(coef)[-1]),
+                 coef[, c("B", "Std. Error")], Beta = beta,
+                 coef[, c("t", "Sig.")], row.names = NULL,
+                 check.names = FALSE, stringsAsFactors = FALSE)
+    }, models, summaries, labels, SIMPLIFY=FALSE, USE.NAMES = FALSE)
+    # obtain number of rows in each coefficient table
+    p <- vapply(coefficients, nrow, integer(1))
+    # combine coefficient tables
+    coefficients <- do.call(rbind, coefficients)
+    # format table nicely
+    if (legacy) formatted <- formatSPSS(coefficients, ...)
+    else {
+      args <- list(coefficients, ...)
+      if (is.null(args$pValue)) args$pValue <- names(coefficients) == "Sig."
+      formatted <- do.call(formatSPSS, args)
+    }
+    # define header with line breaks
+    header <- names(coefficients)
+    header <- list(header[1], "", "Unstandardized\nCoefficients" = header[3:4],
+                   "Standardized\nCoefficients" = header[5], header[6],
+                   header[7])
+    # define footnotes
+    footnotes <- data.frame(marker = "a", row = "main",
+                            column = NA_integer_,
+                            text = footnoteResponse)
+    # construct list containing all necessary information
+    spss <- list(table = formatted, main = "Coefficients", header = header,
+                 rowNames = FALSE, info = 2, footnotes = footnotes,
+                 major = cumsum(p[-k]), version = version)
+
+  } else stop ("type of 'statistics' not supported")  # shouldn't happen
+
+  # add class and return object
+  class(spss) <- "SPSSTable"
+  spss
+
+}
+
+
+## function to add line breaks in character strings to make sure that a given
+## character limit is not exceeded per line
+# text .... a character vector for which each element will be wrapped
+# limit ... an integer giving the character limit per line
+
+wrapText <- function(text, limit = 66) {
+  # split text according to white space
+  partsList <- strsplit(text, "\\s+", fixed = FALSE)
+  # loop over list
+  vapply(partsList, function(parts) {
+    # add parts to a line as long as there is space (given by 'limit'),
+    # and start a new line when running out of space
+    lines <- character(0)
+    while(length(parts) > 0) {
+      if (length(parts) == 1) {
+        # only one part left, so add it as a new line and we're done
+        add <- 1
+      } else {
+        # temporarily add space before every part except the first one
+        strings <- c(parts[1], paste(" ", parts[-1], sep = ""))
+        # determine how many predictors have space
+        width <- nchar(strings)
+        add <- which(cumsum(width) <= limit)
+        # if the first part is too long it needs to be added anyway
+        if (length(add) == 0) add <- 1
+      }
+      # add a new line
+      lines <- c(lines, paste(parts[add], collapse = " "))
+      # remove the parts that have just been written to the new line
+      parts <- parts[-add]
+    }
+    # add line break in between lines
+    paste(lines, collapse = "\n")
+  }, character(1))
 }
 
 
@@ -161,378 +421,428 @@ regression <- function(..., data, labels = NULL, change = FALSE) {
 #' @importFrom stats aggregate anova model.matrix model.response pf
 #' @export
 
-print.regressionSPSS <- function(x, digits = 3,
-                                 statistics = c("summary", "anova", "estimates"),
-                                 theme = c("modern", "legacy"), ...) {
+print.regressionSPSS <- function(x,
+                            statistics = c("summary", "anova", "estimates"),
+                            theme = c("modern", "legacy"), wrap = NULL, ...) {
 
   ## initializations
   count <- 0
-  statistics <- match.arg(statistics, several.ok=TRUE)
+  statistics <- match.arg(statistics, several.ok = TRUE)
   theme <- match.arg(theme)
-  legacy <- theme == "legacy"
-  models <- x$models
-  labels <- names(models)
-  change <- x$change
-  # TODO: it's probably a good idea to let the user supply character limits
-  if (change) wrap <- c(90, 66)
-  else wrap <- c(50, 66)
+  if (is.null(wrap)) {
+    if (x$change) wrap <- c(90, 66)
+    else wrap <- c(50, 60)
+  } else wrap <- rep_len(wrap, 2)
 
-  ## extract coefficients
-  summaries <- lapply(models, summary)
-  coefficients <- mapply(function(m, s) {
-    # extract coefficients
-    coef <- coefficients(s)
-    # extract response and predictor matrix (without intercept column)
-    y <- model.response(m$model)
-    terms <- attr(m$model, "terms")
-    x <- model.matrix(terms, data = m$model)[, -1, drop = FALSE]
-    # compute standardized coefficients
-    sy <- sd(y)
-    sx <- apply(x, 2, sd)
-    beta <- c(NA_real_, coef[-1, 1] * sx / sy)
-    # rename rows and columns
-    rownames(coef)[1] <- "(Constant)"
-    colnames(coef) <- c("B", "Std. Error", "t", "Sig.")
-    # combine information on coefficients
-    cbind(coef[, c("B", "Std. Error")], Beta=beta, coef[, c("t", "Sig.")])
-  }, models, summaries, SIMPLIFY=FALSE)
-  predictors <- lapply(coefficients, rownames)
-
-  ## compute ANOVA tables
-  anovas <- mapply(function(m, s) {
-    # perform ANOVA
-    a <- anova(m)
-    class(a) <- "data.frame"
-    # aggregate information from individual variables
-    a$Type <- ifelse(row.names(a) == "Residuals", "Residual", "Regression")
-    sum <- aggregate(a[, c("Sum Sq", "Df")], a[, "Type", drop=FALSE], sum)
-    mean <- aggregate(a[, "Mean Sq", drop=FALSE], a[, "Type", drop=FALSE], mean)
-    a <- cbind(sum[, c("Sum Sq", "Df")], mean[, "Mean Sq", drop=FALSE])
-    row.names(a) <- sum$Type
-    # extract information from test
-    f <- s$fstatistic[1]
-    p <- pf(f, s$fstatistic[2], s$fstatistic[3], lower.tail=FALSE)
-    # add test results
-    a[, "F"] <- c(f, NA_real_)
-    a[, "Sig."] <- c(p, NA_real_)
-    # add total sum of squares
-    total <- data.frame("Sum Sq"=sum(a[, "Sum Sq"]),  Df=sum(a[, "Df"]),
-                        "Mean Sq"=NA_real_, "F"=NA_real_, "Sig."=NA_real_,
-                        row.names="Total", check.names=FALSE)
-    # return results
-    rbind(a, total)
-  }, models, summaries, SIMPLIFY=FALSE)
-
-  ## compute R squares
-  rsq <- vapply(summaries, "[[", numeric(1), "r.squared")
-  adjrsq <- vapply(summaries, "[[", numeric(1), "adj.r.squared")
-  sigma <- vapply(summaries, "[[", numeric(1), "sigma")
-  fits <- data.frame("R"=sqrt(rsq), "R Sq"=rsq,
-                     "Adj. R Sq"=adjrsq, "Std. Error"=sigma,
-                     row.names=labels, check.names=FALSE)
-
-  ## if requested, compute change statistics
-  if (change) {
-    k <- length(models)
-    # compute R square changes and degrees of freedom
-    rsqchange <- diff(rsq)
-    df <- vapply(anovas, function(a) a$Df[1:2], integer(2), USE.NAMES=FALSE)
-    if (x$method == "enter") {
-      # R square of the full model
-      rsqfull <- rsq[-1]
-      # compute degrees of freedom
-      df1 <- diff(df[1, ])
-      df2 <- df[2, -1]
-    } else {
-      # R square of the full model
-      rsqfull <- rsq[-k]
-      # compute degrees of freedom
-      df1 <- -diff(df[1, ])
-      df2 <- df[2, -k]
-    }
-    # compute F changes and p-values
-    f <- (abs(rsqchange) / df1) / ((1 - rsqfull) / df2)
-    p <- pf(f, df1, df2, lower.tail=FALSE)
-    # add information from first model
-    first <- anovas[[1]]
-    changes <- data.frame("R Sq Change"=c(rsq[1], rsqchange),
-                          "F Change"=c(first[1, "F"], f),
-                          df1=c(first[1, "Df"], df1),
-                          df2=c(first[2, "Df"], df2),
-                          "Sig. F Change"=c(first[1, "Sig."], p),
-                          row.names=labels, check.names=FALSE)
-    # add to information on model fits
-    fits <- cbind(fits, changes)
-  }
-
-  ## print LaTeX table for model summaries
+  ## print LaTeX table for descriptives
   if ("summary" %in% statistics) {
-    # initialize LaTeX table
     cat("\n")
-    if (legacy) {
-      if (change) cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|r|}\n")
-      else cat("\\begin{tabular}{|l|r|r|r|r|}\n")
-    } else {
-      if (change) cat(latexTabular(10, info = 1))
-      else cat(latexTabular(5, info = 1))
-      cat("\n")
-    }
-    # print table header
-    cat("\\noalign{\\smallskip}\n")
-    if (change) cat("\\multicolumn{10}{c}{\\textbf{Model Summary}} \\\\\n")
-    else cat("\\multicolumn{5}{c}{\\textbf{Model Summary}} \\\\\n")
-    if (legacy) {
-      cat("\\noalign{\\smallskip}\\hline\n")
-      if (change) {
-        cat(" & & & & \\multicolumn{1}{c|}{Std. Error} & \\multicolumn{5}{c|}{Change Statistics} \\\\\n")
-        cat("\\cline{6-10}\n")
-        cat(" & & & \\multicolumn{1}{c|}{Adjusted} & \\multicolumn{1}{c|}{of the} & \\multicolumn{1}{c|}{R Square} & & & & \\multicolumn{1}{c|}{Sig. F} \\\\\n")
-        cat("\\multicolumn{1}{|c|}{Model} & \\multicolumn{1}{c|}{R} & \\multicolumn{1}{c|}{R Square} & \\multicolumn{1}{c|}{R Square} & \\multicolumn{1}{c|}{Estimate} & \\multicolumn{1}{c|}{Change} & \\multicolumn{1}{c|}{F Change} & \\multicolumn{1}{c|}{df1} & \\multicolumn{1}{c|}{df2} & \\multicolumn{1}{c|}{Change} \\\\\n")
-      } else {
-        cat(" & & & \\multicolumn{1}{c|}{Adjusted} & \\multicolumn{1}{c|}{Std. Error of} \\\\\n")
-        cat("\\multicolumn{1}{|c|}{Model} & \\multicolumn{1}{c|}{R} & \\multicolumn{1}{c|}{R Square} & \\multicolumn{1}{c|}{R Square} & \\multicolumn{1}{c|}{the Estimate} \\\\\n")
-      }
-    } else {
-      cat("\\noalign{\\smallskip}\n")
-      if (change) {
-        cat(.latexMulticolumn("", 1, "l"), "&",
-            .latexMulticolumn("", 1, right = TRUE), "&",
-            .latexMulticolumn("", 1, right = TRUE), "&",
-            .latexMulticolumn("", 1, right = TRUE), "&",
-            .latexMulticolumn("Std. Error", 1, right = TRUE), "&",
-            .latexMulticolumn("Change Statistics", 5), "\\\\\n")
-        cat(.latexMulticolumn("", 1, "l"), "&",
-            .latexMulticolumn("", 1, right = TRUE), "&",
-            .latexMulticolumn("", 1, right = TRUE), "&",
-            .latexMulticolumn("Adjusted", 1, right = TRUE), "&",
-            .latexMulticolumn("of the", 1, right = TRUE), "&",
-            .latexMulticolumn("R Square", 1, right = TRUE), "&",
-            .latexMulticolumn("", 1, right = TRUE), "&",
-            .latexMulticolumn("", 1, right = TRUE), "&",
-            .latexMulticolumn("", 1, right = TRUE), "&",
-            .latexMulticolumn("Sig. F", 1), "\\\\\n")
-        cat(.latexMulticolumn("Model", 1, "l"), "&",
-            .latexMulticolumn("R", 1, right = TRUE), "&",
-            .latexMulticolumn("R Square", 1, right = TRUE), "&",
-            .latexMulticolumn("R Square", 1, right = TRUE), "&",
-            .latexMulticolumn("Estimate", 1, right = TRUE), "&",
-            .latexMulticolumn("Change", 1, right = TRUE), "&",
-            .latexMulticolumn("F Change", 1, right = TRUE), "&",
-            .latexMulticolumn("df1", 1, right = TRUE), "&",
-            .latexMulticolumn("df2", 1, right = TRUE), "&",
-            .latexMulticolumn("Change", 1), "\\\\\n")
-      } else {
-        cat(.latexMulticolumn("", 1, "l"), "&",
-            .latexMulticolumn("", 1, right = TRUE), "&",
-            .latexMulticolumn("", 1, right = TRUE), "&",
-            .latexMulticolumn("Adjusted", 1, right = TRUE), "&",
-            .latexMulticolumn("Std. Error of", 1), "\\\\\n")
-        cat(.latexMulticolumn("Model", 1, "l"), "&",
-            .latexMulticolumn("R", 1, right = TRUE), "&",
-            .latexMulticolumn("R Square", 1, right = TRUE), "&",
-            .latexMulticolumn("R Square", 1, right = TRUE), "&",
-            .latexMulticolumn("the Estimate", 1), "\\\\\n")
-      }
-    }
-    cat("\\hline\n")
-    # format model summaries
-    if (legacy) formatted <- formatSPSS(fits, digits=digits, pValue=FALSE)
-    else formatted <- formatSPSS(fits, digits=digits)
-    for (i in seq_along(models)) {
-      # print current model summary
-      superscript <- sprintf("$^{\\text{%s}}$", letters[i])
-      cat(labels[i], " & ", formatted[i, 1], superscript, " & ",
-          paste0(formatted[i, -1], collapse=" & "), " \\\\\n", sep="")
-    }
-    # finalize LaTeX table
-    cat("\\hline\n")
-    for (i in seq_along(predictors)) {
-      if (change) {
-        catPredictors(predictors[[i]], columns = 10, index = i,
-                      wrap = wrap[1])
-      } else {
-        catPredictors(predictors[[i]], columns = 5, index = i,
-                      wrap = wrap[1])
-      }
-    }
-    cat("\\noalign{\\smallskip}\n")
-    cat("\\end{tabular}\n")
+    # put frequencies into SPSS format
+    spss <- toSPSS(x, statistics = "summary", version = theme,
+                   wrap = wrap[1], ...)
+    # print LaTeX table
+    toLatex(spss, theme = theme)
     cat("\n")
     count <- count + 1
   }
 
-  ## print LaTeX table for ANOVA tables
+  ## print LaTeX table for Levene test
   if ("anova" %in% statistics) {
-    # initialize LaTeX table
     if (count == 0) cat("\n")
-    if (legacy) cat("\\begin{tabular}{|ll|r|r|r|r|r|}\n")
-    else {
-      cat(latexTabular(7, info = 2))
-      cat("\n")
-    }
-    # print table header
-    cat("\\noalign{\\smallskip}\n")
-    cat("\\multicolumn{7}{c}{\\textbf{ANOVA}$^{\\text{a}}$} \\\\\n")
-    if (legacy) {
-      cat("\\noalign{\\smallskip}\\hline\n")
-      cat(" & & \\multicolumn{1}{c|}{Sum of} & & & & \\\\\n")
-      cat("\\multicolumn{1}{|c}{Model} & & \\multicolumn{1}{c|}{Squares} & \\multicolumn{1}{c|}{df} & \\multicolumn{1}{c|}{Mean Square} & \\multicolumn{1}{c|}{F} & \\multicolumn{1}{c|}{Sig.} \\\\\n")
-    } else {
-      cat("\\noalign{\\smallskip}\n")
-      cat(.latexMulticolumn("", 1, "l"), "&",
-          .latexMulticolumn("", 1, "l"), "&",
-          .latexMulticolumn("Sum of", 1, right = TRUE), "&",
-          .latexMulticolumn("", 1, right = TRUE), "&",
-          .latexMulticolumn("", 1, right = TRUE), "&",
-          .latexMulticolumn("", 1, right = TRUE), "&",
-          .latexMulticolumn("", 1), "\\\\\n")
-      cat(.latexMulticolumn("Model", 1, "l"), "&",
-          .latexMulticolumn("", 1, "l"), "&",
-          .latexMulticolumn("Squares", 1, right = TRUE), "&",
-          .latexMulticolumn("df", 1, right = TRUE), "&",
-          .latexMulticolumn("Mean Square", 1, right = TRUE), "&",
-          .latexMulticolumn("F", 1, right = TRUE), "&",
-          .latexMulticolumn("Sig.", 1), "\\\\\n")
-    }
-    cat("\\hline\n")
-    for (i in seq_along(anovas)) {
-      # extract current ANOVA table
-      if (legacy) {
-        formatted <- formatSPSS(anovas[[i]], digits=digits, pValue=FALSE)
-      } else formatted <- formatSPSS(anovas[[i]], digits=digits)
-      # print current ANOVA table
-      for (type in rownames(formatted)) {
-        if (type == "Regression") {
-          label <- labels[i]
-          superscript <- sprintf("$^\\text{%s}$", letters[i+1])
-        } else {
-          label <- NULL
-          superscript <- NULL
-        }
-        cat(label, " & ", type, " & ", paste0(formatted[type, ], collapse=" & "),
-            superscript, " \\\\\n", sep="")
-      }
-      # finalize current ANOVA table
-      cat("\\hline\n")
-    }
-    # finalize LaTeX table
-    catResponse(x$response, columns = 7)
-    for (i in seq_along(predictors)) {
-      catPredictors(predictors[[i]], columns = 7, index = i+1,
-                    wrap = wrap[2])
-    }
-    cat("\\noalign{\\smallskip}\n")
-    cat("\\end{tabular}\n")
+    else cat("\\medskip\n")
+    # put frequencies into SPSS format
+    spss <- toSPSS(x, statistics = "anova", version = theme,
+                   wrap = wrap[2], ...)
+    # print LaTeX table
+    toLatex(spss, theme = theme)
     cat("\n")
-    count <- count + 1
   }
 
-  ## print LaTeX table for coefficients
+  ## print LaTeX table for ANOVA
   if ("estimates" %in% statistics) {
-    # initialize LaTeX table
     if (count == 0) cat("\n")
-    if (legacy) cat("\\begin{tabular}{|ll|r|r|r|r|r|}\n")
-    else {
-      cat(latexTabular(7, info = 2))
-      cat("\n")
-    }
-    # print table header
-    cat("\\noalign{\\smallskip}\n")
-    cat("\\multicolumn{7}{c}{\\textbf{Coefficients}$^{\\text{a}}$} \\\\\n")
-    if (legacy) {
-      cat("\\noalign{\\smallskip}\\hline\n")
-      cat(" & & \\multicolumn{2}{c|}{Unstandardized} & \\multicolumn{1}{c|}{Standardized} & & \\\\\n")
-      cat(" & & \\multicolumn{2}{c|}{Coefficients} & \\multicolumn{1}{c|}{Coefficients} & & \\\\\n")
-      cat("\\cline{3-5}\n")
-      cat("\\multicolumn{1}{|c}{Model} & & \\multicolumn{1}{c|}{B} & \\multicolumn{1}{c|}{Std. Error} & \\multicolumn{1}{c|}{Beta} & \\multicolumn{1}{c|}{t} & \\multicolumn{1}{c|}{Sig.} \\\\\n")
-    } else {
-      cat("\\noalign{\\smallskip}\n")
-      cat(.latexMulticolumn("", 1, "l"), "&",
-          .latexMulticolumn("", 1, "l"), "&",
-          .latexMulticolumn("Unstandardized", 2, right = TRUE), "&",
-          .latexMulticolumn("Standardized", 1, right = TRUE), "&",
-          .latexMulticolumn("", 1, right = TRUE), "&",
-          .latexMulticolumn("", 1), "\\\\\n")
-      cat(.latexMulticolumn("", 1, "l"), "&",
-          .latexMulticolumn("", 1, "l"), "&",
-          .latexMulticolumn("Coefficients", 2, right = TRUE), "&",
-          .latexMulticolumn("Coefficients", 1, right = TRUE), "&",
-          .latexMulticolumn("", 1, right = TRUE), "&",
-          .latexMulticolumn("", 1), "\\\\\n")
-      cat(.latexMulticolumn("Model", 1, "l"), "&",
-          .latexMulticolumn("", 1, "l"), "&",
-          .latexMulticolumn("B", 1, right = TRUE), "&",
-          .latexMulticolumn("Std. Error", 1, right = TRUE), "&",
-          .latexMulticolumn("Beta", 1, right = TRUE), "&",
-          .latexMulticolumn("t", 1, right = TRUE), "&",
-          .latexMulticolumn("Sig.", 1), "\\\\\n")
-    }
-    cat("\\hline\n")
-    for (i in seq_along(coefficients)) {
-      # extract current coefficients
-      if (legacy) {
-        formatted <- formatSPSS(coefficients[[i]], digits=digits, pValue=FALSE)
-      } else formatted <- formatSPSS(coefficients[[i]], digits=digits)
-      # print current coefficients
-      for (variable in rownames(formatted)) {
-        cat(if (variable == "(Constant)") labels[i], "&", variable, "&",
-            paste0(formatted[variable, ], collapse=" & "), "\\\\\n")
-      }
-      # finalize current model
-      # FIXME: line in between models should be in color 'darkgraySPSS'
-      cat("\\hline\n")                                     # regular black line
-      # cat("\\noalign{\\color{darkgraySPSS}\\hrule}%\n")  # doesn't work
-    }
-    # finalize LaTeX table
-    catResponse(x$response, columns = 7)
-    cat("\\noalign{\\smallskip}\n")
-    cat("\\end{tabular}\n")
+    else cat("\\medskip\n")
+    # put frequencies into SPSS format
+    spss <- toSPSS(x, statistics = "estimates", version = theme, ...)
+    # print LaTeX table
+    toLatex(spss, theme = theme)
     cat("\n")
   }
+
 }
 
-
-## utility function to print information on the dependent variable
-catResponse <- function(response, columns) {
-  cat("\\multicolumn{", columns, "}{l}{a. Dependent variable: ", response,
-      "} \\\\\n", sep="")
-}
-
-## utility function to print information on the predictors
-catPredictors <- function(predictors, columns, index = 1, wrap = 66) {
-  # initializations
-  p <- length(predictors)
-  # prepare string for first predictor
-  prefix <- "Predictors: "
-  predictorStrings <- paste0("Predictors: ", predictors[1])
-  # after each predictor except the last, a separator is inserted
-  if (p > 1) {
-    separators <- c(rep.int(", ", p-1), "")
-    predictorStrings <- paste0(c(predictorStrings, predictors[-1]), separators)
-  }
-  # add lines with as many predictors as there is space (given by 'wrap')
-  i <- 0
-  while(length(predictorStrings) > 0) {
-    # update number of lines to print
-    i <- i + 1
-    # determine how many predictors have space
-    width <- nchar(predictorStrings)
-    add <- which(cumsum(width) <= wrap)
-    # too long a variable needs to be added anyway
-    if (length(add) == 0) add <- 1
-    # print predictors that have
-    if (i == 1) {
-      cat("\\multicolumn{", columns, "}{l}{", letters[index],". ",
-          paste0(predictorStrings[add]), "} \\\\\n", sep="")
-    } else {
-      cat("\\multicolumn{", columns, "}{l}{\\phantom{", letters[index],". }",
-          paste0(predictorStrings[add]), "} \\\\\n", sep="")
-
-    }
-    # remove the predictors which have just been printed
-    predictorStrings <- predictorStrings[-add]
-  }
-}
+# print.regressionSPSS <- function(x, digits = 3,
+#                                  statistics = c("summary", "anova", "estimates"),
+#                                  theme = c("modern", "legacy"), ...) {
+#
+#   ## initializations
+#   count <- 0
+#   statistics <- match.arg(statistics, several.ok=TRUE)
+#   theme <- match.arg(theme)
+#   legacy <- theme == "legacy"
+#   models <- x$models
+#   labels <- names(models)
+#   change <- x$change
+#   # TODO: it's probably a good idea to let the user supply character limits
+#   if (change) wrap <- c(90, 66)
+#   else wrap <- c(50, 66)
+#
+#   ## extract coefficients
+#   summaries <- x$summaries
+#   coefficients <- mapply(function(m, s) {
+#     # extract coefficients
+#     coef <- coefficients(s)
+#     # extract response and predictor matrix (without intercept column)
+#     y <- model.response(m$model)
+#     terms <- attr(m$model, "terms")
+#     x <- model.matrix(terms, data = m$model)[, -1, drop = FALSE]
+#     # compute standardized coefficients
+#     sy <- sd(y)
+#     sx <- apply(x, 2, sd)
+#     beta <- c(NA_real_, coef[-1, 1] * sx / sy)
+#     # rename rows and columns
+#     rownames(coef)[1] <- "(Constant)"
+#     colnames(coef) <- c("B", "Std. Error", "t", "Sig.")
+#     # combine information on coefficients
+#     cbind(coef[, c("B", "Std. Error")], Beta=beta, coef[, c("t", "Sig.")])
+#   }, models, summaries, SIMPLIFY=FALSE)
+#   predictors <- lapply(coefficients, rownames)
+#
+#   ## compute ANOVA tables
+#   anovas <- mapply(function(m, s) {
+#     # perform ANOVA
+#     a <- anova(m)
+#     class(a) <- "data.frame"
+#     # aggregate information from individual variables
+#     a$Type <- ifelse(row.names(a) == "Residuals", "Residual", "Regression")
+#     sum <- aggregate(a[, c("Sum Sq", "Df")], a[, "Type", drop=FALSE], sum)
+#     mean <- aggregate(a[, "Mean Sq", drop=FALSE], a[, "Type", drop=FALSE], mean)
+#     a <- cbind(sum[, c("Sum Sq", "Df")], mean[, "Mean Sq", drop=FALSE])
+#     row.names(a) <- sum$Type
+#     # extract information from test
+#     f <- s$fstatistic[1]
+#     p <- pf(f, s$fstatistic[2], s$fstatistic[3], lower.tail=FALSE)
+#     # add test results
+#     a[, "F"] <- c(f, NA_real_)
+#     a[, "Sig."] <- c(p, NA_real_)
+#     # add total sum of squares
+#     total <- data.frame("Sum Sq"=sum(a[, "Sum Sq"]),  Df=sum(a[, "Df"]),
+#                         "Mean Sq"=NA_real_, "F"=NA_real_, "Sig."=NA_real_,
+#                         row.names="Total", check.names=FALSE)
+#     # return results
+#     rbind(a, total)
+#   }, models, summaries, SIMPLIFY=FALSE)
+#
+#   ## compute R squares
+#   rsq <- vapply(summaries, "[[", numeric(1), "r.squared")
+#   adjrsq <- vapply(summaries, "[[", numeric(1), "adj.r.squared")
+#   sigma <- vapply(summaries, "[[", numeric(1), "sigma")
+#   fits <- data.frame("R"=sqrt(rsq), "R Sq"=rsq,
+#                      "Adj. R Sq"=adjrsq, "Std. Error"=sigma,
+#                      row.names=labels, check.names=FALSE)
+#
+#   ## if requested, compute change statistics
+#   if (change) {
+#     k <- length(models)
+#     # compute R square changes and degrees of freedom
+#     rsqchange <- diff(rsq)
+#     df <- vapply(anovas, function(a) a$Df[1:2], integer(2), USE.NAMES=FALSE)
+#     if (x$method == "enter") {
+#       # R square of the full model
+#       rsqfull <- rsq[-1]
+#       # compute degrees of freedom
+#       df1 <- diff(df[1, ])
+#       df2 <- df[2, -1]
+#     } else {
+#       # R square of the full model
+#       rsqfull <- rsq[-k]
+#       # compute degrees of freedom
+#       df1 <- -diff(df[1, ])
+#       df2 <- df[2, -k]
+#     }
+#     # compute F changes and p-values
+#     f <- (abs(rsqchange) / df1) / ((1 - rsqfull) / df2)
+#     p <- pf(f, df1, df2, lower.tail=FALSE)
+#     # add information from first model
+#     first <- anovas[[1]]
+#     changes <- data.frame("R Sq Change"=c(rsq[1], rsqchange),
+#                           "F Change"=c(first[1, "F"], f),
+#                           df1=c(first[1, "Df"], df1),
+#                           df2=c(first[2, "Df"], df2),
+#                           "Sig. F Change"=c(first[1, "Sig."], p),
+#                           row.names=labels, check.names=FALSE)
+#     # add to information on model fits
+#     fits <- cbind(fits, changes)
+#   }
+#
+#   ## print LaTeX table for model summaries
+#   if ("summary" %in% statistics) {
+#     # initialize LaTeX table
+#     cat("\n")
+#     if (legacy) {
+#       if (change) cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|r|}\n")
+#       else cat("\\begin{tabular}{|l|r|r|r|r|}\n")
+#     } else {
+#       if (change) cat(latexTabular(10, info = 1))
+#       else cat(latexTabular(5, info = 1))
+#       cat("\n")
+#     }
+#     # print table header
+#     cat("\\noalign{\\smallskip}\n")
+#     if (change) cat("\\multicolumn{10}{c}{\\textbf{Model Summary}} \\\\\n")
+#     else cat("\\multicolumn{5}{c}{\\textbf{Model Summary}} \\\\\n")
+#     if (legacy) {
+#       cat("\\noalign{\\smallskip}\\hline\n")
+#       if (change) {
+#         cat(" & & & & \\multicolumn{1}{c|}{Std. Error} & \\multicolumn{5}{c|}{Change Statistics} \\\\\n")
+#         cat("\\cline{6-10}\n")
+#         cat(" & & & \\multicolumn{1}{c|}{Adjusted} & \\multicolumn{1}{c|}{of the} & \\multicolumn{1}{c|}{R Square} & & & & \\multicolumn{1}{c|}{Sig. F} \\\\\n")
+#         cat("\\multicolumn{1}{|c|}{Model} & \\multicolumn{1}{c|}{R} & \\multicolumn{1}{c|}{R Square} & \\multicolumn{1}{c|}{R Square} & \\multicolumn{1}{c|}{Estimate} & \\multicolumn{1}{c|}{Change} & \\multicolumn{1}{c|}{F Change} & \\multicolumn{1}{c|}{df1} & \\multicolumn{1}{c|}{df2} & \\multicolumn{1}{c|}{Change} \\\\\n")
+#       } else {
+#         cat(" & & & \\multicolumn{1}{c|}{Adjusted} & \\multicolumn{1}{c|}{Std. Error of} \\\\\n")
+#         cat("\\multicolumn{1}{|c|}{Model} & \\multicolumn{1}{c|}{R} & \\multicolumn{1}{c|}{R Square} & \\multicolumn{1}{c|}{R Square} & \\multicolumn{1}{c|}{the Estimate} \\\\\n")
+#       }
+#     } else {
+#       cat("\\noalign{\\smallskip}\n")
+#       if (change) {
+#         cat(.latexMulticolumn("", 1, "l"), "&",
+#             .latexMulticolumn("", 1, right = TRUE), "&",
+#             .latexMulticolumn("", 1, right = TRUE), "&",
+#             .latexMulticolumn("", 1, right = TRUE), "&",
+#             .latexMulticolumn("Std. Error", 1, right = TRUE), "&",
+#             .latexMulticolumn("Change Statistics", 5), "\\\\\n")
+#         cat(.latexMulticolumn("", 1, "l"), "&",
+#             .latexMulticolumn("", 1, right = TRUE), "&",
+#             .latexMulticolumn("", 1, right = TRUE), "&",
+#             .latexMulticolumn("Adjusted", 1, right = TRUE), "&",
+#             .latexMulticolumn("of the", 1, right = TRUE), "&",
+#             .latexMulticolumn("R Square", 1, right = TRUE), "&",
+#             .latexMulticolumn("", 1, right = TRUE), "&",
+#             .latexMulticolumn("", 1, right = TRUE), "&",
+#             .latexMulticolumn("", 1, right = TRUE), "&",
+#             .latexMulticolumn("Sig. F", 1), "\\\\\n")
+#         cat(.latexMulticolumn("Model", 1, "l"), "&",
+#             .latexMulticolumn("R", 1, right = TRUE), "&",
+#             .latexMulticolumn("R Square", 1, right = TRUE), "&",
+#             .latexMulticolumn("R Square", 1, right = TRUE), "&",
+#             .latexMulticolumn("Estimate", 1, right = TRUE), "&",
+#             .latexMulticolumn("Change", 1, right = TRUE), "&",
+#             .latexMulticolumn("F Change", 1, right = TRUE), "&",
+#             .latexMulticolumn("df1", 1, right = TRUE), "&",
+#             .latexMulticolumn("df2", 1, right = TRUE), "&",
+#             .latexMulticolumn("Change", 1), "\\\\\n")
+#       } else {
+#         cat(.latexMulticolumn("", 1, "l"), "&",
+#             .latexMulticolumn("", 1, right = TRUE), "&",
+#             .latexMulticolumn("", 1, right = TRUE), "&",
+#             .latexMulticolumn("Adjusted", 1, right = TRUE), "&",
+#             .latexMulticolumn("Std. Error of", 1), "\\\\\n")
+#         cat(.latexMulticolumn("Model", 1, "l"), "&",
+#             .latexMulticolumn("R", 1, right = TRUE), "&",
+#             .latexMulticolumn("R Square", 1, right = TRUE), "&",
+#             .latexMulticolumn("R Square", 1, right = TRUE), "&",
+#             .latexMulticolumn("the Estimate", 1), "\\\\\n")
+#       }
+#     }
+#     cat("\\hline\n")
+#     # format model summaries
+#     if (legacy) formatted <- formatSPSS(fits, digits=digits, pValue=FALSE)
+#     else formatted <- formatSPSS(fits, digits=digits)
+#     for (i in seq_along(models)) {
+#       # print current model summary
+#       superscript <- sprintf("$^{\\text{%s}}$", letters[i])
+#       cat(labels[i], " & ", formatted[i, 1], superscript, " & ",
+#           paste0(formatted[i, -1], collapse=" & "), " \\\\\n", sep="")
+#     }
+#     # finalize LaTeX table
+#     cat("\\hline\n")
+#     for (i in seq_along(predictors)) {
+#       if (change) {
+#         catPredictors(predictors[[i]], columns = 10, index = i,
+#                       wrap = wrap[1])
+#       } else {
+#         catPredictors(predictors[[i]], columns = 5, index = i,
+#                       wrap = wrap[1])
+#       }
+#     }
+#     cat("\\noalign{\\smallskip}\n")
+#     cat("\\end{tabular}\n")
+#     cat("\n")
+#     count <- count + 1
+#   }
+#
+#   ## print LaTeX table for ANOVA tables
+#   if ("anova" %in% statistics) {
+#     # initialize LaTeX table
+#     if (count == 0) cat("\n")
+#     if (legacy) cat("\\begin{tabular}{|ll|r|r|r|r|r|}\n")
+#     else {
+#       cat(latexTabular(7, info = 2))
+#       cat("\n")
+#     }
+#     # print table header
+#     cat("\\noalign{\\smallskip}\n")
+#     cat("\\multicolumn{7}{c}{\\textbf{ANOVA}$^{\\text{a}}$} \\\\\n")
+#     if (legacy) {
+#       cat("\\noalign{\\smallskip}\\hline\n")
+#       cat(" & & \\multicolumn{1}{c|}{Sum of} & & & & \\\\\n")
+#       cat("\\multicolumn{1}{|c}{Model} & & \\multicolumn{1}{c|}{Squares} & \\multicolumn{1}{c|}{df} & \\multicolumn{1}{c|}{Mean Square} & \\multicolumn{1}{c|}{F} & \\multicolumn{1}{c|}{Sig.} \\\\\n")
+#     } else {
+#       cat("\\noalign{\\smallskip}\n")
+#       cat(.latexMulticolumn("", 1, "l"), "&",
+#           .latexMulticolumn("", 1, "l"), "&",
+#           .latexMulticolumn("Sum of", 1, right = TRUE), "&",
+#           .latexMulticolumn("", 1, right = TRUE), "&",
+#           .latexMulticolumn("", 1, right = TRUE), "&",
+#           .latexMulticolumn("", 1, right = TRUE), "&",
+#           .latexMulticolumn("", 1), "\\\\\n")
+#       cat(.latexMulticolumn("Model", 1, "l"), "&",
+#           .latexMulticolumn("", 1, "l"), "&",
+#           .latexMulticolumn("Squares", 1, right = TRUE), "&",
+#           .latexMulticolumn("df", 1, right = TRUE), "&",
+#           .latexMulticolumn("Mean Square", 1, right = TRUE), "&",
+#           .latexMulticolumn("F", 1, right = TRUE), "&",
+#           .latexMulticolumn("Sig.", 1), "\\\\\n")
+#     }
+#     cat("\\hline\n")
+#     for (i in seq_along(anovas)) {
+#       # extract current ANOVA table
+#       if (legacy) {
+#         formatted <- formatSPSS(anovas[[i]], digits=digits, pValue=FALSE)
+#       } else formatted <- formatSPSS(anovas[[i]], digits=digits)
+#       # print current ANOVA table
+#       for (type in rownames(formatted)) {
+#         if (type == "Regression") {
+#           label <- labels[i]
+#           superscript <- sprintf("$^\\text{%s}$", letters[i+1])
+#         } else {
+#           label <- NULL
+#           superscript <- NULL
+#         }
+#         cat(label, " & ", type, " & ", paste0(formatted[type, ], collapse=" & "),
+#             superscript, " \\\\\n", sep="")
+#       }
+#       # finalize current ANOVA table
+#       cat("\\hline\n")
+#     }
+#     # finalize LaTeX table
+#     catResponse(x$response, columns = 7)
+#     for (i in seq_along(predictors)) {
+#       catPredictors(predictors[[i]], columns = 7, index = i+1,
+#                     wrap = wrap[2])
+#     }
+#     cat("\\noalign{\\smallskip}\n")
+#     cat("\\end{tabular}\n")
+#     cat("\n")
+#     count <- count + 1
+#   }
+#
+#   ## print LaTeX table for coefficients
+#   if ("estimates" %in% statistics) {
+#     # initialize LaTeX table
+#     if (count == 0) cat("\n")
+#     if (legacy) cat("\\begin{tabular}{|ll|r|r|r|r|r|}\n")
+#     else {
+#       cat(latexTabular(7, info = 2))
+#       cat("\n")
+#     }
+#     # print table header
+#     cat("\\noalign{\\smallskip}\n")
+#     cat("\\multicolumn{7}{c}{\\textbf{Coefficients}$^{\\text{a}}$} \\\\\n")
+#     if (legacy) {
+#       cat("\\noalign{\\smallskip}\\hline\n")
+#       cat(" & & \\multicolumn{2}{c|}{Unstandardized} & \\multicolumn{1}{c|}{Standardized} & & \\\\\n")
+#       cat(" & & \\multicolumn{2}{c|}{Coefficients} & \\multicolumn{1}{c|}{Coefficients} & & \\\\\n")
+#       cat("\\cline{3-5}\n")
+#       cat("\\multicolumn{1}{|c}{Model} & & \\multicolumn{1}{c|}{B} & \\multicolumn{1}{c|}{Std. Error} & \\multicolumn{1}{c|}{Beta} & \\multicolumn{1}{c|}{t} & \\multicolumn{1}{c|}{Sig.} \\\\\n")
+#     } else {
+#       cat("\\noalign{\\smallskip}\n")
+#       cat(.latexMulticolumn("", 1, "l"), "&",
+#           .latexMulticolumn("", 1, "l"), "&",
+#           .latexMulticolumn("Unstandardized", 2, right = TRUE), "&",
+#           .latexMulticolumn("Standardized", 1, right = TRUE), "&",
+#           .latexMulticolumn("", 1, right = TRUE), "&",
+#           .latexMulticolumn("", 1), "\\\\\n")
+#       cat(.latexMulticolumn("", 1, "l"), "&",
+#           .latexMulticolumn("", 1, "l"), "&",
+#           .latexMulticolumn("Coefficients", 2, right = TRUE), "&",
+#           .latexMulticolumn("Coefficients", 1, right = TRUE), "&",
+#           .latexMulticolumn("", 1, right = TRUE), "&",
+#           .latexMulticolumn("", 1), "\\\\\n")
+#       cat(.latexMulticolumn("Model", 1, "l"), "&",
+#           .latexMulticolumn("", 1, "l"), "&",
+#           .latexMulticolumn("B", 1, right = TRUE), "&",
+#           .latexMulticolumn("Std. Error", 1, right = TRUE), "&",
+#           .latexMulticolumn("Beta", 1, right = TRUE), "&",
+#           .latexMulticolumn("t", 1, right = TRUE), "&",
+#           .latexMulticolumn("Sig.", 1), "\\\\\n")
+#     }
+#     cat("\\hline\n")
+#     for (i in seq_along(coefficients)) {
+#       # extract current coefficients
+#       if (legacy) {
+#         formatted <- formatSPSS(coefficients[[i]], digits=digits, pValue=FALSE)
+#       } else formatted <- formatSPSS(coefficients[[i]], digits=digits)
+#       # print current coefficients
+#       for (variable in rownames(formatted)) {
+#         cat(if (variable == "(Constant)") labels[i], "&", variable, "&",
+#             paste0(formatted[variable, ], collapse=" & "), "\\\\\n")
+#       }
+#       # finalize current model
+#       # FIXME: line in between models should be in color 'darkgraySPSS'
+#       cat("\\hline\n")                                     # regular black line
+#       # cat("\\noalign{\\color{darkgraySPSS}\\hrule}%\n")  # doesn't work
+#     }
+#     # finalize LaTeX table
+#     catResponse(x$response, columns = 7)
+#     cat("\\noalign{\\smallskip}\n")
+#     cat("\\end{tabular}\n")
+#     cat("\n")
+#   }
+# }
+#
+#
+# ## utility function to print information on the dependent variable
+# catResponse <- function(response, columns) {
+#   cat("\\multicolumn{", columns, "}{l}{a. Dependent variable: ", response,
+#       "} \\\\\n", sep="")
+# }
+#
+# ## utility function to print information on the predictors
+# catPredictors <- function(predictors, columns, index = 1, wrap = 66) {
+#   # initializations
+#   p <- length(predictors)
+#   # prepare string for first predictor
+#   prefix <- "Predictors: "
+#   predictorStrings <- paste0("Predictors: ", predictors[1])
+#   # after each predictor except the last, a separator is inserted
+#   if (p > 1) {
+#     separators <- c(rep.int(", ", p-1), "")
+#     predictorStrings <- paste0(c(predictorStrings, predictors[-1]), separators)
+#   }
+#   # add lines with as many predictors as there is space (given by 'wrap')
+#   i <- 0
+#   while(length(predictorStrings) > 0) {
+#     # update number of lines to print
+#     i <- i + 1
+#     # determine how many predictors have space
+#     width <- nchar(predictorStrings)
+#     add <- which(cumsum(width) <= wrap)
+#     # too long a variable needs to be added anyway
+#     if (length(add) == 0) add <- 1
+#     # print predictors that have
+#     if (i == 1) {
+#       cat("\\multicolumn{", columns, "}{l}{", letters[index],". ",
+#           paste0(predictorStrings[add]), "} \\\\\n", sep="")
+#     } else {
+#       cat("\\multicolumn{", columns, "}{l}{\\phantom{", letters[index],". }",
+#           paste0(predictorStrings[add]), "} \\\\\n", sep="")
+#
+#     }
+#     # remove the predictors which have just been printed
+#     predictorStrings <- predictorStrings[-add]
+#   }
+# }
 
 
 #' @rdname regression

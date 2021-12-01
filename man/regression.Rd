@@ -14,9 +14,9 @@ regression(..., data, labels = NULL, change = FALSE)
 
 \method{print}{regressionSPSS}(
   x,
-  digits = 3,
   statistics = c("summary", "anova", "estimates"),
   theme = c("modern", "legacy"),
+  wrap = NULL,
   ...
 )
 
@@ -56,9 +56,6 @@ regression models in the output tables.}
 \item{x, object}{an object of class \code{"regressionSPSS"} as returned by
 function \code{regression}.}
 
-\item{digits}{an integer giving the number of digits after the comma to be
-printed in the LaTeX tables.}
-
 \item{statistics}{a character vector specifying which LaTeX tables should
 be printed.  Available options are \code{"summary"} for model summaries,
 \code{"anova"} for ANOVA results, and \code{"estimates"} for estimated
@@ -77,6 +74,9 @@ values are \code{"histogram"} for a histogram of the residuals, or
 standardized fitted values.}
 
 \item{main, xlab, ylab}{the plot title and axis labels.}
+
+\item{digits}{an integer giving the number of digits after the comma to be
+printed in the LaTeX tables.}
 }
 \value{
 An object of class \code{"regressionSPSS"} with the following
