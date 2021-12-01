@@ -129,7 +129,7 @@ toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
     version <- match.arg(version)
     legacy <- version == "legacy"
     haveExact <- !is.null(object$exact)
-    # extract and format values nicely
+    # extract results
     rn <- c("Z", "Asymp. Sig. (2-tailed)")
     values <- unlist(object$asymptotic)
     pValue <- c(FALSE, !legacy)
@@ -138,7 +138,7 @@ toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
       values <- c(values, object$exact)
       pValue <- c(pValue, !legacy, !legacy, FALSE)
     }
-    # format table nicely
+    # format results nicely
     args <- list(values, ...)
     if (is.null(args$pValue)) args$pValue <- pValue
     formatted <- do.call(formatSPSS, args)

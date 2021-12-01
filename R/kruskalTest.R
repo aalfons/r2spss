@@ -113,16 +113,19 @@ toSPSS.kruskalTestSPSS <- function(object, statistics = c("test", "ranks"),
     if (is.null(digits)) digits <- 3
     version <- match.arg(version)
     legacy <- version == "legacy"
+    # extract results
     # put test results into SPSS format
     rn <- c(if (legacy) "Chi-Square" else "Kruskal-Wallis H",
             "df", "Asymp. Sig.")
-    test <- data.frame(unlist(object$test), row.names = rn)
-    names(test) <- object$variable
-    # format table nicely
-    args <- list(test, digits = digits, ...)
-    if (is.null(args$pValue)) args$pValue <- !legacy
-    if (is.null(args$checkInt)) args$checkInt <- TRUE
+    values <- unlist(object$test)
+    # format results nicely
+    args <- list(values, digits = digits, ...)
+    if (is.null(args$pValue)) args$pValue <- c(FALSE, FALSE, !legacy)
+    if (is.null(args$checkInt)) args$checkInt <- c(FALSE, TRUE, FALSE)
     formatted <- do.call(formatSPSS, args)
+    # put test results into SPSS format
+    test <- data.frame(formatted, row.names = rn)
+    names(test) <- object$variable
     # define footnotes
     footnotes <- c("Kruskal Wallis Test",
                    paste("Grouping Variable:", object$group))
@@ -130,7 +133,7 @@ toSPSS.kruskalTestSPSS <- function(object, statistics = c("test", "ranks"),
                             column = rep.int(NA_integer_, 2),
                             text = footnotes)
     # construct list containing all necessary information
-    spss <- list(table = formatted, main = "Test Statistics",
+    spss <- list(table = test, main = "Test Statistics",
                  header = TRUE, rowNames = TRUE, info = 0,
                  footnotes = footnotes, version = version)
 
