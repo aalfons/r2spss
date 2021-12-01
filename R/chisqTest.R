@@ -309,9 +309,9 @@ print.chisqTestSPSS <- function(x, statistics = c("frequencies", "test"),
 
   ## initializations
   count <- 0
-  digits <- rep_len(digits, 2)
   statistics <- match.arg(statistics, several.ok = TRUE)
   theme <- match.arg(theme)
+  digits <- rep_len(digits, 2)
 
   ## print LaTeX table for frequencies
   if ("frequencies" %in% statistics) {
@@ -336,4 +336,5 @@ print.chisqTestSPSS <- function(x, statistics = c("frequencies", "test"),
     toLatex(spss, theme = theme)
     cat("\n")
   }
+
 }

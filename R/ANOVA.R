@@ -491,6 +491,7 @@ print.ANOVASPSS <- function(x,
     toLatex(spss, theme = theme)
     cat("\n")
   }
+
 }
 
 

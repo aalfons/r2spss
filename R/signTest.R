@@ -128,12 +128,11 @@ toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
     # initializations
     version <- match.arg(version)
     legacy <- version == "legacy"
-    haveExact <- !is.null(object$exact)
     # extract results
     rn <- c("Z", "Asymp. Sig. (2-tailed)")
     values <- unlist(object$asymptotic)
     pValue <- c(FALSE, !legacy)
-    if (haveExact) {
+    if (!is.null(object$exact)) {
       rn <- c(rn, sprintf("Exact Sig. (%d-tailed)", 2:1), "Point probability")
       values <- c(values, object$exact)
       pValue <- c(pValue, !legacy, !legacy, FALSE)
@@ -144,7 +143,7 @@ toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
     formatted <- do.call(formatSPSS, args)
     # put test results into SPSS format
     test <- data.frame(formatted, row.names = rn)
-    names(test) <- paste(object$variable, collapse = " - ")
+    names(test) <- paste(object$variables, collapse = " - ")
     # define footnotes
     footnotes <- data.frame(marker = "a", row = "main",
                             column = NA_integer_,
@@ -176,7 +175,6 @@ toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
 #'
 #' @export
 
-
 print.signTestSPSS <- function(x, statistics = c("frequencies", "test"),
                                theme = c("modern", "legacy"), ...) {
 
@@ -206,4 +204,5 @@ print.signTestSPSS <- function(x, statistics = c("frequencies", "test"),
     toLatex(spss, theme = theme)
     cat("\n")
   }
+
 }

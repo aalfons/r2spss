@@ -87,7 +87,6 @@ wilcoxonTest <- function(data, variables, group = NULL, exact = FALSE) {
   data <- as.data.frame(data)
   variables <- as.character(variables)
   group <- as.character(group)
-  exactPValue <- isTRUE(exact)
   ## select test
   if (length(group) == 0) {
     ## signed rank test
@@ -149,24 +148,148 @@ wilcoxonTest <- function(data, variables, group = NULL, exact = FALSE) {
     z <- (sum[max] - mu) / sigma
     p <- 2 * min(pnorm(z), pnorm(z, lower.tail=FALSE))
     asymptotic <- list(statistic=z, p.value=p)
-    # exact test without correction for ties
+    # Mann-Whitney U statistic
     u <- sum[max] - n[max]*(n[max]+1)/2
     # sigma <- sqrt((prod(n)*(N+1)) / 12)
-    exact <- list(statistic=u)
-    if (exactPValue) {
-      # compute p-value only if requested, as it can take a long time
+    # if requested, compute exact test without correction for ties
+    # (can take a long time)
+    if (isTRUE(exact)) {
       if (u > prod(n)/2) p <- pwilcox(u-1, n[max], n[-max], lower.tail=FALSE)
       else p <- pwilcox(u, n[max], n[-max])
-      p <- min(2*p, 1)
-      exact$p.value <- p
-    }
+      exact <- min(2*p, 1)
+    } else exact <- NULL
     # construct object
-    out <- list(statistics=stat, w=sum[max], asymptotic=asymptotic, exact=exact,
-                variables=variables[1], group=group[1], type="independent")
+    out <- list(statistics=stat, u=u, w=sum[max], asymptotic=asymptotic,
+                exact=exact, variables=variables[1], group=group[1],
+                type="independent")
   }
   ## return results
   class(out) <- "wilcoxonTestSPSS"
   out
+}
+
+
+## convert R results to all necessary information for SPSS-like table
+#' @export
+
+toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
+                                    version = c("modern", "legacy"),
+                                    digits = NULL, ...) {
+
+  ## initializations
+  statistics <- match.arg(statistics)
+  ## put requested results into SPSS format
+
+  if (statistics == "ranks") {
+
+    # initializations
+    if (is.null(digits)) digits <- 2
+    p <- ncol(object$statistics)
+    # prepare necessary information
+    if (object$type == "paired") {
+      # put table into SPSS format
+      N <- object$n
+      ties <- N - sum(object$statistics$N)
+      ranks <- rbind(object$statistics,
+            Ties = c(ties, rep.int(NA_integer_, p-1)),
+            Total = c(N, rep.int(NA_integer_, p-1)))
+      # format table nicely
+      formatted <- formatSPSS(ranks, digits = digits, ...)
+      # define label
+      label <- paste(object$variables, collapse = " - ")
+      # define footnotes
+      footnotes <- c(paste(object$variables, collapse = " < "),
+                     paste(object$variables, collapse = " > "),
+                     paste(object$variables, collapse = " = "))
+      footnotes <- data.frame(marker = c("a", "b", "c"), row = 1:3,
+                              column = rep.int(1, 3), text = footnotes)
+      # construct list containing all necessary information
+      spss <- list(table = formatted, main = "Ranks", header = TRUE,
+                   label = label, rowNames = TRUE, info = 1,
+                   footnotes = footnotes)
+    } else if (object$type == "independent") {
+      # put table into SPSS format
+      N <- sum(object$statistics$N)
+      ranks <- rbind(object$statistics,
+                     Total = c(N, rep.int(NA_integer_, p-1)))
+      # format table nicely
+      formatted <- formatSPSS(ranks, digits = digits, ...)
+      # construct list containing all necessary information
+      spss <- list(table = formatted, main = "Ranks", header = TRUE,
+                   label = object$variables, rowNames = TRUE, info = 0)
+    } else stop("type of test not supported")
+
+  } else if (statistics == "test") {
+
+    # initializations
+    if (is.null(digits)) digits <- 3
+    version <- match.arg(version)
+    legacy <- version == "legacy"
+    # prepare necessary information
+    if (object$type == "paired") {
+      # extract results
+      rn <- c("Z", "Asymp. Sig. (2-tailed)")
+      values <- unlist(object$test)
+      # format results nicely
+      args <- list(values, digits = digits, ...)
+      if (is.null(args$pValue)) args$pValue <- c(FALSE, !legacy)
+      formatted <- do.call(formatSPSS, args)
+      # put test results into SPSS format
+      test <- data.frame(formatted, row.names = rn)
+      names(test) <- paste(object$variables, collapse = " - ")
+      # define footnotes
+      footnotes <- data.frame(marker = c("a", "b"), row = c("main", 1),
+                              column = c(NA_integer_, 1),
+                              text = c("Wilcoxon Signed Ranks Test",
+                                       "Based on positive ranks."))
+      # construct list containing all necessary information
+      spss <- list(table = test, main = "Test Statistics",
+                   header = TRUE, rowNames = TRUE, info = 0,
+                   footnotes = footnotes, version = version)
+    } else if (object$type == "independent") {
+      # initializations
+      haveExact <- !is.null(object$exact)
+      # extract results
+      rn <- c("Mann-Whitney U", "Wilcoxon W", "Z", "Asymp. Sig. (2-tailed)")
+      values <- c(object$u, object$w, unlist(object$asymptotic))
+      pValue <- c(FALSE, FALSE, FALSE, !legacy)
+      if (haveExact) {
+        rn <- c(rn, "Exact Sig. [2*(1-tailed Sig.)]")
+        values <- c(values, object$exact)
+        pValue <- c(pValue, !legacy)
+      }
+      # format results nicely
+      args <- list(values, digits = digits, ...)
+      if (is.null(args$pValue)) args$pValue <- pValue
+      formatted <- do.call(formatSPSS, args)
+      # put test results into SPSS format
+      test <- data.frame(formatted, row.names = rn)
+      names(test) <- object$variable
+      # define footnotes
+      marker <- "a"
+      row <- "main"
+      column <- NA_integer_
+      footnote <- paste("Grouping Variable:", object$group)
+      if (haveExact) {
+        marker <- c(marker, "b")
+        row <- c(row, 5)
+        column <- c(column, 1)
+        footnote <- c(footnote, "Not corrected for ties.")
+      }
+      footnotes <- data.frame(marker = marker, row = row, column = column,
+                              text = footnote)
+      # construct list containing all necessary information
+      spss <- list(table = test, main = "Test Statistics",
+                   header = TRUE, rowNames = TRUE, info = 0,
+                   footnotes = footnotes, version = version)
+    } else stop("type of test not supported")
+
+  } else stop ("type of 'statistics' not supported")  # shouldn't happen
+
+  # add class and return object
+  class(spss) <- "SPSSTable"
+  spss
+
 }
 
 
@@ -185,102 +308,138 @@ wilcoxonTest <- function(data, variables, group = NULL, exact = FALSE) {
 #'
 #' @export
 
-print.wilcoxonTestSPSS <- function(x, digits = 2:3,
-                                   statistics = c("ranks", "test"),
-                                   ...) {
+print.wilcoxonTestSPSS <- function(x, statistics = c("ranks", "test"),
+                                   theme = c("modern", "legacy"),
+                                   digits = 2:3, ...) {
 
   ## initializations
   count <- 0
-  statistics <- match.arg(statistics, several.ok=TRUE)
+  statistics <- match.arg(statistics, several.ok = TRUE)
+  theme <- match.arg(theme)
+  digits <- rep_len(digits, 2)
 
   ## print LaTeX table for ranks
   if ("ranks" %in% statistics) {
-    formatted <- formatSPSS(x$statistics, digits=digits[1])
-    # print LaTeX table
     cat("\n")
-    if (x$type == "paired") {
-      formatted[, "N"] <- paste0(formatted[, "N"], "$^\\text{", c("a", "b"), "}$")
-      cat("\\begin{tabular}{|ll|r|r|r|}\n")
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{5}{c}{\\textbf{Ranks}} \\\\\n")
-      cat("\\noalign{\\smallskip}\\hline\n")
-      cat(" & & \\multicolumn{1}{|c|}{N} & \\multicolumn{1}{|c|}{Mean Rank} & \\multicolumn{1}{|c|}{Sum of Ranks} \\\\\n")
-      cat("\\hline\n")
-      cat(x$variables[2], "-", x$variables[1], "&", rownames(formatted)[1], "&", paste0(formatted[1, ], collapse=" & "), "\\\\\n")
-      cat(" &", rownames(formatted)[2], "&", paste(formatted[2, ], collapse=" & "), "\\\\\n")
-      cat(" & Ties & ", x$n - sum(x$statistics$N), "$^\\text{c}$ & & \\\\\n", sep="")
-      cat(" & Total &", x$n, "& & \\\\\n")
-      cat("\\hline\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{5}{l}{", "a. ", x$variables[2], " < ", x$variables[1], "} \\\\\n", sep="")
-      cat("\\multicolumn{5}{l}{", "b. ", x$variables[2], " > ", x$variables[1], "} \\\\\n", sep="")
-      cat("\\multicolumn{5}{l}{", "c. ", x$variables[2], " = ", x$variables[1], "} \\\\\n", sep="")
-    } else if (x$type == "independent") {
-      cat("\\begin{tabular}{|ll|r|r|r|}\n")
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{5}{c}{\\textbf{Ranks}} \\\\\n")
-      cat("\\noalign{\\smallskip}\\hline\n")
-      cat(" &", x$group, "& \\multicolumn{1}{|c|}{N} & \\multicolumn{1}{|c|}{Mean Rank} & \\multicolumn{1}{|c|}{Sum of Ranks} \\\\\n")
-      cat("\\hline\n")
-      cat(x$variables, "&", rownames(formatted)[1], "&", paste0(formatted[1, ], collapse=" & "), "\\\\\n")
-      cat(" &", rownames(formatted)[2], "&", paste0(formatted[2, ], collapse=" & "), "\\\\\n")
-      cat(" & Total &", sum(x$statistics$N), "& & \\\\\n")
-      cat("\\hline\\noalign{\\smallskip}\n")
-    } else stop("type of test not supported")
-    # finalize LaTeX table
-    cat("\\end{tabular}\n")
+    # put table into SPSS format
+    spss <- toSPSS(x, digits = digits[1], statistics = "ranks",
+                   version = theme, ...)
+    # print LaTeX table
+    toLatex(spss, theme = theme)
     cat("\n")
     count <- count + 1
   }
 
   ## print LaTeX table for test
   if ("test" %in% statistics) {
-
-    ## collect output for test
-    if (x$type == "paired") {
-      test <- c(x$test$statistic, x$test$p.value)
-      formatted <- formatSPSS(test, digits=digits[2])
-      min <- which.min(x$statistics[, "Sum of Ranks"])
-    } else if (x$type == "independent") {
-      haveExact <- !is.null(x$exact$p.value)
-      test <- c(x$exact$statistic, x$w, x$asymptotic$statistic,
-                x$asymptotic$p.value, x$exact$p.value)
-      formatted <- formatSPSS(test, digits=digits[2])
-    } else stop("type of test not supported")
-
-    ## print LaTeX table
     if (count == 0) cat("\n")
-    if (x$type == "paired") {
-      cat("\\begin{tabular}{|l|r|}\n")
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{2}{c}{\\textbf{Test Statistics}$^{\\text{a}}$} \\\\\n")
-      cat("\\noalign{\\smallskip}\\hline\n")
-      cat(" & \\multicolumn{1}{|c|}{", paste(x$variables[2], "-", x$variables[1]), "} \\\\\n", sep="")
-      cat("\\hline\n")
-      cat("Z & ", formatted[1], "$^\\text{b}$ \\\\\n", sep="")
-      cat("Asymp. Sig. (2-tailed) &", formatted[2], "\\\\\n")
-      cat("\\hline\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{2}{l}{a. Wilcoxon Signed Ranks Test} \\\\\n")
-      cat("\\multicolumn{2}{l}{b. Based on", c("negative", "positive")[min], "ranks.} \\\\\n")
-    } else if (x$type == "independent") {
-      cat("\\begin{tabular}{|l|r|}\n")
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{2}{c}{\\textbf{Test Statistics}$^{\\text{a}}$} \\\\\n")
-      cat("\\noalign{\\smallskip}\\hline\n")
-      cat(" & \\multicolumn{1}{|c|}{", x$variables, "} \\\\\n", sep="")
-      cat("\\hline\n")
-      cat("Mann-Whitney U &", formatted[1], "\\\\\n")
-      cat("Wilcoxon W &", formatted[2], "\\\\\n")
-      cat("Z &", formatted[3], "\\\\\n")
-      cat("Asymp. Sig. (2-tailed) &", formatted[4], "\\\\\n")
-      if (haveExact) {
-        cat("Exact Sig. [2*(1-tailed Sig.)] &", formatted[5], "$^\\text{b}$ \\\\\n", sep="")
-      }
-      cat("\\hline\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{2}{l}{a. Grouping Variable: ", x$group, "} \\\\\n", sep="")
-      cat("\\multicolumn{2}{l}{b. Not corrected for ties.} \\\\\n")
-    } else stop("type of test not supported")
-    # finalize LaTeX table
-    cat("\\end{tabular}\n")
+    else cat("\\medskip\n")
+    # put test results into SPSS format
+    spss <- toSPSS(x, digits = digits[2], statistics = "test",
+                   version = theme, ...)
+    # print LaTeX table
+    toLatex(spss, theme = theme)
     cat("\n")
   }
+
 }
+
+# print.wilcoxonTestSPSS <- function(x, statistics = c("ranks", "test"),
+#                                    theme = c("modern", "legacy"),
+#                                    digits = 2:3, ...) {
+#
+#   ## initializations
+#   count <- 0
+#   statistics <- match.arg(statistics, several.ok=TRUE)
+#
+#   ## print LaTeX table for ranks
+#   if ("ranks" %in% statistics) {
+#     formatted <- formatSPSS(x$statistics, digits=digits[1])
+#     # print LaTeX table
+#     cat("\n")
+#     if (x$type == "paired") {
+#       formatted[, "N"] <- paste0(formatted[, "N"], "$^\\text{", c("a", "b"), "}$")
+#       cat("\\begin{tabular}{|ll|r|r|r|}\n")
+#       cat("\\noalign{\\smallskip}\n")
+#       cat("\\multicolumn{5}{c}{\\textbf{Ranks}} \\\\\n")
+#       cat("\\noalign{\\smallskip}\\hline\n")
+#       cat(" & & \\multicolumn{1}{|c|}{N} & \\multicolumn{1}{|c|}{Mean Rank} & \\multicolumn{1}{|c|}{Sum of Ranks} \\\\\n")
+#       cat("\\hline\n")
+#       cat(x$variables[2], "-", x$variables[1], "&", rownames(formatted)[1], "&", paste0(formatted[1, ], collapse=" & "), "\\\\\n")
+#       cat(" &", rownames(formatted)[2], "&", paste(formatted[2, ], collapse=" & "), "\\\\\n")
+#       cat(" & Ties & ", x$n - sum(x$statistics$N), "$^\\text{c}$ & & \\\\\n", sep="")
+#       cat(" & Total &", x$n, "& & \\\\\n")
+#       cat("\\hline\\noalign{\\smallskip}\n")
+#       cat("\\multicolumn{5}{l}{", "a. ", x$variables[2], " < ", x$variables[1], "} \\\\\n", sep="")
+#       cat("\\multicolumn{5}{l}{", "b. ", x$variables[2], " > ", x$variables[1], "} \\\\\n", sep="")
+#       cat("\\multicolumn{5}{l}{", "c. ", x$variables[2], " = ", x$variables[1], "} \\\\\n", sep="")
+#     } else if (x$type == "independent") {
+#       cat("\\begin{tabular}{|ll|r|r|r|}\n")
+#       cat("\\noalign{\\smallskip}\n")
+#       cat("\\multicolumn{5}{c}{\\textbf{Ranks}} \\\\\n")
+#       cat("\\noalign{\\smallskip}\\hline\n")
+#       cat(" &", x$group, "& \\multicolumn{1}{|c|}{N} & \\multicolumn{1}{|c|}{Mean Rank} & \\multicolumn{1}{|c|}{Sum of Ranks} \\\\\n")
+#       cat("\\hline\n")
+#       cat(x$variables, "&", rownames(formatted)[1], "&", paste0(formatted[1, ], collapse=" & "), "\\\\\n")
+#       cat(" &", rownames(formatted)[2], "&", paste0(formatted[2, ], collapse=" & "), "\\\\\n")
+#       cat(" & Total &", sum(x$statistics$N), "& & \\\\\n")
+#       cat("\\hline\\noalign{\\smallskip}\n")
+#     } else stop("type of test not supported")
+#     # finalize LaTeX table
+#     cat("\\end{tabular}\n")
+#     cat("\n")
+#     count <- count + 1
+#   }
+#
+#   ## print LaTeX table for test
+#   if ("test" %in% statistics) {
+#
+#     ## collect output for test
+#     if (x$type == "paired") {
+#       test <- c(x$test$statistic, x$test$p.value)
+#       formatted <- formatSPSS(test, digits=digits[2])
+#       min <- which.min(x$statistics[, "Sum of Ranks"])
+#     } else if (x$type == "independent") {
+#       haveExact <- !is.null(x$exact$p.value)
+#       test <- c(x$exact$statistic, x$w, x$asymptotic$statistic,
+#                 x$asymptotic$p.value, x$exact$p.value)
+#       formatted <- formatSPSS(test, digits=digits[2])
+#     } else stop("type of test not supported")
+#
+#     ## print LaTeX table
+#     if (count == 0) cat("\n")
+#     if (x$type == "paired") {
+#       cat("\\begin{tabular}{|l|r|}\n")
+#       cat("\\noalign{\\smallskip}\n")
+#       cat("\\multicolumn{2}{c}{\\textbf{Test Statistics}$^{\\text{a}}$} \\\\\n")
+#       cat("\\noalign{\\smallskip}\\hline\n")
+#       cat(" & \\multicolumn{1}{|c|}{", paste(x$variables[2], "-", x$variables[1]), "} \\\\\n", sep="")
+#       cat("\\hline\n")
+#       cat("Z & ", formatted[1], "$^\\text{b}$ \\\\\n", sep="")
+#       cat("Asymp. Sig. (2-tailed) &", formatted[2], "\\\\\n")
+#       cat("\\hline\\noalign{\\smallskip}\n")
+#       cat("\\multicolumn{2}{l}{a. Wilcoxon Signed Ranks Test} \\\\\n")
+#       cat("\\multicolumn{2}{l}{b. Based on", c("negative", "positive")[min], "ranks.} \\\\\n")
+#     } else if (x$type == "independent") {
+#       cat("\\begin{tabular}{|l|r|}\n")
+#       cat("\\noalign{\\smallskip}\n")
+#       cat("\\multicolumn{2}{c}{\\textbf{Test Statistics}$^{\\text{a}}$} \\\\\n")
+#       cat("\\noalign{\\smallskip}\\hline\n")
+#       cat(" & \\multicolumn{1}{|c|}{", x$variables, "} \\\\\n", sep="")
+#       cat("\\hline\n")
+#       cat("Mann-Whitney U &", formatted[1], "\\\\\n")
+#       cat("Wilcoxon W &", formatted[2], "\\\\\n")
+#       cat("Z &", formatted[3], "\\\\\n")
+#       cat("Asymp. Sig. (2-tailed) &", formatted[4], "\\\\\n")
+#       if (haveExact) {
+#         cat("Exact Sig. [2*(1-tailed Sig.)] &", formatted[5], "$^\\text{b}$ \\\\\n", sep="")
+#       }
+#       cat("\\hline\\noalign{\\smallskip}\n")
+#       cat("\\multicolumn{2}{l}{a. Grouping Variable: ", x$group, "} \\\\\n", sep="")
+#       cat("\\multicolumn{2}{l}{b. Not corrected for ties.} \\\\\n")
+#     } else stop("type of test not supported")
+#     # finalize LaTeX table
+#     cat("\\end{tabular}\n")
+#     cat("\n")
+#   }
+# }

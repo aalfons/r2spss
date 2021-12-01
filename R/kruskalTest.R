@@ -169,6 +169,7 @@ print.kruskalTestSPSS <- function(x, statistics = c("ranks", "test"),
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
   theme <- match.arg(theme)
+  digits <- rep_len(digits, 2)
 
   ## print LaTeX table for ranks
   if ("ranks" %in% statistics) {
@@ -193,4 +194,5 @@ print.kruskalTestSPSS <- function(x, statistics = c("ranks", "test"),
     toLatex(spss, theme = theme)
     cat("\n")
   }
+
 }
