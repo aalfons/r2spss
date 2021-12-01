@@ -129,9 +129,12 @@ formatSPSS.numeric <- function(object, digits = 3, pValue = FALSE,
   # convert numbers to strings
   formatted <- sprintf(fmt, object)
   # if requested format p-value
-  zeros <- rep.int(0, n)
-  below <- finite & !isInt & pValue & (formatted == sprintf(fmt, zeros))
-  formatted[below] <- gsub("^<0.", "<.", paste0("<", 10^(-digits[below])))
+  # zeros <- rep.int(0, n)
+  # below <- finite & !isInt & pValue & (formatted == sprintf(fmt, zeros))
+  # formatted[below] <- gsub("^<0.", "<.", paste0("<", 10^(-digits[below])))
+  threshold <- 10^(-digits)
+  below <- finite & !isInt & pValue & (object >= 0 & object < threshold)
+  formatted[below] <- gsub("^<0.", "<.", paste0("<", threshold[below]))
   # replace leading zeros
   formatted <- gsub("^0.", ".", formatted)    # positive numbers
   formatted <- gsub("^-0.", "-.", formatted)  # negative numbers
