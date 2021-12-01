@@ -41,7 +41,7 @@ r2spss.sty <- function(path = ".") {
   cat("% additional packages\n", file = file)
   cat("\\RequirePackage{amsmath}\n", file = file)
   cat("\\RequirePackage{array}\n", file = file)
-  cat("\\RequirePackage{colortbl}\n\n", file = file)
+  cat("\\RequirePackage{colortbl}\n", file = file)
   cat("\\RequirePackage[T1]{fontenc}\n\n", file = file)
 
   # write LaTeX statements to define colors
