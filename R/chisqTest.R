@@ -225,15 +225,17 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
     fmt <- paste0("%.", digits[2], "f")
     # prepare necessary information
     if (object$type == "goodness-of-fit") {
-      # put test results into SPSS format
+      # extract results
       rn <- c("Chi-Square", "df", "Asymp. Sig.")
-      chisq <- data.frame(unlist(object$chisq), row.names = rn)
-      names(chisq) <- object$variables
-      # format table nicely
-      args <- list(chisq, digits = digits[1], ...)
-      if (is.null(args$pValue)) args$pValue <- !legacy
-      if (is.null(args$checkInt)) args$checkInt <- TRUE
+      values <- unlist(object$chisq)
+      # format results nicely
+      args <- list(values, digits = digits[1], ...)
+      if (is.null(args$pValue)) args$pValue <- c(FALSE, FALSE, !legacy)
+      if (is.null(args$checkInt)) args$checkInt <- c(FALSE, TRUE, FALSE)
       formatted <- do.call(formatSPSS, args)
+      # put test results into SPSS format
+      chisq <- data.frame(formatted, row.names = rn)
+      names(chisq) <- object$variables
       # define footnote
       footnote <- paste0(nTooSmall, " cells (", sprintf(fmt, pTooSmall),
                          "\\%) have expected\nfrequencies less than 5. The\nminimum expected cell\nfrequency is ",
@@ -241,7 +243,7 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
       footnotes <- data.frame(marker = "a", row = 1, column = 1,
                               text = footnote)
       # construct list containing all necessary information
-      spss <- list(table = formatted, main = "Test Statistics",
+      spss <- list(table = chisq, main = "Test Statistics",
                    header = TRUE, rowNames = TRUE, info = 0,
                    footnotes = footnotes, version = version)
     } else if (object$type == "independence") {
