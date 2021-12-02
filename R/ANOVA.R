@@ -234,6 +234,8 @@ toSPSS.ANOVASPSS <- function(object,
 
   ## initializations
   statistics <- match.arg(statistics)
+  if (object$type == "one-way") sub <- object$variable
+  else sub <- paste("Dependent Variable:", object$variable)
 
   ## put requested results into SPSS format
   if (statistics == "descriptives") {
@@ -252,9 +254,8 @@ toSPSS.ANOVASPSS <- function(object,
       header <- c(as.list(header[seq_len(lower-1)]), ciHeader,
                   as.list(header[-seq_len(upper)]))
       # construct list containing all necessary information
-      spss <- list(table = formatted, main = "Descriptives",
-                   sub = object$variable, header = header,
-                   rowNames = TRUE, info = 0)
+      spss <- list(table = formatted, main = "Descriptives", sub = sub,
+                   header = header, rowNames = TRUE, info = 0)
     } else if (object$type == "two-way") {
       # extract relevant information
       descriptives <- object$descriptives
@@ -267,15 +268,13 @@ toSPSS.ANOVASPSS <- function(object,
       # format table nicely
       formatted <- formatSPSS(descriptives, digits = digits, ...)
       # define header with line breaks
-      header <- gsub("Std. Deviation", "Std.\nDeviation", names(descriptives),
-                     fixed = TRUE)
+      header <- wrapText(names(descriptives), limit = 12)
       # define positions for major grid lines
       major <- seq(from = nLevels[2], by = nLevels[2],
                    length.out = nLevels[1] - 1)
       # construct list containing all necessary information
       spss <- list(table = formatted, main = "Descriptive Statistics",
-                   sub = paste("Dependent variable:", object$variable),
-                   header = header, rowNames = FALSE, info = 2,
+                   sub = sub, header = header, rowNames = FALSE, info = 2,
                    major = major)
     } else stop("type of ANOVA not supported")
 
@@ -314,9 +313,7 @@ toSPSS.ANOVASPSS <- function(object,
         if (is.null(args$checkInt)) args$checkInt <- names(levene) == "df2"
         formatted <- do.call(formatSPSS, args)
         # define header with line breaks
-        header <- c("", "",
-                    gsub("Levene Statistic", "Levene\nStatistic", names(levene),
-                         fixed = TRUE))
+        header <- c("", "", wrapText(names(levene), limit = 8))
         # define nice labels for the rows
         rowLabels <- c(mean = "Mean", median = "Median",
                        adjusted = "Median and with adjusted df",
@@ -340,34 +337,35 @@ toSPSS.ANOVASPSS <- function(object,
                        version = "modern")
         }
       } else if (object$type == "two-way") {
+        # define text in footnotes
+        footnotes <- c(paste("Tests the null hypothesis that the error",
+                             "variance of the dependent variable is equal",
+                             "across groups."),
+                       if (!legacy) paste("Dependent variable:", object$variable),
+                       paste("Design: Intercept +", object$group[1], "+",
+                              object$group[2], "+", object$group[1], "*",
+                              object$group[2]))
+        # construct list containing information
         if (legacy) {
           # define main title
           main <- "Levene's Test of Equality of\nError Variances"
-          sub <- paste("Dependent variable:", object$variable)
           # define footnotes
-          footnotes <- c("Tests the null hypothesis that the\nerror variance of the dependent\nvariable is equal across groups.",
-                         paste0("Design: Intercept + ", object$group[1], " +\n",
-                                object$group[2], " + ", object$group[1], " * ",
-                                object$group[2]))
           footnotes <- data.frame(marker = c("", "a"), row = c(NA, "main"),
-                                  column = rep(NA_integer_, 2), text = footnotes)
+                                  column = rep(NA_integer_, 2),
+                                  text = wrapText(footnotes, limit = c(35, 32)))
           # construct list
-          spss <- list(table = formatted, main = main, sub = sub, header = TRUE,
-                       rowNames = FALSE, info = 0, footnotes = footnotes,
-                       version = "legacy")
+          spss <- list(table = formatted, main = main, sub = sub,
+                       header = TRUE, rowNames = FALSE, info = 0,
+                       footnotes = footnotes, version = "legacy")
         } else {
           # define main title
           main <- "Levene's Test of Equality of Error Variances"
           # define footnotes
-          footnotes <- c("Tests the null hypothesis that the error variance of the dependent variable\nis equal across groups.",
-                         paste("Dependent variable:", object$variable),
-                         paste0("Design: Intercept + ", object$group[1], " + ",
-                                object$group[2], " + ", object$group[1], " * ",
-                                object$group[2]))
           footnotes <- data.frame(marker = c("", "a", "b"),
                                   row = c(NA, "main", "main"),
                                   column = rep(NA_integer_, 3),
-                                  text = footnotes)
+                                  text = wrapText(footnotes,
+                                                  limit = c(75, 72, 72)))
           # construct list
           spss <- list(table = formatted, main = main, header = header,
                        label = object$variable, rowNames = rowLabels, info = 0,
@@ -401,13 +399,12 @@ toSPSS.ANOVASPSS <- function(object,
       }
       ## construct list containing all necessary information
       if (object$type == "one-way") {
-        spss <- list(table = formatted, main = "ANOVA", sub = object$variable,
+        spss <- list(table = formatted, main = "ANOVA", sub = sub,
                      header = TRUE, rowNames = TRUE, info = 0,
                      version = version)
       } else if (object$type == "two-way") {
         # define header with line breaks
-        header <- c("Source",
-                    gsub("Sum of", "Sum\nof", names(test), fixed = TRUE))
+        header <- c("Source", wrapText(names(test), limit = 12))
         # define footnotes
         RSq <- 1 - object$test["Error", "Sum Sq"] / object$test["Corrected Total", "Sum Sq"]
         AdjRSq <- 1 - object$test["Error", "Mean Sq"] /
@@ -419,8 +416,7 @@ toSPSS.ANOVASPSS <- function(object,
                                 text = footnote)
         # construct list
         spss <- list(table = formatted,
-                     main = "Tests of Between-Subject Effects",
-                     sub = paste("Dependent Variable:", object$variable),
+                     main = "Tests of Between-Subject Effects", sub = sub,
                      header = header, rowNames = TRUE, info = 0,
                      footnotes = footnotes, version = version)
       }

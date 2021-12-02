@@ -158,8 +158,7 @@ regression <- function(..., data, labels = NULL, change = FALSE) {
 
 toSPSS.regressionSPSS <- function(object,
                                   statistics = c("estimates", "anova", "summary"),
-                                  version = c("modern", "legacy"),
-                                  wrap = NULL, ...) {
+                                  version = c("modern", "legacy"), ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
@@ -182,7 +181,7 @@ toSPSS.regressionSPSS <- function(object,
   if (statistics == "summary") {
 
     # initializations
-    if (is.null(wrap)) wrap <- if(object$change) 90 else 50
+    wrap <- if(object$change) 90 else 50
     # compute model fit statistics in SPSS format
     rsq <- vapply(summaries, "[[", numeric(1), "r.squared")
     adjrsq <- vapply(summaries, "[[", numeric(1), "adj.r.squared")
@@ -191,6 +190,7 @@ toSPSS.regressionSPSS <- function(object,
                        "Adjusted R Square" = adjrsq,
                        "Std. Error of the Estimate" = sigma,
                        row.names = labels, check.names = FALSE)
+    nc <- ncol(fits)+1
     # if requested, compute change statistics in SPSS format
     if (object$change) {
       # extract degrees of freedom of each model
@@ -226,6 +226,7 @@ toSPSS.regressionSPSS <- function(object,
                             check.names = FALSE)
       # add to information on model fits
       fits <- cbind(fits, changes)
+      nc <- c(nc, ncol(changes))
     }
     # format table nicely
     if (object$change && !legacy) {
@@ -236,14 +237,13 @@ toSPSS.regressionSPSS <- function(object,
       formatted <- do.call(formatSPSS, args)
     } else formatted <- formatSPSS(fits, ...)
     # define header with line breaks
+    header <- c("Model", names(fits))
+    limit <- rep_len(if (object$change) 10 else 15, length(header))
+    limit[grepl("Adjusted", header, fixed = TRUE)] <- 9
+    header <- wrapText(header, limit = limit)
     if (object$change) {
-      header <- list("Model", "R", "R Square", "Adjusted\nR Square",
-                     "Std. Error\nof the\nEstimate",
-                     "Change Statistics" = c("R Square\nChange", "F Change",
-                                             "df1", "df2", "Sig. F\nChange"))
-    } else {
-      header <- c("Model", "R", "R Square", "Adjusted\nR Square",
-                  "Std. Error of\nthe Estimate")
+      header <- c(as.list(header[seq_len(nc[1])]),
+                  list("Change Statistics" = header[nc[1]+seq_len(nc[2])]))
     }
     # define footnotes
     row <- seq_len(k)
@@ -260,7 +260,7 @@ toSPSS.regressionSPSS <- function(object,
   } else if (statistics == "anova") {
 
     # initializations
-    if (is.null(wrap)) wrap <- 66
+    wrap <- 66
     # compute ANOVA tables in SPSS format
     anovas <- mapply(function(m, s, l) {
       # perform ANOVA
@@ -298,8 +298,9 @@ toSPSS.regressionSPSS <- function(object,
       formatted <- do.call(formatSPSS, args)
     }
     # define header with line breaks
-    header <- gsub("Sum of ", "Sum of\n", names(anovas))
-    header[2] <- ""
+    # header <- gsub("Sum of ", "Sum of\n", names(anovas))
+    header <- wrapText(names(anovas), limit = 12)
+    header[header == "Type"] <- ""
     # define footnotes
     row <- c("main", seq(from = 1, by = 3, length.out=k))
     column <- c(NA_integer_, rep.int(ncol(anovas), k))
@@ -370,43 +371,6 @@ toSPSS.regressionSPSS <- function(object,
 }
 
 
-## function to add line breaks in character strings to make sure that a given
-## character limit is not exceeded per line
-# text .... a character vector for which each element will be wrapped
-# limit ... an integer giving the character limit per line
-
-wrapText <- function(text, limit = 66) {
-  # split text according to white space
-  partsList <- strsplit(text, "\\s+", fixed = FALSE)
-  # loop over list
-  vapply(partsList, function(parts) {
-    # add parts to a line as long as there is space (given by 'limit'),
-    # and start a new line when running out of space
-    lines <- character(0)
-    while(length(parts) > 0) {
-      if (length(parts) == 1) {
-        # only one part left, so add it as a new line and we're done
-        add <- 1
-      } else {
-        # temporarily add space before every part except the first one
-        strings <- c(parts[1], paste(" ", parts[-1], sep = ""))
-        # determine how many predictors have space
-        width <- nchar(strings)
-        add <- which(cumsum(width) <= limit)
-        # if the first part is too long it needs to be added anyway
-        if (length(add) == 0) add <- 1
-      }
-      # add a new line
-      lines <- c(lines, paste(parts[add], collapse = " "))
-      # remove the parts that have just been written to the new line
-      parts <- parts[-add]
-    }
-    # add line break in between lines
-    paste(lines, collapse = "\n")
-  }, character(1))
-}
-
-
 #' @rdname regression
 #'
 #' @param x,object  an object of class \code{"regressionSPSS"} as returned by
@@ -423,23 +387,18 @@ wrapText <- function(text, limit = 66) {
 
 print.regressionSPSS <- function(x,
                             statistics = c("summary", "anova", "estimates"),
-                            theme = c("modern", "legacy"), wrap = NULL, ...) {
+                            theme = c("modern", "legacy"), ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
   theme <- match.arg(theme)
-  if (is.null(wrap)) {
-    if (x$change) wrap <- c(90, 66)
-    else wrap <- c(50, 60)
-  } else wrap <- rep_len(wrap, 2)
 
   ## print LaTeX table for descriptives
   if ("summary" %in% statistics) {
     cat("\n")
     # put frequencies into SPSS format
-    spss <- toSPSS(x, statistics = "summary", version = theme,
-                   wrap = wrap[1], ...)
+    spss <- toSPSS(x, statistics = "summary", version = theme, ...)
     # print LaTeX table
     toLatex(spss, theme = theme)
     cat("\n")
@@ -451,8 +410,7 @@ print.regressionSPSS <- function(x,
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
     # put frequencies into SPSS format
-    spss <- toSPSS(x, statistics = "anova", version = theme,
-                   wrap = wrap[2], ...)
+    spss <- toSPSS(x, statistics = "anova", version = theme, ...)
     # print LaTeX table
     toLatex(spss, theme = theme)
     cat("\n")

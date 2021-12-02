@@ -84,7 +84,7 @@ toSPSS.descriptivesSPSS <- function(object, digits = 2, ...) {
                         "Valid N (listwise)" = c(object$n, rep.int(NA, p)))
   # define header with line breaks
   colNames <- names(descriptives)
-  header <- c("", gsub("Std. ", "Std.\n", colNames, fixed = TRUE))
+  header <- c("", wrapText(colNames, limit = 10))
   # format table nicely
   args <- list(descriptives, digits = digits, ...)
   if (is.null(args$checkInt)) {

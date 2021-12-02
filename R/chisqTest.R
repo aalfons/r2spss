@@ -238,10 +238,11 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
       names(chisq) <- object$variables
       # define footnote
       footnote <- paste0(nTooSmall, " cells (", sprintf(fmt, pTooSmall),
-                         "\\%) have expected\nfrequencies less than 5. The\nminimum expected cell\nfrequency is ",
+                         "\\%) have expected frequencies less than 5. ",
+                         "The minimum expected cell frequency is ",
                          sprintf(fmt, smallest), ".")
       footnotes <- data.frame(marker = "a", row = 1, column = 1,
-                              text = footnote)
+                              text = wrapText(footnote, limit = 30))
       # construct list containing all necessary information
       spss <- list(table = chisq, main = "Test Statistics",
                    header = TRUE, rowNames = TRUE, info = 0,
@@ -268,10 +269,11 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
       header <- c("", gsub("Sig.", "Sig.\n", names(chisq), fixed = TRUE))
       # define footnote
       footnote <- paste0(nTooSmall, " cells (", sprintf(fmt, pTooSmall),
-                         "\\%) have expected count less than 5.\nThe minimum expected count is ",
+                         "\\%) have expected count less than 5. ",
+                         "The minimum expected count is ",
                          sprintf(fmt, smallest), ".")
       footnotes <- data.frame(marker = "a", row = 1, column = 1,
-                              text = footnote)
+                              text = wrapText(footnote, limit = 50))
       # construct list containing all necessary information
       spss <- list(table = formatted, main = "Chi-Square Tests",
                    header = header, rowNames = TRUE, info = 0,

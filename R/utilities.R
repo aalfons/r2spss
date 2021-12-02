@@ -4,67 +4,41 @@
 # --------------------------------------
 
 
-## function to create a \begin{tabular} statement that also defines the
-## appearance with respect alignment, colors and borders
-# info ........ number of columns containing information describing the
-#               results.  Those will receive text in color 'blueSPSS' and
-#               background in color 'graySPSS'.  By default, there will not be
-#               a border before the first column or between these columns, nor
-#               with the first column containing the actual results.
-# results ..... number of columns containing the actual results.  Those will
-#               receive background in color in color 'lightgraySPSS'.  By
-#               default, there will be lines in between those columns in color
-#               'darkgraySPSS', but not after the last column..
-# alignment ... character vector containing an alignment specifier for each
-#               column.  The default is "l" (left-aligned) for the columns with
-#               information and "r" (right-aligned) for the columns with
-#               results.
-# border ...... logical vector indicating which borders to draw.  Its length
-#               should be the number of columns plus 1.  See the descriptions
-#               above for the defaults.
-latexTabular <- function(info = 1, results = 1, alignment = NULL,
-                         border = NULL) {
-  # default justification symbols and column separator symbols
-  if (is.null(alignment)) alignment <- rep.int(c("l", "r"), c(info, results))
-  if (is.null(border)) {
-    border <- c(rep.int(FALSE, info+1), rep.int(TRUE, results-1), FALSE)
-  }
-  border <- ifelse(border, "!{\\color{darkgraySPSS}\\vrule}", "")
-  # prefix to define tabular environment and postfix to finalize line
-  prefix <- "\\begin{tabular}{"
-  postfix <- "}"
-  # define font and background colors for the different columns
-  font <- rep.int(c(">{\\color{blueSPSS}}", ""), c(info, results))
-  background <- rep.int(c("graySPSS", "lightgraySPSS"), c(info, results))
-  background <- paste0(">{\\columncolor{", background, "}}")
-  # full specifications per column except left border of first column
-  specs <- paste0(font, background, alignment, border[-1])
-  # create \begin{tabular} statement
-  paste0(prefix, border[1], paste0(specs, collapse = ""), postfix)
-}
+## function to add line breaks in character strings to make sure that a given
+## character limit is not exceeded per line
+# text .... a character vector for which each element will be wrapped
+# limit ... integer vector giving the character limit for each element of 'text'
 
-
-# function to create a \multicolumn statement that also defines the appearance
-# with respect to alignment and borders
-# text ........ character string giving the text to be written inside the
-#               merged cell.  For a non-empty string, the text will receive
-#               color 'blueSPSS'.
-# columns ..... number of subsequent columns to merge.
-# alignment ... character string containing an alignment specifier for the
-#               merged cell.  The default is "c" for centered.
-# left ........ logical vector indicating whether to draw a left border in
-#               color 'darkgraySPSS'.  The default is FALSE.
-# right ....... logical vector indicating whether to draw a right border in
-#               color 'darkgraySPSS'.  The default is FALSE.
-.latexMulticolumn <- function(text, columns = 1, alignment = "c",
-                              left = FALSE, right = FALSE) {
-  # if requested, define left and right borders
-  left <- if (left) "!{\\color{darkgraySPSS}\\vrule}" else ""
-  right <- if (right) "!{\\color{darkgraySPSS}\\vrule}" else ""
-  # define text color
-  color <- if (text == "") "" else ">{\\color{blueSPSS}}"
-  # full specification of the merged cell
-  spec <- paste0(left, color, alignment, right)
-  # create \multicolumn statement
-  sprintf("\\multicolumn{%d}{%s}{%s}", columns, spec, text)
+wrapText <- function(text, limit = 66) {
+  # initializations
+  n <- length(text)
+  limit <- rep_len(limit, n)
+  # split text according to white space
+  partsList <- strsplit(text, "\\s+", fixed = FALSE)
+  # loop over list
+  mapply(function(parts, limit) {
+    # add parts to a line as long as there is space (given by 'limit'),
+    # and start a new line when running out of space
+    lines <- character(0)
+    while(length(parts) > 0) {
+      if (length(parts) == 1) {
+        # only one part left, so add it as a new line and we're done
+        add <- 1
+      } else {
+        # temporarily add space before every part except the first one
+        strings <- c(parts[1], paste(" ", parts[-1], sep = ""))
+        # determine how many predictors have space
+        width <- nchar(strings)
+        add <- which(cumsum(width) <= limit)
+        # if the first part is too long it needs to be added anyway
+        if (length(add) == 0) add <- 1
+      }
+      # add a new line
+      lines <- c(lines, paste(parts[add], collapse = " "))
+      # remove the parts that have just been written to the new line
+      parts <- parts[-add]
+    }
+    # add line break in between lines
+    paste(lines, collapse = "\n")
+  }, parts = partsList, limit = limit)
 }
