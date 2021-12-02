@@ -97,7 +97,7 @@ toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
 
   ## initializations
   statistics <- match.arg(statistics)
-  ## put requested results into SPSS format
+  label <- paste(rev(object$variables), collapse = " - ")
 
   if (statistics == "frequencies") {
 
@@ -109,8 +109,7 @@ toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
                               N = c(object$statistics$N, ties, N))
     # format table nicely
     formatted <- formatSPSS(frequencies, ...)
-    # define label and header
-    label <- paste(object$variables, collapse = " - ")
+    # define header
     header <- c("", "", "N")
     # define footnotes
     footnotes <- c(paste(object$variables, collapse = " < "),
@@ -143,7 +142,7 @@ toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
     formatted <- do.call(formatSPSS, args)
     # put test results into SPSS format
     test <- data.frame(formatted, row.names = rn)
-    names(test) <- paste(object$variables, collapse = " - ")
+    names(test) <- label
     # define footnotes
     footnotes <- data.frame(marker = "a", row = "main",
                             column = NA_integer_,

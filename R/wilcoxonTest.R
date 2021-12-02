@@ -178,7 +178,9 @@ toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
 
   ## initializations
   statistics <- match.arg(statistics)
-  ## put requested results into SPSS format
+  label <- if (object$type == "paired") {
+    paste(rev(object$variables), collapse = " - ")
+  } else label <- object$variables
 
   if (statistics == "ranks") {
 
@@ -195,8 +197,6 @@ toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
             Total = c(N, rep.int(NA_integer_, p-1)))
       # format table nicely
       formatted <- formatSPSS(ranks, digits = digits, ...)
-      # define label
-      label <- paste(object$variables, collapse = " - ")
       # define footnotes
       footnotes <- c(paste(object$variables, collapse = " < "),
                      paste(object$variables, collapse = " > "),
@@ -216,7 +216,7 @@ toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
       formatted <- formatSPSS(ranks, digits = digits, ...)
       # construct list containing all necessary information
       spss <- list(table = formatted, main = "Ranks", header = TRUE,
-                   label = object$variables, rowNames = TRUE, info = 0)
+                   label = label, rowNames = TRUE, info = 0)
     } else stop("type of test not supported")
 
   } else if (statistics == "test") {
@@ -236,7 +236,7 @@ toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
       formatted <- do.call(formatSPSS, args)
       # put test results into SPSS format
       test <- data.frame(formatted, row.names = rn)
-      names(test) <- paste(object$variables, collapse = " - ")
+      names(test) <- label
       # define footnotes
       footnotes <- data.frame(marker = c("a", "b"), row = c("main", 1),
                               column = c(NA_integer_, 1),
@@ -264,7 +264,7 @@ toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
       formatted <- do.call(formatSPSS, args)
       # put test results into SPSS format
       test <- data.frame(formatted, row.names = rn)
-      names(test) <- object$variable
+      names(test) <- label
       # define footnotes
       marker <- "a"
       row <- "main"
