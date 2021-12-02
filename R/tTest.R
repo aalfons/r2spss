@@ -171,6 +171,260 @@ tTest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
 }
 
 
+## convert R results to all necessary information for SPSS-like table
+#' @export
+
+toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
+                             version = c("modern", "legacy"), digits = 3, ...) {
+
+  ## initializations
+  statistics <- match.arg(statistics)
+
+  if (statistics == "statistics") {
+
+    # format table nicely
+    formatted <- formatSPSS(object$statistics, digits = digits, ...)
+    # define main title
+    prefix <- switch(object$type, "one-sample" = "One-Sample",
+                     paired = "Paired Samples", independent = "Group")
+    main <- paste(prefix, "Statistics")
+    # add line breaks to column names for header
+    header <- wrapText(names(object$statistics), limit = 10)
+    # construct list containing all necessary information
+    if (object$type == "one-sample") {
+      # define header
+      header <- c("", header)
+      # construct list
+      spss <- list(table = formatted, main = main, header = header,
+                   rowNames = TRUE, info = 0)
+    } else if (object$type == "paired") {
+      # initializations
+      version <- match.arg(version)
+      legacy <- version == "legacy"
+      # define header and label
+      if (legacy) {
+        header <- c("", header)
+        label <- NULL
+      } else {
+        header <- c("", "", header)
+        label <- "Pair 1"
+      }
+      # construct list
+      spss <- list(table = formatted, main = main, header = header,
+                   label = label, rowNames = TRUE, info = 0,
+                   version = version)
+    } else if (object$type == "independent") {
+      # define header and label
+      header <- c("", object$group, header)
+      label <- object$variables
+      # construct list
+      spss <- list(table = formatted, main = main, header = header,
+                   label = label, rowNames = TRUE, info = 0)
+    } else stop("type of test not supported")
+
+  } else if (statistics == "test") {
+
+    # initializations
+    version <- match.arg(version)
+    legacy <- version == "legacy"
+    # define main title
+    prefix <- switch(object$type, "one-sample" = "One-Sample",
+                     paired = "Paired Samples",
+                     independent = "Independent Samples")
+    main <- paste(prefix, "Test")
+
+    if (object$type == "independent") {
+
+      # initializations
+      wrap <- 10
+      # extract results for test on variance
+      levene <- data.frame("F" = object$levene[, "F value"],
+                           "Sig." = object$levene[, "Pr(>F)"],
+                           row.names = NULL, check.names = FALSE)
+      leveneHeader <- list("Levene's Test\nfor Equality\nof Variances" =
+                             names(levene))
+      # extract significance
+      p <- c(object$pooled$p.value, object$satterthwaite$p.value)
+      if (legacy) {
+        # part of data frame
+        p <- data.frame("Sig. (2-tailed)" = p, row.names = NULL,
+                        check.names = FALSE)
+        # part of header
+        pHeader <- as.list("Sig. (2-\ntailed)")
+      } else {
+        # part of data frame
+        p <- data.frame("One-Sided p" = p/2, "Two-Sided p" = p,
+                        row.names = NULL,  check.names = FALSE)
+        # part of header
+        pHeader <- list("Significance" = c("One-\nSided\np", "Two-\nSided\np"))
+      }
+      # extract results for test with equal variances assumed
+      est <- object$pooled$estimate[1] - object$pooled$estimate[2]
+      df <- as.integer(object$pooled$parameter)
+      ci <- object$pooled$conf.int
+      gamma <- attr(ci, "conf.level")
+      alpha <- 1 - gamma
+      se <- diff(ci) / (2 * qt(1-alpha/2, df = df))
+      # construct data frame for test with equal variances assumed
+      pooled <- data.frame("t" = object$pooled$statistic,
+                           "df" = df, p[1, , drop = FALSE],
+                           "Mean Difference" = est,
+                           "Std. Error Difference" = se,
+                           "Lower" = ci[1], "Upper" = ci[2],
+                           row.names = NULL, check.names = FALSE)
+      # extract results for test with equal variances not assumed
+      est <- object$satterthwaite$estimate[1] - object$satterthwaite$estimate[2]
+      df <- object$satterthwaite$parameter
+      ci <- object$satterthwaite$conf.int
+      gamma <- attr(ci, "conf.level")
+      alpha <- 1 - gamma
+      se <- diff(ci) / (2 * qt(1-alpha/2, df = df))
+      # construct data frame for test with equal variances not assumed
+      satterthwaite <- data.frame("t" = object$satterthwaite$statistic,
+                                  "df" = df, p[2, , drop = FALSE],
+                                  "Mean Difference" = est,
+                                  "Std. Error Difference" = se,
+                                  "Lower" = ci[1], "Upper" = ci[2],
+                                  row.names = NULL, check.names = FALSE)
+      # put test results in SPSS format
+      test <- cbind(levene,
+                    rbind(pooled = pooled, satterthwaite = satterthwaite))
+      # format table nicely
+      args <- list(test, digits = digits, ...)
+      if (!legacy && is.null(args$pValue)) {
+        args$pValue <- grepl("Sig", names(test), fixed = TRUE) |
+          grepl("-Sided", names(test), fixed = TRUE)
+      }
+      if (is.null(args$checkInt)) args$checkInt <- names(test) == "df"
+      formatted <- do.call(formatSPSS, args)
+      # define part of header for confidence interval
+      header <- c("", "", wrapText(names(test), limit = wrap))
+      lower <- which(header == "Lower")
+      upper <- which(header == "Upper")
+      ciHeader <- list(header[lower:upper])
+      names(ciHeader) <- paste0(format(100*gamma, digits = digits),
+                                "\\% Confidence\nInterval of the\nDifference")
+      # define header
+      header <- c(as.list(header[1:2]), leveneHeader, as.list(header[5:6]),
+                  pHeader, as.list(header[(7:8)+ncol(p)]), ciHeader)
+      # define nice labels for the rows
+      rowLabels <- c(pooled = "assumed", satterthwaite = "not assumed")
+      rowLabels <- paste("Equal variances", rowLabels[row.names(test)])
+      rowLabels <- gsub(" ", "\n", rowLabels, fixed = TRUE)
+      # # define column widths
+      # width <- c("", "5em", rep.int("", ncol(test)))
+      # construct list containing all necessary information
+      spss <- list(table = formatted, main = main, label = object$variables,
+                   header = header, rowNames = rowLabels, info = 0,
+                   # width = width,
+                   version = version)
+
+    } else {
+
+      # initializations
+      wrap <- if (object$type == "one-sample") 10 else 8
+      # extract results
+      est <- object$test$estimate
+      t <- object$test$statistic
+      df <- as.integer(object$test$parameter)
+      # extract significance
+      if (legacy) {
+        # part of data frame
+        p <- data.frame("Sig. (2-tailed)" = object$test$p.value,
+                        row.names = NULL, check.names = FALSE)
+        # part of header
+        pHeader <- as.list("Sig. (2-\ntailed)")
+      } else {
+        # part of data frame
+        p <- data.frame("One-Sided p" = object$test$p.value/2,
+                        "Two-Sided p" = object$test$p.value,
+                        row.names = NULL,  check.names = FALSE)
+        # part of header
+        pNames <- wrapText(names(p), limit = wrap)
+        if (wrap < 9) pNames <- gsub("-", "-\n", pNames, fixed = TRUE)
+        pHeader <- list("Significance" = pNames)
+      }
+      # put test results in SPSS format
+      if (object$type == "one-sample") {
+        # extract more results
+        mu <- object$test$null.value
+        ci <- object$test$conf.int - mu
+        gamma <- attr(ci, "conf.level")
+        # construct data frame
+        test <- data.frame("t" = t, "df" = df, p,
+                           "Mean Difference" = est-mu,
+                           "Lower" = ci[1], "Upper" = ci[2],
+                           row.names = object$variables,
+                           check.names = FALSE)
+      } else if (object$type == "paired") {
+        # extract more results
+        ci <- object$test$conf.int
+        gamma <- attr(ci, "conf.level")
+        alpha <- 1 - gamma
+        se <- diff(ci) / (2 * qt(1-alpha/2, df = df))
+        sd <- se * sqrt(object$n)
+        rn <- paste0(object$variables, collapse = " - ")
+        # construct data frame
+        test <- data.frame("Mean" = est, "Std. Deviation" = sd,
+                           "Std. Error Mean" = se, "Lower" = ci[1],
+                           "Upper" = ci[2], "t" = t, "df" = df, p,
+                           row.names = rn, check.names = FALSE)
+      }
+      # format results nicely
+      if (legacy) formatted <- formatSPSS(test, digits = digits, ...)
+      else {
+        args <- list(test, digits = digits, ...)
+        if (is.null(args$pValue)) {
+          args$pValue <- grepl("-Sided", names(test), fixed = TRUE)
+        }
+        formatted <- do.call(formatSPSS, args)
+      }
+      # define part of header for confidence interval
+      header <- wrapText(names(test), limit = wrap)
+      lower <- which(header == "Lower")
+      upper <- which(header == "Upper")
+      ciHeader <- list(header[lower:upper])
+      names(ciHeader) <- paste0(format(100*gamma, digits = digits),
+                                "\\% Confidence\nInterval of the\nDifference")
+      # construct list containing all necessary information
+      if (object$type == "one-sample") {
+        # define header
+        header <- c("", header)
+        header <- c(as.list(header[1:3]), pHeader, as.list(header[4+ncol(p)]),
+                    ciHeader)
+        # construct list
+        spss <- list(table = formatted, main = main, header = header,
+                     rowNames = TRUE, info = 0, version = version)
+      } else if (object$type == "paired") {
+        # define header
+        if (legacy) {
+          header <- c("", header)
+          label <- NULL
+          haveLabel <- FALSE
+        } else {
+          header <- c("", "", header)
+          label <- "Pair 1"
+          haveLabel <- TRUE
+        }
+        header <- c(as.list(header[seq_len(haveLabel+4)]), ciHeader,
+                    as.list(header[haveLabel+(7:8)]), pHeader)
+        # construct list
+        spss <- list(table = formatted, main = main, label = label,
+                     header = header, rowNames = TRUE, info = 0,
+                     version = version)
+      }
+
+    }
+
+  } else stop ("type of 'statistics' not supported")  # shouldn't happen
+
+  # add class and return object
+  class(spss) <- "SPSSTable"
+  spss
+
+}
+
+
 #' @rdname tTest
 #'
 #' @param x  an object of class \code{"tTestSPSS"} as returned by function
@@ -186,174 +440,166 @@ tTest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
 #' @importFrom stats qt
 #' @export
 
-print.tTestSPSS <- function(x, digits = 3,
-                            statistics = c("statistics", "test"),
-                            ...) {
+print.tTestSPSS <- function(x, statistics = c("statistics", "test"),
+                            theme = c("modern", "legacy"), digits = 3, ...) {
 
   ## initializations
   count <- 0
-  statistics <- match.arg(statistics, several.ok=TRUE)
+  statistics <- match.arg(statistics, several.ok = TRUE)
+  theme <- match.arg(theme)
 
-  ## print LaTeX table for statistics
+  ## print LaTeX table for ranks
   if ("statistics" %in% statistics) {
-    formatted <- formatSPSS(x$statistics, digits=digits)
-    # print LaTeX table
     cat("\n")
-    if (x$type == "one-sample") {
-      cat("\\begin{tabular}{|l|r|r|r|r|}\n")
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{5}{c}{\\textbf{One-Sample Statistics}} \\\\\n")
-      cat("\\noalign{\\smallskip}\\hline\n")
-      cat(" & & & \\multicolumn{1}{|c|}{Std.} & \\multicolumn{1}{|c|}{Std. Error} \\\\\n")
-      cat(" & \\multicolumn{1}{|c|}{N} & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Deviation} & \\multicolumn{1}{|c|}{Mean} \\\\\n")
-      cat("\\hline\n")
-      cat(rownames(formatted), "&", paste0(formatted, collapse=" & "), "\\\\\n")
-    } else if (x$type == "paired") {
-      cat("\\begin{tabular}{|l|r|r|r|r|}\n")
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{5}{c}{\\textbf{Paired Samples Statistics}} \\\\\n")
-      cat("\\noalign{\\smallskip}\\hline\n")
-      cat(" & & & \\multicolumn{1}{|c|}{Std.} & \\multicolumn{1}{|c|}{Std. Error} \\\\\n")
-      cat(" & \\multicolumn{1}{|c|}{N} & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Deviation} & \\multicolumn{1}{|c|}{Mean} \\\\\n")
-      cat("\\hline\n")
-      cat(rownames(formatted)[1], "&", paste0(formatted[1, ], collapse=" & "), "\\\\\n")
-      cat(rownames(formatted)[2], "&", paste0(formatted[2, ], collapse=" & "), "\\\\\n")
-    } else if (x$type == "independent") {
-      cat("\\begin{tabular}{|ll|r|r|r|r|}\n")
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{6}{c}{\\textbf{Group Statistics}} \\\\\n")
-      cat("\\noalign{\\smallskip}\\hline\n")
-      cat(" & & & & \\multicolumn{1}{|c|}{Std.} & \\multicolumn{1}{|c|}{Std. Error} \\\\\n")
-      cat(" &", x$group, "& \\multicolumn{1}{|c|}{N} & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Deviation} & \\multicolumn{1}{|c|}{Mean} \\\\\n")
-      cat("\\hline\n")
-      cat(x$variables, "&", rownames(formatted)[1], "&", paste0(formatted[1, ], collapse=" & "), "\\\\\n")
-      cat(" &", rownames(formatted)[2], "&", paste0(formatted[2, ], collapse=" & "), "\\\\\n")
-    } else stop("type of test not supported")
-    # finalize LaTeX table
-    cat("\\hline\\noalign{\\smallskip}\n")
-    cat("\\end{tabular}\n")
+    # put table into SPSS format
+    spss <- toSPSS(x, digits = digits, statistics = "statistics",
+                   version = theme, ...)
+    # print LaTeX table
+    toLatex(spss, theme = theme)
     cat("\n")
     count <- count + 1
   }
 
   ## print LaTeX table for test
   if ("test" %in% statistics) {
-
-    ## collect output for test
-    if (x$type == "one-sample") {
-      est <- x$test$estimate
-      mu <- x$test$null.value
-      ci <- x$test$conf.int - mu
-      gamma <- attr(ci, "conf.level")
-      test <- data.frame(t=x$test$statistic, df=as.integer(x$test$parameter),
-                         "Sig."=x$test$p.value, "Mean Difference"=est-mu,
-                         Lower=ci[1], Upper=ci[2], check.names=FALSE,
-                         row.names=x$variables)
-      formatted <- formatSPSS(test, digits=digits)
-    } else if (x$type == "paired") {
-      df <- as.integer(x$test$parameter)
-      ci <- x$test$conf.int
-      gamma <- attr(ci, "conf.level")
-      alpha <- 1 - gamma
-      se <- diff(ci) / (2 * qt(1-alpha/2, df=df))
-      sd <- se * sqrt(x$n)
-      rn <- paste0(x$variables, collapse=" - ")
-      test <- data.frame(Mean=x$test$estimate, "Std. Deviation"=sd,
-                         "Std. Error Mean"=se, Lower=ci[1], Upper=ci[2],
-                         t=x$test$statistic, df=df, "Sig."=x$test$p.value,
-                         check.names=FALSE, row.names=rn)
-      formatted <- formatSPSS(test, digits=digits)
-    } else if (x$type == "independent") {
-      levene <- data.frame("F"=x$levene[, "F value"],
-                           "Sig."=x$levene[, "Pr(>F)"],
-                           check.names=FALSE, row.names=NULL)
-      # equal variances assumed
-      est <- x$pooled$estimate[1] - x$pooled$estimate[2]
-      df <- as.integer(x$pooled$parameter)
-      ci <- x$pooled$conf.int
-      gamma <- attr(ci, "conf.level")
-      alpha <- 1 - gamma
-      se <- diff(ci) / (2 * qt(1-alpha/2, df=df))
-      pooled <- data.frame(t=x$pooled$statistic, df=df, "Sig."=x$pooled$p.value,
-                           "Mean Difference"=est, "Std. Error Difference"=se,
-                           Lower=ci[1], Upper=ci[2], check.names=FALSE,
-                           row.names=NULL)
-      # equal variances not assumed
-      est <- x$satterthwaite$estimate[1] - x$satterthwaite$estimate[2]
-      df <- x$satterthwaite$parameter
-      ci <- x$satterthwaite$conf.int
-      gamma <- attr(ci, "conf.level")
-      alpha <- 1 - gamma
-      se <- diff(ci) / (2 * qt(1-alpha/2, df=df))
-      satterthwaite <- data.frame(t=x$satterthwaite$statistic, df=df,
-                                  "Sig."=x$satterthwaite$p.value,
-                                  "Mean Difference"=est,
-                                  "Std. Error Difference"=se,
-                                  Lower=ci[1], Upper=ci[2],
-                                  check.names=FALSE, row.names=NULL)
-      # combine tests
-      formatted <- rbind(formatSPSS(pooled, digits=digits),
-                         formatSPSS(satterthwaite, digits=digits))
-      formatted <- cbind(formatSPSS(levene, digits=digits), formatted)
-    } else stop("type of test not supported")
-
-    ## print LaTeX table
     if (count == 0) cat("\n")
-    if (x$type == "one-sample") {
-      cat("\\begin{tabular}{|l|r|r|r|r|r|r|}\n")
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{7}{c}{\\textbf{One-Sample Test}} \\\\\n")
-      cat("\\noalign{\\smallskip}\\hline\n")
-      cat(" & \\multicolumn{6}{|c|}{Test Value = ", format(x$test$null.value, digits=digits), "} \\\\\n", sep="")
-      cat("\\cline{2-7}\n")
-      cat(" & & & & & \\multicolumn{2}{|c|}{", format(100*gamma, digits=digits), "\\% Confidence} \\\\\n", sep="")
-      cat(" & & & & & \\multicolumn{2}{|c|}{Interval of the} \\\\\n")
-      cat(" & & & \\multicolumn{1}{|c|}{Sig. (2-} & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{2}{|c|}{Difference} \\\\\n")
-      cat("\\cline{6-7}\n")
-      cat(" & \\multicolumn{1}{|c|}{t} & \\multicolumn{1}{|c|}{df} & \\multicolumn{1}{|c|}{tailed)} & \\multicolumn{1}{|c|}{Difference} & \\multicolumn{1}{|c|}{Lower} & \\multicolumn{1}{|c|}{Upper} \\\\\n")
-      cat("\\hline\n")
-      cat(rownames(formatted), "&", paste0(formatted, collapse=" & "), "\\\\\n")
-    } else if (x$type == "paired") {
-      cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|}\n")
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{9}{c}{\\textbf{Paired Samples Test}} \\\\\n")
-      cat("\\noalign{\\smallskip}\\hline\n")
-      cat(" & \\multicolumn{5}{|c|}{Paired Differences} & & & \\\\\n", sep="")
-      cat("\\cline{2-6}\n")
-      cat(" & & & & \\multicolumn{2}{|c|}{", format(100*gamma, digits=digits), "\\% Confidence} & & & \\\\\n", sep="")
-      cat(" & & & \\multicolumn{1}{|c|}{Std.} & \\multicolumn{2}{|c|}{Interval of the} & & & \\\\\n")
-      cat(" & & \\multicolumn{1}{|c|}{Std.} & \\multicolumn{1}{|c|}{Error} & \\multicolumn{2}{|c|}{Difference} & & & \\multicolumn{1}{|c|}{Sig. (2-} \\\\\n")
-      cat("\\cline{5-6}\n")
-      cat(" & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Deviation} & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Lower} & \\multicolumn{1}{|c|}{Upper} & \\multicolumn{1}{|c|}{t} & \\multicolumn{1}{|c|}{df} & \\multicolumn{1}{|c|}{tailed)} \\\\\n")
-      cat("\\hline\n")
-      cat(rownames(formatted), "&", paste0(formatted, collapse=" & "), "\\\\\n")
-    } else if (x$type == "independent") {
-      cat("\\begin{tabular}{|ll|r|r|r|r|r|r|r|r|r|}\n")
-      cat("\\noalign{\\smallskip}\n")
-      cat("\\multicolumn{11}{c}{\\textbf{Independent Samples Test}} \\\\\n")
-      cat("\\noalign{\\smallskip}\\hline\n")
-      cat(" & & \\multicolumn{2}{|c|}{Levene's Test} & \\multicolumn{7}{|c|}{} \\\\\n", sep="")
-      cat(" & & \\multicolumn{2}{|c|}{for Equality} & \\multicolumn{7}{|c|}{} \\\\\n", sep="")
-      cat(" & & \\multicolumn{2}{|c|}{of Variances} & \\multicolumn{7}{|c|}{t-test for Equality of Means} \\\\\n", sep="")
-      cat("\\cline{3-11}\n")
-      cat(" & & & & & & & & & \\multicolumn{2}{|c|}{", format(100*gamma, digits=digits), "\\% Confidence} \\\\\n", sep="")
-      cat(" & & & & & & & & & \\multicolumn{2}{|c|}{Interval of the} \\\\\n")
-      cat(" & & & & & & \\multicolumn{1}{|c|}{Sig. (2-} & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Std. Error} & \\multicolumn{2}{|c|}{Difference} \\\\\n")
-      cat("\\cline{10-11}\n")
-      cat(" & & \\multicolumn{1}{|c|}{F} & \\multicolumn{1}{|c|}{Sig.} & \\multicolumn{1}{|c|}{t} & \\multicolumn{1}{|c|}{df} & \\multicolumn{1}{|c|}{tailed)} & \\multicolumn{1}{|c|}{Difference} & \\multicolumn{1}{|c|}{Difference} & \\multicolumn{1}{|c|}{Lower} & \\multicolumn{1}{|c|}{Upper} \\\\\n")
-      cat("\\hline\n")
-      cat(x$variables, "& Equal &", paste0(formatted[1,], collapse=" & "), "\\\\\n")
-      cat(" & variances & & & & & & & & & \\\\\n")
-      cat(" & assumed & & & & & & & & & \\\\\n")
-      cat("\\hline\n")
-      cat(" & Equal &", paste0(formatted[2,], collapse=" & "), "\\\\\n")
-      cat(" & variances & & & & & & & & & \\\\\n")
-      cat(" & not & & & & & & & & & \\\\\n")
-      cat(" & assumed & & & & & & & & & \\\\\n")
-    } else stop("type of test not supported")
-    # finalize LaTeX table
-    cat("\\hline\\noalign{\\smallskip}\n")
-    cat("\\end{tabular}\n")
+    else cat("\\medskip\n")
+    # put test results into SPSS format
+    spss <- toSPSS(x, digits = digits, statistics = "test",
+                   version = theme, ...)
+    # print LaTeX table
+    toLatex(spss, theme = theme)
     cat("\n")
   }
+
 }
+
+# print.tTestSPSS <- function(x, digits = 3,
+#                             statistics = c("statistics", "test"),
+#                             ...) {
+#
+#   ## initializations
+#   count <- 0
+#   statistics <- match.arg(statistics, several.ok=TRUE)
+#
+#   ## print LaTeX table for test
+#   if ("test" %in% statistics) {
+#
+#     ## collect output for test
+#     if (x$type == "one-sample") {
+#       est <- x$test$estimate
+#       mu <- x$test$null.value
+#       ci <- x$test$conf.int - mu
+#       gamma <- attr(ci, "conf.level")
+#       test <- data.frame(t=x$test$statistic, df=as.integer(x$test$parameter),
+#                          "Sig."=x$test$p.value, "Mean Difference"=est-mu,
+#                          Lower=ci[1], Upper=ci[2], check.names=FALSE,
+#                          row.names=x$variables)
+#       formatted <- formatSPSS(test, digits=digits)
+#     } else if (x$type == "paired") {
+#       df <- as.integer(x$test$parameter)
+#       ci <- x$test$conf.int
+#       gamma <- attr(ci, "conf.level")
+#       alpha <- 1 - gamma
+#       se <- diff(ci) / (2 * qt(1-alpha/2, df=df))
+#       sd <- se * sqrt(x$n)
+#       rn <- paste0(x$variables, collapse=" - ")
+#       test <- data.frame(Mean=x$test$estimate, "Std. Deviation"=sd,
+#                          "Std. Error Mean"=se, Lower=ci[1], Upper=ci[2],
+#                          t=x$test$statistic, df=df, "Sig."=x$test$p.value,
+#                          check.names=FALSE, row.names=rn)
+#       formatted <- formatSPSS(test, digits=digits)
+#     } else if (x$type == "independent") {
+#       levene <- data.frame("F"=x$levene[, "F value"],
+#                            "Sig."=x$levene[, "Pr(>F)"],
+#                            check.names=FALSE, row.names=NULL)
+#       # equal variances assumed
+#       est <- x$pooled$estimate[1] - x$pooled$estimate[2]
+#       df <- as.integer(x$pooled$parameter)
+#       ci <- x$pooled$conf.int
+#       gamma <- attr(ci, "conf.level")
+#       alpha <- 1 - gamma
+#       se <- diff(ci) / (2 * qt(1-alpha/2, df=df))
+#       pooled <- data.frame(t=x$pooled$statistic, df=df, "Sig."=x$pooled$p.value,
+#                            "Mean Difference"=est, "Std. Error Difference"=se,
+#                            Lower=ci[1], Upper=ci[2], check.names=FALSE,
+#                            row.names=NULL)
+#       # equal variances not assumed
+#       est <- x$satterthwaite$estimate[1] - x$satterthwaite$estimate[2]
+#       df <- x$satterthwaite$parameter
+#       ci <- x$satterthwaite$conf.int
+#       gamma <- attr(ci, "conf.level")
+#       alpha <- 1 - gamma
+#       se <- diff(ci) / (2 * qt(1-alpha/2, df=df))
+#       satterthwaite <- data.frame(t=x$satterthwaite$statistic, df=df,
+#                                   "Sig."=x$satterthwaite$p.value,
+#                                   "Mean Difference"=est,
+#                                   "Std. Error Difference"=se,
+#                                   Lower=ci[1], Upper=ci[2],
+#                                   check.names=FALSE, row.names=NULL)
+#       # combine tests
+#       formatted <- rbind(formatSPSS(pooled, digits=digits),
+#                          formatSPSS(satterthwaite, digits=digits))
+#       formatted <- cbind(formatSPSS(levene, digits=digits), formatted)
+#     } else stop("type of test not supported")
+#
+#     ## print LaTeX table
+#     if (count == 0) cat("\n")
+#     if (x$type == "one-sample") {
+#       cat("\\begin{tabular}{|l|r|r|r|r|r|r|}\n")
+#       cat("\\noalign{\\smallskip}\n")
+#       cat("\\multicolumn{7}{c}{\\textbf{One-Sample Test}} \\\\\n")
+#       cat("\\noalign{\\smallskip}\\hline\n")
+#       cat(" & \\multicolumn{6}{|c|}{Test Value = ", format(x$test$null.value, digits=digits), "} \\\\\n", sep="")
+#       cat("\\cline{2-7}\n")
+#       cat(" & & & & & \\multicolumn{2}{|c|}{", format(100*gamma, digits=digits), "\\% Confidence} \\\\\n", sep="")
+#       cat(" & & & & & \\multicolumn{2}{|c|}{Interval of the} \\\\\n")
+#       cat(" & & & \\multicolumn{1}{|c|}{Sig. (2-} & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{2}{|c|}{Difference} \\\\\n")
+#       cat("\\cline{6-7}\n")
+#       cat(" & \\multicolumn{1}{|c|}{t} & \\multicolumn{1}{|c|}{df} & \\multicolumn{1}{|c|}{tailed)} & \\multicolumn{1}{|c|}{Difference} & \\multicolumn{1}{|c|}{Lower} & \\multicolumn{1}{|c|}{Upper} \\\\\n")
+#       cat("\\hline\n")
+#       cat(rownames(formatted), "&", paste0(formatted, collapse=" & "), "\\\\\n")
+#     } else if (x$type == "paired") {
+#       cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|}\n")
+#       cat("\\noalign{\\smallskip}\n")
+#       cat("\\multicolumn{9}{c}{\\textbf{Paired Samples Test}} \\\\\n")
+#       cat("\\noalign{\\smallskip}\\hline\n")
+#       cat(" & \\multicolumn{5}{|c|}{Paired Differences} & & & \\\\\n", sep="")
+#       cat("\\cline{2-6}\n")
+#       cat(" & & & & \\multicolumn{2}{|c|}{", format(100*gamma, digits=digits), "\\% Confidence} & & & \\\\\n", sep="")
+#       cat(" & & & \\multicolumn{1}{|c|}{Std.} & \\multicolumn{2}{|c|}{Interval of the} & & & \\\\\n")
+#       cat(" & & \\multicolumn{1}{|c|}{Std.} & \\multicolumn{1}{|c|}{Error} & \\multicolumn{2}{|c|}{Difference} & & & \\multicolumn{1}{|c|}{Sig. (2-} \\\\\n")
+#       cat("\\cline{5-6}\n")
+#       cat(" & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Deviation} & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Lower} & \\multicolumn{1}{|c|}{Upper} & \\multicolumn{1}{|c|}{t} & \\multicolumn{1}{|c|}{df} & \\multicolumn{1}{|c|}{tailed)} \\\\\n")
+#       cat("\\hline\n")
+#       cat(rownames(formatted), "&", paste0(formatted, collapse=" & "), "\\\\\n")
+#     } else if (x$type == "independent") {
+#       cat("\\begin{tabular}{|ll|r|r|r|r|r|r|r|r|r|}\n")
+#       cat("\\noalign{\\smallskip}\n")
+#       cat("\\multicolumn{11}{c}{\\textbf{Independent Samples Test}} \\\\\n")
+#       cat("\\noalign{\\smallskip}\\hline\n")
+#       cat(" & & \\multicolumn{2}{|c|}{Levene's Test} & \\multicolumn{7}{|c|}{} \\\\\n", sep="")
+#       cat(" & & \\multicolumn{2}{|c|}{for Equality} & \\multicolumn{7}{|c|}{} \\\\\n", sep="")
+#       cat(" & & \\multicolumn{2}{|c|}{of Variances} & \\multicolumn{7}{|c|}{t-test for Equality of Means} \\\\\n", sep="")
+#       cat("\\cline{3-11}\n")
+#       cat(" & & & & & & & & & \\multicolumn{2}{|c|}{", format(100*gamma, digits=digits), "\\% Confidence} \\\\\n", sep="")
+#       cat(" & & & & & & & & & \\multicolumn{2}{|c|}{Interval of the} \\\\\n")
+#       cat(" & & & & & & \\multicolumn{1}{|c|}{Sig. (2-} & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Std. Error} & \\multicolumn{2}{|c|}{Difference} \\\\\n")
+#       cat("\\cline{10-11}\n")
+#       cat(" & & \\multicolumn{1}{|c|}{F} & \\multicolumn{1}{|c|}{Sig.} & \\multicolumn{1}{|c|}{t} & \\multicolumn{1}{|c|}{df} & \\multicolumn{1}{|c|}{tailed)} & \\multicolumn{1}{|c|}{Difference} & \\multicolumn{1}{|c|}{Difference} & \\multicolumn{1}{|c|}{Lower} & \\multicolumn{1}{|c|}{Upper} \\\\\n")
+#       cat("\\hline\n")
+#       cat(x$variables, "& Equal &", paste0(formatted[1,], collapse=" & "), "\\\\\n")
+#       cat(" & variances & & & & & & & & & \\\\\n")
+#       cat(" & assumed & & & & & & & & & \\\\\n")
+#       cat("\\hline\n")
+#       cat(" & Equal &", paste0(formatted[2,], collapse=" & "), "\\\\\n")
+#       cat(" & variances & & & & & & & & & \\\\\n")
+#       cat(" & not & & & & & & & & & \\\\\n")
+#       cat(" & assumed & & & & & & & & & \\\\\n")
+#     } else stop("type of test not supported")
+#     # finalize LaTeX table
+#     cat("\\hline\\noalign{\\smallskip}\n")
+#     cat("\\end{tabular}\n")
+#     cat("\n")
+#   }
+# }

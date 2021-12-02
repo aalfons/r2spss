@@ -283,16 +283,18 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
     }
   }
   # write table body
+  alignLabel <- alignment$table[1]
+  alignName <- alignment$table[addLabel+1]
   for (i in seq.int(nrow(formatted))) {
     # write current row
     if (i == 1) {
-      cat(if (addLabel) paste(label, "&"),
-          if (addRowNames) paste(rowNames[i], "&"),
+      cat(if (addLabel) paste(latexInfoCell(label, alignLabel), "&"),
+          if (addRowNames) paste(latexInfoCell(rowNames[i], alignName), "&"),
           paste0(formatted[i, ], collapse = " & "),
           "\\\\\n")
     } else {
       cat(if (addLabel) " &",
-          if (addRowNames) paste(rowNames[i], "&"),
+          if (addRowNames) paste(latexInfoCell(rowNames[i], alignName), "&"),
           paste0(formatted[i, ], collapse = " & "),
           "\\\\\n")
     }
@@ -404,6 +406,7 @@ legacyBeginTabular <- function(columns, info = 1, alignment, border) {
   # full specifications per column except left border of first column
   specs <- paste0(alignment, border[-1])
   # create \begin{tabular} statement
+  # paste0("\\begin{tabular}{", border[1], paste0(specs, collapse = ""), "}\n")
   paste0("\\begin{tabular}{", border[1], paste0(specs, collapse = ""), "}\n")
 }
 
@@ -496,8 +499,8 @@ parseHeaderLayout <- function(header, alignment, left, right) {
 
 
 ## function to create a header cell, which in many cases contains a
-# \multicolumn statement that also defines the appearance with respect
-# to alignment and borders
+## \multicolumn statement that also defines the appearance with respect
+## to alignment and borders
 # text ........ character string giving the text to be written inside the
 #               merged cell.
 # columns ..... number of subsequent columns to merge.
@@ -550,6 +553,24 @@ legacyHeaderCell <- function(text = "", columns = 1, alignment = "c",
   spec <- paste0(left, alignment, right)
   # create \multicolumn statement
   sprintf("\\multicolumn{%d}{%s}{%s}", columns, spec, text)
+}
+
+
+## function to create a info cell, which may contain a \makecell statement
+## to break up the cell according to defined line breaks
+# text ........ character string giving the text to be written inside the
+#               cell.  If it contains any line breaks, a \makecell statement
+#               will be created.
+# alignment ... character string containing an alignment specifier for the
+#               merged cell.  The default is "l" for left-aligned.
+
+latexInfoCell <- function(text = "", alignment = "l") {
+  if (grepl("\n", text, fixed = TRUE)) {
+    # currently, vertical alignment is always set to top-alignment
+    # (t in the \makecell command before the horizonal alignment specifier)
+    latexText <- gsub("\n", "\\\\", text, fixed = TRUE)
+    paste0("\\makecell[t", alignment, "]{", latexText, "}")
+  } else text
 }
 
 

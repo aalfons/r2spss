@@ -249,7 +249,7 @@ toSPSS.ANOVASPSS <- function(object,
       upper <- which(header == "Upper Bound")
       header <- gsub(" ", "\n", header, fixed = TRUE)  # add line breaks
       ciHeader <- list(header[lower:upper])
-      names(ciHeader) <- paste0(format(100*object$conf.level, digits=digits),
+      names(ciHeader) <- paste0(format(100*object$conf.level, digits = digits),
                                 "\\% Confidence\nInterval for Mean")
       header <- c(as.list(header[seq_len(lower-1)]), ciHeader,
                   as.list(header[-seq_len(upper)]))
@@ -316,11 +316,11 @@ toSPSS.ANOVASPSS <- function(object,
         header <- c("", "", wrapText(names(levene), limit = 8))
         # define nice labels for the rows
         rowLabels <- c(mean = "Mean", median = "Median",
-                       adjusted = "Median and with adjusted df",
-                       trimmed = "trimmed mean")
+                       adjusted = "Median and\nwith adjusted df",
+                       trimmed = "trimmed\nmean")
         rowLabels <- paste("Based on", rowLabels[row.names(levene)])
-        # define column widths
-        width <- c("", "0.3\\linewidth", rep.int("", ncol(levene)))
+        # # define column widths
+        # width <- c("", "0.3\\linewidth", rep.int("", ncol(levene)))
       }
       ## construct list containing all necessary information
       if (object$type == "one-way") {
@@ -333,7 +333,7 @@ toSPSS.ANOVASPSS <- function(object,
           spss <- list(table = formatted,
                        main = "Tests of Homogeneity of Variances",
                        header = header, label = object$variable,
-                       rowNames = rowLabels, info = 0, width = width,
+                       rowNames = rowLabels, info = 0, #width = width,
                        version = "modern")
         }
       } else if (object$type == "two-way") {
@@ -369,7 +369,8 @@ toSPSS.ANOVASPSS <- function(object,
           # construct list
           spss <- list(table = formatted, main = main, header = header,
                        label = object$variable, rowNames = rowLabels, info = 0,
-                       width = width, footnotes = footnotes, version = "modern")
+                       # width = width,
+                       footnotes = footnotes, version = "modern")
         }
       } else stop("type of ANOVA not supported")
 
