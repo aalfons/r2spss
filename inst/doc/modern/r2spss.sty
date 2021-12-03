@@ -9,18 +9,18 @@
 \ProvidesPackage{r2spss}%
 [2021/11/24 Format R Output to Look Like SPSS v0.2.0]
 
-% additional packages
+% packages generally required
 \RequirePackage{amsmath}
-\RequirePackage{array}
-\RequirePackage{colortbl}
+\RequirePackage[T1]{fontenc}
+
+% packages required for modern theme
+\RequirePackage{nicematrix}
+
+% packages required for legacy theme
+\RequirePackage{makecell}
 
 % define colors
 \definecolor{graySPSS}{gray}{0.87}
 \definecolor{lightgraySPSS}{RGB}{250,250,252}
 \definecolor{darkgraySPSS}{gray}{0.66}
 \definecolor{blueSPSS}{RGB}{39,73,96}
-
-% new column types for tabular environment
-\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
-\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
-\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
