@@ -235,15 +235,13 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
 
     if (object$type == "independent") {
 
-      # initializations
+      ## initializations
       wrap <- 10
-      # extract results for test on variance
+      ## extract results for test on variance
       levene <- data.frame("F" = object$levene[, "F value"],
                            "Sig." = object$levene[, "Pr(>F)"],
                            row.names = NULL, check.names = FALSE)
-      leveneHeader <- list("Levene's Test\nfor Equality\nof Variances" =
-                             names(levene))
-      # extract significance
+      ## extract p-values
       p <- c(object$pooled$p.value, object$satterthwaite$p.value)
       if (legacy) {
         # part of data frame
@@ -251,45 +249,44 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
                         check.names = FALSE)
         # part of header
         pHeader <- as.list("Sig. (2-\ntailed)")
+
       } else {
         # part of data frame
         p <- data.frame("One-Sided p" = p/2, "Two-Sided p" = p,
                         row.names = NULL,  check.names = FALSE)
-        # part of header
-        pHeader <- list("Significance" = c("One-\nSided\np", "Two-\nSided\np"))
       }
-      # extract results for test with equal variances assumed
+      ## extract results for test with equal variances assumed
       est <- object$pooled$estimate[1] - object$pooled$estimate[2]
       df <- as.integer(object$pooled$parameter)
       ci <- object$pooled$conf.int
       gamma <- attr(ci, "conf.level")
       alpha <- 1 - gamma
       se <- diff(ci) / (2 * qt(1-alpha/2, df = df))
-      # construct data frame for test with equal variances assumed
+      ## construct data frame for test with equal variances assumed
       pooled <- data.frame("t" = object$pooled$statistic,
                            "df" = df, p[1, , drop = FALSE],
                            "Mean Difference" = est,
                            "Std. Error Difference" = se,
                            "Lower" = ci[1], "Upper" = ci[2],
                            row.names = NULL, check.names = FALSE)
-      # extract results for test with equal variances not assumed
+      ## extract results for test with equal variances not assumed
       est <- object$satterthwaite$estimate[1] - object$satterthwaite$estimate[2]
       df <- object$satterthwaite$parameter
       ci <- object$satterthwaite$conf.int
       gamma <- attr(ci, "conf.level")
       alpha <- 1 - gamma
       se <- diff(ci) / (2 * qt(1-alpha/2, df = df))
-      # construct data frame for test with equal variances not assumed
+      ## construct data frame for test with equal variances not assumed
       satterthwaite <- data.frame("t" = object$satterthwaite$statistic,
                                   "df" = df, p[2, , drop = FALSE],
                                   "Mean Difference" = est,
                                   "Std. Error Difference" = se,
                                   "Lower" = ci[1], "Upper" = ci[2],
                                   row.names = NULL, check.names = FALSE)
-      # put test results in SPSS format
+      ## put test results in SPSS format
       test <- cbind(levene,
                     rbind(pooled = pooled, satterthwaite = satterthwaite))
-      # format table nicely
+      ## format table nicely
       args <- list(test, digits = digits, ...)
       if (!legacy && is.null(args$pValue)) {
         args$pValue <- grepl("Sig", names(test), fixed = TRUE) |
@@ -297,23 +294,49 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
       }
       if (is.null(args$checkInt)) args$checkInt <- names(test) == "df"
       formatted <- do.call(formatSPSS, args)
-      # define part of header for confidence interval
-      header <- c("", "", wrapText(names(test), limit = wrap))
-      lower <- which(header == "Lower")
-      upper <- which(header == "Upper")
-      ciHeader <- list(header[lower:upper])
-      names(ciHeader) <- paste0(format(100*gamma, digits = digits),
-                                "\\% Confidence\nInterval of the\nDifference")
-      # define header
-      header <- c(as.list(header[1:2]), leveneHeader, as.list(header[5:6]),
-                  pHeader, as.list(header[(7:8)+ncol(p)]), ciHeader)
-      # define nice labels for the rows
+      ## construct header
+      cn <- c("", "", names(test))
+      # construct top-level header
+      f <- which(cn == "F")
+      sig <- which(cn == "Sig.")
+      top <- data.frame(first = c(seq_len(f-1), f, sig+1),
+                        last = c(seq_len(f-1), sig, length(cn)),
+                        text = c(rep.int("", f-1),
+                                 "Levene's Test\nfor Equality\nof Variances",
+                                 "t-test for Equality of Means"))
+      # merged header for p-values
+      if (legacy) {
+        onesided <- twosided <- grep("2-tailed", cn, fixed = TRUE)
+        pText <- ""
+      } else {
+        onesided <- grep("One-Sided", cn, fixed = TRUE)
+        twosided <- grep("Two-Sided", cn, fixed = TRUE)
+        pText <- c("Significance")
+      }
+      # merged header for confidence interval
+      lower <- which(cn == "Lower")
+      upper <- which(cn == "Upper")
+      ciText <- paste0(format(100*gamma, digits = digits),
+                       "\\% Confidence\nInterval of the\nDifference")
+      # construct mid-level header
+      middle <- data.frame(first = c(seq_len(onesided-1), onesided,
+                                     seq(from = twosided+1, to = lower-1),
+                                     lower),
+                           last = c(seq_len(onesided-1), twosided,
+                                    seq(from = twosided+1, to = lower-1),
+                                    upper),
+                           text = c(rep.int("", onesided-1), pText,
+                                    rep.int("", lower-twosided-1),
+                                    ciText))
+      # construct bottom-level header
+      bottom <- c(wrapText(cn, limit = wrap))
+      bottom <- gsub("-", "-\n", bottom, fixed = TRUE)
+      header <- list(top, middle, bottom)
+      ## define nice labels for the rows
       rowLabels <- c(pooled = "assumed", satterthwaite = "not assumed")
       rowLabels <- paste("Equal variances", rowLabels[row.names(test)])
       rowLabels <- gsub(" ", "\n", rowLabels, fixed = TRUE)
-      # # define column widths
-      # width <- c("", "5em", rep.int("", ncol(test)))
-      # construct list containing all necessary information
+      ## construct list containing all necessary information
       spss <- list(table = formatted, main = main, label = object$variables,
                    header = header, rowNames = rowLabels, info = 0,
                    # width = width,

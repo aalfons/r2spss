@@ -21,11 +21,6 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
                                footnotes = NULL, major = NULL, minor = NULL,
                                theme = c("modern", "legacy"), ...) {
 
-  ## FIXME: major and minor lines should be in color 'darkgraySPSS' for modern
-  ##        theme, but I haven't figured out yet how to specify this.  The
-  ##        lines above and below the table body should remain the default
-  ##        color (typically black).
-
   ## initializations
   d <- dim(object)
   if (d[1] == 0) stop("table to be written has no rows")
@@ -68,15 +63,13 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
     header <- c(if(addLabel) "", if (addRowNames) "", names(object))
   } else {
     writeHeader <- TRUE
-    if (is.list(header)) {
-      if (length(unlist(header, use.names = FALSE)) != columns) {
-        stop(sprintf("'header' must have in total %d elements", columns))
-      }
-    } else if (is.character(header)) {
+    if (is.character(header)) {
       if (length(header) != columns) {
         stop(sprintf("'header' must have length %d", columns))
       }
-    } else stop("'header' must be TRUE/FALSE, a list, or a character vector")
+    } else if (!is.list(header)) {
+      stop("'header' must be TRUE/FALSE, a character vector, or a list")
+    }
   }
   # compute number of columns actually containing results
   results <- columns - info
@@ -190,30 +183,14 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
     leftBorder <- c(border[1], rep.int(FALSE, columns-1))
     rightBorder <- border[-1]
     headerList <- parseHeaderLayout(header, alignment = alignment$header,
-                                    left = leftBorder,
-                                    right = rightBorder)
-    # loop over levels in header layout
-    headerText <- lapply(headerList, function(level) {
-      # obtain matrix of header cells based on line breaks
-      # note: strsplit() transforms "" to character()
-      headerText <- strsplit(level$header, "\n", fixed = TRUE)
-      headerRows <- vapply(headerText, length, numeric(1))
-      nHeaderRows <- max(headerRows)
-      if (nHeaderRows <= 1) matrix(level$header, nrow = 1)
-      else {
-        mapply(function(text, rows) {
-          c(rep.int("", nHeaderRows - rows), text)
-        }, text = headerText, rows = headerRows, USE.NAMES = FALSE)
-      }
-    })
-    nHeaderRows <- vapply(headerText, nrow, integer(1))
-  } else nHeaderRows <- NULL
+                                    left = leftBorder, right = rightBorder)
+  } else headerList <- NULL
 
   ## create LaTeX table
 
   ## write \begin{tabular} statement
-  first <- length(latexMain) + length(latexSub) + sum(nHeaderRows)
-  cat(latexBeginTabular(alignment$table, border, nrow = c(first, d[1]),
+  skip <- length(latexMain) + length(latexSub) + length(headerList)
+  cat(latexBeginTabular(alignment$table, border, nrow = c(skip, d[1]),
                         ncol = c(info, results), theme = theme),
       sep = "")
 
@@ -229,38 +206,18 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
   if (writeHeader) {
     # for legacy theme, draw line above header
     if (legacy) cat(latexLine())
-    # # parse header layout
-    # leftBorder <- c(border[1], rep.int(FALSE, columns-1))
-    # rightBorder <- border[-1]
-    # headerList <- parseHeaderLayout(header, alignment = alignment$header,
-    #                                 left = leftBorder,
-    #                                 right = rightBorder)
-    # loop over levels in header layout
-    for (l in seq_along(headerList)) {
-      # # obtain matrix of header cells based on line breaks
-      # # note: strsplit() transforms "" to character()
-      # headerText <- strsplit(level$header, "\n", fixed = TRUE)
-      # headerRows <- vapply(headerText, length, numeric(1))
-      # nHeaderRows <- max(headerRows)
-      # if (nHeaderRows <= 1) headerText <- matrix(level$header, nrow = 1)
-      # else {
-      #   headerText <- mapply(function(text, rows) {
-      #     c(rep.int("", nHeaderRows - rows), text)
-      #   }, text = headerText, rows = headerRows, USE.NAMES = FALSE)
-      # }
-      level <- headerList[[l]]
-      # write rows of header cells
-      for (i in seq_len(nHeaderRows[l])) {
-        headerCells <- mapply(latexHeaderCell, text = headerText[[l]][i, ],
-                              columns = level$columns,
-                              alignment = level$alignment,
-                              left = level$left, right = level$right,
-                              MoreArgs = list(theme = theme),
-                              USE.NAMES = FALSE)
-        cat(paste(headerCells, collapse = " & "), "\\\\\n")
-      }
+    # loop over rows in header layout
+    for (row in headerList) {
+      # write current row
+      headerCells <- mapply(latexHeaderCell, text = row$text,
+                            columns = row$columns,
+                            alignment = row$alignment,
+                            left = row$left, right = row$right,
+                            MoreArgs = list(theme = theme),
+                            USE.NAMES = FALSE)
+      cat(paste(headerCells, collapse = " & "), "\\\\\n")
       # for legacy theme, add partial lines under merged cells
-      merged <- level$merged
+      merged <- row$merged
       if (legacy && !is.null(merged)) {
         for (j in seq_len(nrow(merged))) {
           cat(latexPartialLine(merged[j, "first"], merged[j, "last"]))
@@ -682,11 +639,11 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
 # border ...... logical vector indicating which borders to draw.  Its length
 #               should be columns + 1.  See the functions below for the
 #               defaults.
-# nrow ........ integer vector of length two, with the first element indicating
-#               on which row the table body starts and the second element
-#               giving the number of rows in the table body.
+# nrow ........ integer vector of length two, with the first element giving
+#               the number of rows in the title and header, and the second
+#               element giving the number of rows in the table body.
 # ncol ........ integer vector of length two, with the first element giving
-#               the number of columns containing auxiliary information and
+#               the number of columns containing auxiliary information, and
 #               the second element giving the number of columns containing
 #               actual results.
 # theme ....... character string specifying whether the table should have the
@@ -837,57 +794,57 @@ latexMulticolumn <- function(text, columns = 1, alignment = "l") {
 # }
 
 
-## If header is given as a list, parse the structure and return a list with the
-## necessary information for each level to write the header cells of the latex
-## table.  Otherwise the list contains only one component, which contains all
-## the information for the only level of header cells.
-parseHeaderLayout <- function(header, alignment, left, right) {
-  if (is.list(header)) {
-    ## obtain first (top) level of header layout
-    # text and number of columns for each first level element
-    firstHeader <- names(header)
-    if (is.null(firstHeader)) firstHeader <- rep.int("", length(header))
-    firstColumns <- vapply(header, length, numeric(1), USE.NAMES = FALSE)
-    # obtain alignment of each first level element
-    group <- rep.int(seq_along(firstColumns), times = firstColumns)
-    alignmentList <- split(alignment, group)
-    firstAlignment <- vapply(alignmentList, function(align) {
-      if (length(align) == 1) align
-      else {
-        unique <- unique(align)
-        if (length(unique) == 1) unique
-        else "c"
-      }
-    }, character(1), USE.NAMES = FALSE)
-    # obtain first and last index of each first level element
-    indexList <- split(seq_len(sum(firstColumns)), group)
-    indices <- t(mapply(function(i, l) c(first = i[1], last = i[l]),
-                        i = indexList, l = firstColumns, USE.NAMES = FALSE))
-    # determine which cells are merged (lines to draw for legacy theme)
-    keep <- (indices[, "last"] > indices[, "first"]) | firstHeader != ""
-    # first level layout
-    firstLevel <- list(header = firstHeader,
-                       columns = firstColumns,
-                       alignment = firstAlignment,
-                       left = left[indices[, "first"]],
-                       right = right[indices[, "last"]],
-                       merged = indices[keep, , drop = FALSE])
-    ## obtain second (bottom) level of header layout
-    secondHeader <- unlist(header, recursive = FALSE, use.names = FALSE)
-    if (is.list(secondHeader)) {
-      stop("header layout must not have more than two levels")
-    }
-    secondLevel <- list(header = secondHeader,
-                        columns = rep.int(1, length(secondHeader)),
-                        alignment = alignment, left = left, right = right)
-    ## return header layout
-    list(first = firstLevel, second = secondLevel)
-  } else {
-    ## only one header level
-    list(first = list(header = header, columns = rep.int(1, length(header)),
-                      alignment = alignment, left = left, right = right))
-  }
-}
+# ## If header is given as a list, parse the structure and return a list with the
+# ## necessary information for each level to write the header cells of the latex
+# ## table.  Otherwise the list contains only one component, which contains all
+# ## the information for the only level of header cells.
+# parseHeaderLayout <- function(header, alignment, left, right) {
+#   if (is.list(header)) {
+#     ## obtain first (top) level of header layout
+#     # text and number of columns for each first level element
+#     firstHeader <- names(header)
+#     if (is.null(firstHeader)) firstHeader <- rep.int("", length(header))
+#     firstColumns <- vapply(header, length, numeric(1), USE.NAMES = FALSE)
+#     # obtain alignment of each first level element
+#     group <- rep.int(seq_along(firstColumns), times = firstColumns)
+#     alignmentList <- split(alignment, group)
+#     firstAlignment <- vapply(alignmentList, function(align) {
+#       if (length(align) == 1) align
+#       else {
+#         unique <- unique(align)
+#         if (length(unique) == 1) unique
+#         else "c"
+#       }
+#     }, character(1), USE.NAMES = FALSE)
+#     # obtain first and last index of each first level element
+#     indexList <- split(seq_len(sum(firstColumns)), group)
+#     indices <- t(mapply(function(i, l) c(first = i[1], last = i[l]),
+#                         i = indexList, l = firstColumns, USE.NAMES = FALSE))
+#     # determine which cells are merged (lines to draw for legacy theme)
+#     keep <- (indices[, "last"] > indices[, "first"]) | firstHeader != ""
+#     # first level layout
+#     firstLevel <- list(header = firstHeader,
+#                        columns = firstColumns,
+#                        alignment = firstAlignment,
+#                        left = left[indices[, "first"]],
+#                        right = right[indices[, "last"]],
+#                        merged = indices[keep, , drop = FALSE])
+#     ## obtain second (bottom) level of header layout
+#     secondHeader <- unlist(header, recursive = FALSE, use.names = FALSE)
+#     if (is.list(secondHeader)) {
+#       stop("header layout must not have more than two levels")
+#     }
+#     secondLevel <- list(header = secondHeader,
+#                         columns = rep.int(1, length(secondHeader)),
+#                         alignment = alignment, left = left, right = right)
+#     ## return header layout
+#     list(first = firstLevel, second = secondLevel)
+#   } else {
+#     ## only one header level
+#     list(first = list(header = header, columns = rep.int(1, length(header)),
+#                       alignment = alignment, left = left, right = right))
+#   }
+# }
 
 
 ## function to create a header cell, which in many cases contains a
@@ -919,8 +876,10 @@ latexHeaderCell <- function(text = "", columns = 1, alignment = "c",
     sprintf("\\multicolumn{%d}{%s}{%s}", columns, spec, text)
   } else {
     # create \Block statement and use text color 'blueSPSS'
-    sprintf("\\Block[%s]{1-%d}{\\textcolor{blueSPSS}{%s}}",
-            alignment, columns, text)
+    # sprintf("\\Block[%s]{1-%d}{\\textcolor{blueSPSS}{%s}}",
+    #         alignment, columns, text)
+    sprintf("\\multicolumn{%d}{%s}{\\textcolor{blueSPSS}{%s}}",
+            columns, alignment, text)
   }
 }
 # latexHeaderCell <- function(text = "", columns = 1, alignment = "c",
