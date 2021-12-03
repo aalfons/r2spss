@@ -42,8 +42,6 @@ r2spss.sty <- function(path = ".") {
   cat("\\RequirePackage{amsmath}\n", file = file)
   cat("\\RequirePackage[T1]{fontenc}\n\n", file = file)
   cat("% packages required for modern theme\n", file = file)
-  # cat("\\RequirePackage{array}\n", file = file)
-  # cat("\\RequirePackage{colortbl}\n\n", file = file)
   cat("\\RequirePackage{nicematrix}\n\n", file = file)
   cat("% packages required for legacy theme\n", file = file)
   cat("\\RequirePackage{makecell}\n\n", file = file)
@@ -55,14 +53,5 @@ r2spss.sty <- function(path = ".") {
       append = TRUE)
   cat("\\definecolor{darkgraySPSS}{gray}{0.66}\n", file = file)
   cat("\\definecolor{blueSPSS}{RGB}{39,73,96}\n", file = file)
-
-  # # write LaTeX statements to define new column types for tabular environment
-  # cat("% new column types for tabular environment\n", file = file)
-  # cat("\\newcolumntype{L}[1]{>{\\raggedright\\let\\newline\\\\\\arraybackslash\\hspace{0pt}}p{#1}}\n",
-  #     file = file)
-  # cat("\\newcolumntype{C}[1]{>{\\centering\\let\\newline\\\\\\arraybackslash\\hspace{0pt}}p{#1}}\n",
-  #     file = file)
-  # cat("\\newcolumntype{R}[1]{>{\\raggedleft\\let\\newline\\\\\\arraybackslash\\hspace{0pt}}p{#1}}\n",
-  #     file = file)
 
 }
