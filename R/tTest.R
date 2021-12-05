@@ -331,6 +331,7 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
       # construct bottom-level header
       bottom <- c(wrapText(cn, limit = wrap))
       bottom <- gsub("-", "-\n", bottom, fixed = TRUE)
+      # define header
       header <- list(top, middle, bottom)
       ## define nice labels for the rows
       rowLabels <- c(pooled = "assumed", satterthwaite = "not assumed")
@@ -344,13 +345,13 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
 
     } else {
 
-      # initializations
+      ## initializations
       wrap <- if (object$type == "one-sample") 10 else 8
-      # extract results
+      ## extract results
       est <- object$test$estimate
       t <- object$test$statistic
       df <- as.integer(object$test$parameter)
-      # extract significance
+      ## extract significance
       if (legacy) {
         # part of data frame
         p <- data.frame("Sig. (2-tailed)" = object$test$p.value,
@@ -361,7 +362,7 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
                         "Two-Sided p" = object$test$p.value,
                         row.names = NULL,  check.names = FALSE)
       }
-      # put test results in SPSS format
+      ## put test results in SPSS format
       if (object$type == "one-sample") {
         # extract more results
         mu <- object$test$null.value
@@ -387,7 +388,7 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
                            "Upper" = ci[2], "t" = t, "df" = df, p,
                            row.names = rn, check.names = FALSE)
       }
-      # format results nicely
+      ## format results nicely
       if (legacy) formatted <- formatSPSS(test, digits = digits, ...)
       else {
         args <- list(test, digits = digits, ...)
@@ -453,8 +454,9 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
       bottom <- c(wrapText(cn, limit = wrap))
       if (legacy) bottom <- gsub("\n(2-", "(2-\n", bottom, fixed = TRUE)
       else if (wrap < 9) bottom <- gsub("-", "-\n", bottom, fixed = TRUE)
+      # define header
       header <- list(top, middle, bottom)
-      # construct list containing all necessary information
+      ## construct list containing all necessary information
       if (object$type == "one-sample") {
         spss <- list(table = formatted, main = main, header = header,
                      rowNames = TRUE, info = 0, version = version)

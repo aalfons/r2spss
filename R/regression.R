@@ -180,9 +180,9 @@ toSPSS.regressionSPSS <- function(object,
   ## put requested results into SPSS format
   if (statistics == "summary") {
 
-    # initializations
+    ## initializations
     wrap <- if(object$change) 90 else 50
-    # compute model fit statistics in SPSS format
+    ## compute model fit statistics in SPSS format
     rsq <- vapply(summaries, "[[", numeric(1), "r.squared")
     adjrsq <- vapply(summaries, "[[", numeric(1), "adj.r.squared")
     sigma <- vapply(summaries, "[[", numeric(1), "sigma")
@@ -190,8 +190,7 @@ toSPSS.regressionSPSS <- function(object,
                        "Adjusted R Square" = adjrsq,
                        "Std. Error of the Estimate" = sigma,
                        row.names = labels, check.names = FALSE)
-    nc <- ncol(fits)+1
-    # if requested, compute change statistics in SPSS format
+    ## if requested, compute change statistics in SPSS format
     if (object$change) {
       # extract degrees of freedom of each model
       df <- vapply(summaries, function(s) as.integer(s$fstatistic[2:3]),
@@ -226,9 +225,9 @@ toSPSS.regressionSPSS <- function(object,
                             check.names = FALSE)
       # add to information on model fits
       fits <- cbind(fits, changes)
-      nc <- c(nc, ncol(changes))
     }
-    # format table nicely
+    ## format table nicely
+    cn <- c("Model", names(fits))
     if (object$change && !legacy) {
       args <- list(fits, ...)
       if (is.null(args$pValue)) {
@@ -236,22 +235,30 @@ toSPSS.regressionSPSS <- function(object,
       }
       formatted <- do.call(formatSPSS, args)
     } else formatted <- formatSPSS(fits, ...)
-    # define header with line breaks
-    header <- c("Model", names(fits))
-    limit <- rep_len(if (object$change) 10 else 15, length(header))
-    limit[grepl("Adjusted", header, fixed = TRUE)] <- 9
-    header <- wrapText(header, limit = limit)
+    ## define header with line breaks
+    cn <- c("Model", names(fits))
+    limit <- rep_len(if (object$change) 10 else 15, length(cn))
+    limit[grepl("Adjusted", cn, fixed = TRUE)] <- 9
+    header <- wrapText(cn, limit = limit)
+    # add a top-level header if we have change statistics
     if (object$change) {
-      header <- c(as.list(header[seq_len(nc[1])]),
-                  list("Change Statistics" = header[nc[1]+seq_len(nc[2])]))
+      # top-level header
+      first <- which(cn == "R Square Change")
+      last <- grep("Sig.", cn)
+      standardized <- which(cn == "Beta")
+      top <- data.frame(first = c(seq_len(first-1), first),
+                        last = c(seq_len(first-1), last),
+                        text = c(rep.int("", first-1), "Change Statistics"))
+      # define header
+      header <- list(top, header)
     }
-    # define footnotes
+    ## define footnotes
     row <- seq_len(k)
     column <- rep.int(1, k)
     footnotes <- wrapText(footnotesPredictors, limit = wrap)
     footnotes <- data.frame(marker = letters[seq_len(k)], row = row,
                             column = column, text = footnotes)
-    # construct list containing all necessary information
+    ## construct list containing all necessary information
     spss <- list(table = formatted, main = "Model Summary",
                  header = header, rowNames = TRUE, info = 0,
                  footnotes = footnotes)
@@ -298,8 +305,8 @@ toSPSS.regressionSPSS <- function(object,
       formatted <- do.call(formatSPSS, args)
     }
     # define header with line breaks
-    header <- wrapText(names(anovas), limit = 12)
-    header[header == "Type"] <- ""
+    cn <- gsub("Type", "", names(anovas), fixed = TRUE)
+    header <- wrapText(cn, limit = 12)
     # define footnotes
     row <- c("main", seq(from = 1, by = 3, length.out=k))
     column <- c(NA_integer_, rep.int(ncol(anovas), k))
@@ -314,7 +321,7 @@ toSPSS.regressionSPSS <- function(object,
 
   } else if (statistics == "estimates") {
 
-    # compute coefficient tables in SPSS format
+    ## compute coefficient tables in SPSS format
     coefficients <- mapply(function(m, s, l) {
       # extract coefficients
       coef <- coefficients(s)
@@ -336,27 +343,38 @@ toSPSS.regressionSPSS <- function(object,
                  coef[, c("t", "Sig.")], row.names = NULL,
                  check.names = FALSE, stringsAsFactors = FALSE)
     }, models, summaries, labels, SIMPLIFY=FALSE, USE.NAMES = FALSE)
-    # obtain number of rows in each coefficient table
+    ## obtain number of rows in each coefficient table
     p <- vapply(coefficients, nrow, integer(1))
-    # combine coefficient tables
+    ## combine coefficient tables
     coefficients <- do.call(rbind, coefficients)
-    # format table nicely
+    ## format table nicely
     if (legacy) formatted <- formatSPSS(coefficients, ...)
     else {
       args <- list(coefficients, ...)
       if (is.null(args$pValue)) args$pValue <- names(coefficients) == "Sig."
       formatted <- do.call(formatSPSS, args)
     }
-    # define header with line breaks
-    header <- names(coefficients)
-    header <- list(header[1], "", "Unstandardized\nCoefficients" = header[3:4],
-                   "Standardized\nCoefficients" = header[5], header[6],
-                   header[7])
-    # define footnotes
+    ## define header with line breaks
+    cn <- gsub("Variable", "", names(coefficients), fixed = TRUE)
+    # top-level header
+    B <- which(cn == "B")
+    SE <- which(cn == "Std. Error")
+    standardized <- which(cn == "Beta")
+    top <- data.frame(first = c(seq_len(B-1), B, standardized,
+                                seq(from = standardized+1, length(cn))),
+                      last = c(seq_len(B-1), SE, standardized,
+                               seq(from = standardized+1, length(cn))),
+                      text = c(rep.int("", B-1),
+                               "Unstandardized\nCoefficients",
+                               "Standardized\nCoefficients",
+                               rep.int("", length(cn)-standardized)))
+    # define header
+    header <- list(top, cn)
+    ## define footnotes
     footnotes <- data.frame(marker = "a", row = "main",
                             column = NA_integer_,
                             text = footnoteResponse)
-    # construct list containing all necessary information
+    ## construct list containing all necessary information
     spss <- list(table = formatted, main = "Coefficients", header = header,
                  rowNames = FALSE, info = 2, footnotes = footnotes,
                  major = cumsum(p[-k]), version = version)

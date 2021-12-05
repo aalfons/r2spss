@@ -41,7 +41,7 @@ parseHeaderLayout.list <- function(object, alignment, left, right, ...) {
   if (length(object) == 2) {
 
     # some checks
-    if (is.null(labels)) labels <- paste(c("first", "third"), "header element")
+    if (is.null(labels)) labels <- paste(c("first", "second"), "header element")
     checkDataFrame(object[[1]], label = labels[1], targetNames = target)
     checkCharacter(object[[2]], label = labels[2])
 
@@ -52,9 +52,9 @@ parseHeaderLayout.list <- function(object, alignment, left, right, ...) {
 
     # split strings according to line breaks
     firstList <- strsplit(first$text, "\n", fixed = TRUE)
-    firstList <- lapply(firstList, function(t) if (length(t) == 0) "" else t)
+    # firstList <- lapply(firstList, function(t) if (length(t) == 0) "" else t)
     secondList <- strsplit(second, "\n", fixed = TRUE)
-    secondList <- lapply(secondList, function(t) if (length(t) == 0) "" else t)
+    # secondList <- lapply(secondList, function(t) if (length(t) == 0) "" else t)
 
     # determine heights of first and second header level
     firstHeight <- vapply(firstList, length, integer(1))
@@ -83,6 +83,7 @@ parseHeaderLayout.list <- function(object, alignment, left, right, ...) {
       }, t = childrenText, h = childrenHeight, SIMPLIFY = FALSE)
       childrenMat <- do.call(cbind, childrenList)
       # make overall height the same by adding empty strings to parent cell
+      haveParentText <- parentHeight > 0 && any(parentText != "")
       targetHeight <- c(maxHeight - targetHeight, targetHeight)
       if (parentHeight < targetHeight[1]) {
         parentText <- c(rep.int("", targetHeight[1] - parentHeight), parentText)
@@ -90,7 +91,7 @@ parseHeaderLayout.list <- function(object, alignment, left, right, ...) {
       # return list with necessary information
       column <- list(first = parentText, second = childrenMat,
                      height = targetHeight, which = which)
-      if ((first[j, "last"] > first[j, "first"]) || parentText != "") {
+      if ((first[j, "last"] > first[j, "first"]) || haveParentText) {
         column$merged <- first[j, c("first", "last")]
       }
       column
