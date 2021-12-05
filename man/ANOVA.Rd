@@ -2,16 +2,25 @@
 % Please edit documentation in R/ANOVA.R
 \name{ANOVA}
 \alias{ANOVA}
+\alias{toSPSS.ANOVASPSS}
 \alias{print.ANOVASPSS}
 \alias{plot.ANOVASPSS}
 \title{One-way and Two-way ANOVA}
 \usage{
 ANOVA(data, variable, group, conf.level = 0.95)
 
+\method{toSPSS}{ANOVASPSS}(
+  object,
+  statistics = c("test", "variance", "descriptives"),
+  version = c("modern", "legacy"),
+  digits = 3,
+  ...
+)
+
 \method{print}{ANOVASPSS}(
   x,
   statistics = c("descriptives", "variance", "test"),
-  theme = c("modern", "legacy"),
+  version = c("modern", "legacy"),
   ...
 )
 
@@ -28,18 +37,30 @@ interest.}
 \item{conf.level}{a number between 0 and 1 giving the confidence level of
 the confidence interval.}
 
-\item{x}{an object of class \code{"ANOVASPSS"} as returned by function
+\item{object, x}{an object of class \code{"ANOVASPSS"} as returned by function
 \code{ANOVA}.}
 
-\item{statistics}{a character vector specifying which LaTeX tables should
-be printed.  Available options are \code{"descriptives"} for descriptive
+\item{statistics}{a character string or vector specifying which SPSS tables
+to produce.   Available options are \code{"descriptives"} for descriptive
 statistics, \code{"variance"} for Levene's test on homogeneity of the
-variances, and \code{"test"} for ANOVA results.  The default is to print all
-tables.}
+variances, and \code{"test"} for ANOVA results.  For the \code{toSPSS}
+method, only one option is allowed (the default is the table of ANOVA
+results), but the \code{print} method allows several options (the default
+is to print all tables).}
 
-\item{\dots}{For the \code{plot} method, additional arguments to be passed
-down, in particular graphical parameters (see also \code{\link{linesSPSS}}).
-For the \code{print} method, additional arguments are currently ignored.}
+\item{version}{a character string specifying whether the table should
+mimic the content and look of recent SPSS versions (\code{"modern"}) or
+older versions (<24; \code{"legacy"}).  The main differences are that
+recent versions include different variations of Levene's test, and that
+small p-values are displayed differently.}
+
+\item{digits}{an integer giving the number of digits after the comma to be
+printed in the LaTeX tables.}
+
+\item{\dots}{for  the \code{toSPSS} and \code{print} method, additional
+arguments to be passed down to \code{\link{formatSPSS}}.  For the
+\code{plot} method, additional arguments to be passed down to
+\code{\link{linesSPSS}}, in particular graphical parameters.}
 
 \item{y}{ignored (only included because it is defined for the generic
 function \code{\link[graphics]{plot}}).}
@@ -54,17 +75,17 @@ values are \code{"o"} (the default) for overplotted points and lines, and
 \code{"l"} for lines only.}
 
 \item{main, xlab, ylab}{the plot title and axis labels.}
-
-\item{digits}{an integer giving the number of digits after the comma to be
-printed in the LaTeX tables.}
 }
 \value{
-An object of class \code{"ANOVASPSS"} with the following components:
+\code{ANOVA} returns an object of class \code{"ANOVASPSS"} with the
+following components:
 \describe{
   \item{\code{descriptives}}{a data frame containing per-group descriptive
   statistics.}
   \item{\code{levene}}{an object as returned by
-  \code{\link[car]{leveneTest}}.}
+  \code{\link[car]{leveneTest}} (if \code{version = "legacy"}); or a
+  list of such objects containing different variations of Levene's test
+  (if \code{version = "modern"}).}
   \item{\code{test}}{a data frame containing the ANOVA table.}
   \item{\code{variable}}{a character string containing the name of the
   numeric variable of interest.}
@@ -79,16 +100,39 @@ An object of class \code{"ANOVASPSS"} with the following components:
   (\code{"one-way"} or \code{"two-way"}).}
 }
 
+The \code{toSPSS} method returns an object of class \code{"toSPSS"} which
+contains all relevant information in the required format to produce the
+LaTeX table.  See \code{\link[=toLatex.toSPSS]{toLatex}} for possible
+components and how to further customize the LaTeX table based on the
+returned object.
+
 The \code{print} method produces a LaTeX table that mimics the look of SPSS
-output (version <24).
+output.
 
 The \code{plot} method does not return anything, but produces a profile plot
 of the ANOVA results.
 }
 \description{
 Perform one-way or two-way ANOVA on variables of a data set.  The output is
-printed as a LaTeX table that mimics the look of SPSS output (version <24),
-and a plot of the results mimics the look of SPSS graphs.
+printed as a LaTeX table that mimics the look of SPSS output, and a plot of
+the results mimics the look of SPSS graphs.
+}
+\details{
+The \code{print} method first calls the \code{toSPSS} method followed by
+\code{\link[=toLatex.toSPSS]{toLatex}}.  Further customization can be
+done by calling those two functions separately, and modifying the object
+returned by \code{toSPSS}.
+}
+\note{
+LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
+may require several LaTeX compilations to be displayed correctly.
+
+The test statistic and p-value for Levene's test based on the trimmed mean
+(only returned for \code{version = "modern"}) differ slightly from those
+returned by SPSS.  Function \code{\link{trimmedMean}} rounds how many
+observations to trim in a different manner than base \R's
+\code{\link{mean}}, which brings the results closer to those of SPSS, but
+they are still not identical.
 }
 \examples{
 # load data

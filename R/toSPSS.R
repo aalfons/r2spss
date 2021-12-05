@@ -19,7 +19,7 @@ print.SPSSTable <- function(x, ...) print(unclass(x), ...)
 
 
 #' @export
-toLatex.SPSSTable <- function(object, theme = c("modern", "legacy"), ...) {
+toLatex.SPSSTable <- function(object, version = c("modern", "legacy"), ...) {
   # object of class "SPSSTable" contains all the relevant information that
   # needs to be passed down to the workhorse method
   args <- object
@@ -31,8 +31,7 @@ toLatex.SPSSTable <- function(object, theme = c("modern", "legacy"), ...) {
   # case, the appearance needs to match the version of the table.  Otherwise,
   # the appearance is defined by argument 'theme'.
   which <- grep("version", names(args), fixed = TRUE)
-  if (length(which) == 0) args$theme <- match.arg(theme)
-  else names(args)[which] <- "theme"
+  if (length(which) == 0) args$version <- match.arg(version)
   # call workhorse method
   do.call(toLatex, args)
 }

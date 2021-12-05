@@ -19,7 +19,7 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
                                label = NULL, rowNames = TRUE, info = NULL,
                                alignment = NULL, border = NULL,
                                footnotes = NULL, major = NULL, minor = NULL,
-                               theme = c("modern", "legacy"), ...) {
+                               version = c("modern", "legacy"), ...) {
 
   ## initializations
   d <- dim(object)
@@ -81,8 +81,8 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
     # TODO: perform checks
   }
   # check theme
-  theme <- match.arg(theme)
-  legacy <- theme == "legacy"
+  version <- match.arg(version)
+  legacy <- version == "legacy"
   # check border indicators
   if (is.null(border)) {
     if (legacy) {
@@ -191,7 +191,7 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
   ## write \begin{tabular} statement
   skip <- length(latexMain) + length(latexSub) + length(headerList)
   cat(latexBeginTabular(alignment$table, border, nrow = c(skip, d[1]),
-                        ncol = c(info, results), theme = theme),
+                        ncol = c(info, results), version = version),
       sep = "")
 
   ## if supplied, write main and sub title
@@ -213,7 +213,7 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
                             columns = row$columns,
                             alignment = row$alignment,
                             left = row$left, right = row$right,
-                            MoreArgs = list(theme = theme),
+                            MoreArgs = list(version = version),
                             USE.NAMES = FALSE)
       cat(paste(headerCells, collapse = " & "), "\\\\\n")
       # for legacy theme, add partial lines under merged cells
@@ -225,7 +225,7 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
       }
     }
     # draw line to separate header from table body
-    cat(latexTopLine(theme = theme))
+    cat(latexTopLine(version = version))
   }
 
   ## format and write table body
@@ -260,31 +260,31 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
   for (i in seq.int(nrow(formatted))) {
     # write current row
     if (i == 1) {
-      cat(if (addLabel) paste(latexInfoCell(label, alignLabel, theme = theme), "&"),
-          if (addRowNames) paste(latexInfoCell(rowNames[i], alignName, theme = theme), "&"),
+      cat(if (addLabel) paste(latexInfoCell(label, alignLabel, version = version), "&"),
+          if (addRowNames) paste(latexInfoCell(rowNames[i], alignName, version = version), "&"),
           paste0(formatted[i, ], collapse = " & "),
           "\\\\\n")
     } else {
       cat(if (addLabel) " &",
-          if (addRowNames) paste(latexInfoCell(rowNames[i], alignName, theme = theme), "&"),
+          if (addRowNames) paste(latexInfoCell(rowNames[i], alignName, version = version), "&"),
           paste0(formatted[i, ], collapse = " & "),
           "\\\\\n")
     }
     # if requested, draw major grid line
-    if (drawMajor && (i %in% major)) cat(latexMajorLine(theme = theme))
+    if (drawMajor && (i %in% major)) cat(latexMajorLine(version = version))
     # if requested, draw minor grid line
     if (drawMinor) {
       if (partialMinor) {
         which <- match(i, minor$row)
         if (!is.na(which)) {
           cat(latexMinorLine(minor[which, "first"], minor[which, "last"],
-                             theme = theme))
+                             version = version))
         }
-      } else if (i %in% minor) cat(latexMinorLine(theme = theme))
+      } else if (i %in% minor) cat(latexMinorLine(version = version))
     }
   }
   # draw line below table body
-  cat(latexBottomLine(theme = theme))
+  cat(latexBottomLine(version = version))
 
   ## if supplied, write footnotes
   if (writeFootnotes) {
@@ -304,7 +304,7 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
 
   ## write \end{tabular} statement
   cat("\\noalign{\\smallskip}\n")
-  cat(latexEndTabular(theme = theme))
+  cat(latexEndTabular(version = version))
 
 }
 
@@ -325,7 +325,7 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
 #               the number of columns containing auxiliary information, and
 #               the second element giving the number of columns containing
 #               actual results.
-# theme ....... character string specifying whether the table should have the
+# version ..... character string specifying whether the table should have the
 #               appearance of recent SPSS version ("modern") or older ones
 #               ("legacy").
 
@@ -344,8 +344,9 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
 # columns and after the last column.
 
 
-latexBeginTabular <- function(alignment, border, nrow, ncol, theme = "modern") {
-  legacy <- theme == "legacy"
+latexBeginTabular <- function(alignment, border, nrow, ncol,
+                              version = "modern") {
+  legacy <- version == "legacy"
   if (legacy) {
     # specify environment
     environment <- "tabular"
@@ -377,8 +378,8 @@ latexBeginTabular <- function(alignment, border, nrow, ncol, theme = "modern") {
   lines
 }
 
-latexEndTabular <- function(theme = "modern") {
-  environment <- if (theme == "legacy") "tabular" else "NiceTabular"
+latexEndTabular <- function(version = "modern") {
+  environment <- if (version == "legacy") "tabular" else "NiceTabular"
   sprintf("\\end{%s}\n", environment)
 }
 
@@ -429,16 +430,16 @@ latexMulticolumn <- function(text, columns = 1, alignment = "l") {
 #               merged cell.  The default is "c" for centered.
 # left ........ logical vector indicating whether to draw a left border.
 # right ....... logical vector indicating whether to draw a right border.
-# theme ....... character string specifying whether the cell should have the
+# version ..... character string specifying whether the cell should have the
 #               appearance of recent SPSS version ("modern") or older ones
 #               ("legacy").
 
 latexHeaderCell <- function(text = "", columns = 1, alignment = "c",
-                            left = FALSE, right = FALSE, theme = "modern") {
+                            left = FALSE, right = FALSE, version = "modern") {
   # nothing to do for a single cell with an empty string
   if (text == "" && columns == 1) return("")
   # create LaTeX statement
-  if (theme == "legacy") {
+  if (version == "legacy") {
     # if requested, define left and right borders
     left <- if (left) "|" else ""
     right <- if (right) "|" else ""
@@ -470,11 +471,11 @@ latexHeaderCell <- function(text = "", columns = 1, alignment = "c",
 # alignment ... character string containing an alignment specifier for the
 #               merged cell.  The default is "l" for left-aligned.
 
-latexInfoCell <- function(text = "", alignment = "l", theme = "modern") {
+latexInfoCell <- function(text = "", alignment = "l", version = "modern") {
   if (grepl("\n", text, fixed = TRUE)) {
     # currently, vertical alignment is always set to top-alignment
     latexText <- gsub("\n", "\\\\", text, fixed = TRUE)
-    if (theme == "legacy") {
+    if (version == "legacy") {
       sprintf("\\makecell[t%s]{%s}", alignment, latexText)
     } else sprintf("\\Block[%s,t]{}{%s}", alignment, latexText)
   } else text
@@ -548,22 +549,22 @@ latexPartialLine <- function(first, last) {
 }
 
 
-latexTopLine <- latexBottomLine <- function(theme = "modern") {
-  legacy <- theme == "legacy"
+latexTopLine <- latexBottomLine <- function(version = "modern") {
+  legacy <- version == "legacy"
   line <- latexLine()
   if (!legacy) line <- paste0("\\arrayrulecolor{black}", line)
   line
 }
 
-latexMajorLine <- function(theme = "modern") {
-  legacy <- theme == "legacy"
+latexMajorLine <- function(version = "modern") {
+  legacy <- version == "legacy"
   line <- latexLine()
   if (!legacy) line <- paste0("\\arrayrulecolor{darkgraySPSS}", line)
   line
 }
 
-latexMinorLine <- function(first = NULL, last = NULL, theme = "modern") {
-  legacy <- theme == "legacy"
+latexMinorLine <- function(first = NULL, last = NULL, version = "modern") {
+  legacy <- version == "legacy"
   if (is.null(first) || is.null(last)) line <- latexLine()
   else line <- latexPartialLine(first, last)
   if (!legacy) line <- paste0("\\arrayrulecolor{darkgraySPSS}", line)

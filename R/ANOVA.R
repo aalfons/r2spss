@@ -6,8 +6,13 @@
 #' One-way and Two-way ANOVA
 #'
 #' Perform one-way or two-way ANOVA on variables of a data set.  The output is
-#' printed as a LaTeX table that mimics the look of SPSS output (version <24),
-#' and a plot of the results mimics the look of SPSS graphs.
+#' printed as a LaTeX table that mimics the look of SPSS output, and a plot of
+#' the results mimics the look of SPSS graphs.
+#'
+#' The \code{print} method first calls the \code{toSPSS} method followed by
+#' \code{\link[=toLatex.toSPSS]{toLatex}}.  Further customization can be
+#' done by calling those two functions separately, and modifying the object
+#' returned by \code{toSPSS}.
 #'
 #' @param data  a data frame containing the variables.
 #' @param variable  a character string specifying the numeric variable of
@@ -15,17 +20,37 @@
 #' @param group  a character vector specifying one or two grouping variables.
 #' @param conf.level  a number between 0 and 1 giving the confidence level of
 #' the confidence interval.
-#' @param \dots  For the \code{plot} method, additional arguments to be passed
-#' down, in particular graphical parameters (see also \code{\link{linesSPSS}}).
-#' For the \code{print} method, additional arguments are currently ignored.
+#' @param object,x  an object of class \code{"ANOVASPSS"} as returned by function
+#' \code{ANOVA}.
+#' @param statistics  a character string or vector specifying which SPSS tables
+#' to produce.   Available options are \code{"descriptives"} for descriptive
+#' statistics, \code{"variance"} for Levene's test on homogeneity of the
+#' variances, and \code{"test"} for ANOVA results.  For the \code{toSPSS}
+#' method, only one option is allowed (the default is the table of ANOVA
+#' results), but the \code{print} method allows several options (the default
+#' is to print all tables).
+#' @param version  a character string specifying whether the table should
+#' mimic the content and look of recent SPSS versions (\code{"modern"}) or
+#' older versions (<24; \code{"legacy"}).  The main differences are that
+#' recent versions include different variations of Levene's test, and that
+#' small p-values are displayed differently.
+#' @param digits  an integer giving the number of digits after the comma to be
+#' printed in the LaTeX tables.
+#' @param \dots  for  the \code{toSPSS} and \code{print} method, additional
+#' arguments to be passed down to \code{\link{formatSPSS}}.  For the
+#' \code{plot} method, additional arguments to be passed down to
+#' \code{\link{linesSPSS}}, in particular graphical parameters.
 #'
 #' @return
-#' An object of class \code{"ANOVASPSS"} with the following components:
+#' \code{ANOVA} returns an object of class \code{"ANOVASPSS"} with the
+#' following components:
 #' \describe{
 #'   \item{\code{descriptives}}{a data frame containing per-group descriptive
 #'   statistics.}
 #'   \item{\code{levene}}{an object as returned by
-#'   \code{\link[car]{leveneTest}}.}
+#'   \code{\link[car]{leveneTest}} (if \code{version = "legacy"}); or a
+#'   list of such objects containing different variations of Levene's test
+#'   (if \code{version = "modern"}).}
 #'   \item{\code{test}}{a data frame containing the ANOVA table.}
 #'   \item{\code{variable}}{a character string containing the name of the
 #'   numeric variable of interest.}
@@ -40,11 +65,28 @@
 #'   (\code{"one-way"} or \code{"two-way"}).}
 #' }
 #'
+#' The \code{toSPSS} method returns an object of class \code{"toSPSS"} which
+#' contains all relevant information in the required format to produce the
+#' LaTeX table.  See \code{\link[=toLatex.toSPSS]{toLatex}} for possible
+#' components and how to further customize the LaTeX table based on the
+#' returned object.
+#'
 #' The \code{print} method produces a LaTeX table that mimics the look of SPSS
-#' output (version <24).
+#' output.
 #'
 #' The \code{plot} method does not return anything, but produces a profile plot
 #' of the ANOVA results.
+#'
+#' @note
+#' LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
+#' may require several LaTeX compilations to be displayed correctly.
+#'
+#' The test statistic and p-value for Levene's test based on the trimmed mean
+#' (only returned for \code{version = "modern"}) differ slightly from those
+#' returned by SPSS.  Function \code{\link{trimmedMean}} rounds how many
+#' observations to trim in a different manner than base \R's
+#' \code{\link{mean}}, which brings the results closer to those of SPSS, but
+#' they are still not identical.
 #'
 #' @author Andreas Alfons
 #'
@@ -226,6 +268,7 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
 
 
 ## convert R results to all necessary information for SPSS-like table
+#' @rdname ANOVA
 #' @export
 
 toSPSS.ANOVASPSS <- function(object,
@@ -443,35 +486,24 @@ toSPSS.ANOVASPSS <- function(object,
 
 
 #' @rdname ANOVA
-#'
-#' @param x  an object of class \code{"ANOVASPSS"} as returned by function
-#' \code{ANOVA}.
-#' @param digits  an integer giving the number of digits after the comma to be
-#' printed in the LaTeX tables.
-#' @param statistics  a character vector specifying which LaTeX tables should
-#' be printed.  Available options are \code{"descriptives"} for descriptive
-#' statistics, \code{"variance"} for Levene's test on homogeneity of the
-#' variances, and \code{"test"} for ANOVA results.  The default is to print all
-#' tables.
-#'
 #' @export
 
 print.ANOVASPSS <- function(x,
                             statistics = c("descriptives", "variance", "test"),
-                            theme = c("modern", "legacy"), ...) {
+                            version = c("modern", "legacy"), ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  theme <- match.arg(theme)
+  version <- match.arg(version)
 
   ## print LaTeX table for descriptives
   if ("descriptives" %in% statistics) {
     cat("\n")
     # put frequencies into SPSS format
-    spss <- toSPSS(x, statistics = "descriptives", version = theme, ...)
+    spss <- toSPSS(x, statistics = "descriptives", version = version, ...)
     # print LaTeX table
-    toLatex(spss, theme = theme)
+    toLatex(spss, version = version)
     cat("\n")
     count <- count + 1
   }
@@ -481,9 +513,9 @@ print.ANOVASPSS <- function(x,
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
     # put frequencies into SPSS format
-    spss <- toSPSS(x, statistics = "variance", version = theme, ...)
+    spss <- toSPSS(x, statistics = "variance", version = version, ...)
     # print LaTeX table
-    toLatex(spss, theme = theme)
+    toLatex(spss, version = version)
     cat("\n")
   }
 
@@ -492,9 +524,9 @@ print.ANOVASPSS <- function(x,
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
     # put frequencies into SPSS format
-    spss <- toSPSS(x, statistics = "test", version = theme, ...)
+    spss <- toSPSS(x, statistics = "test", version = version, ...)
     # print LaTeX table
-    toLatex(spss, theme = theme)
+    toLatex(spss, version = version)
     cat("\n")
   }
 
