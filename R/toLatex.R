@@ -447,8 +447,16 @@ latexHeaderCell <- function(text = "", columns = 1, alignment = "c",
     sprintf("\\multicolumn{%d}{%s}{%s}", columns, spec, text)
   } else {
     # create \Block statement and use text color 'blueSPSS'
-    sprintf("\\Block[%s]{1-%d}{\\textcolor{blueSPSS}{%s}}",
-            alignment, columns, text)
+    command <- sprintf("\\Block[%s]{1-%d}{\\textcolor{blueSPSS}{%s}}",
+                       alignment, columns, text)
+    # \Block doesn't work like \multicolumn: for proper alignment of the table,
+    # we still need to add column separators '&' for all merged cells
+    if (columns > 1) {
+      suffix <- paste(rep.int("&", columns - 1), collapse = " ")
+      command <- paste(command, suffix)
+    }
+    # return LaTeX statement
+    command
   }
 }
 
