@@ -247,9 +247,6 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
         # part of data frame
         p <- data.frame("Sig. (2-tailed)" = p, row.names = NULL,
                         check.names = FALSE)
-        # part of header
-        pHeader <- as.list("Sig. (2-\ntailed)")
-
       } else {
         # part of data frame
         p <- data.frame("One-Sided p" = p/2, "Two-Sided p" = p,

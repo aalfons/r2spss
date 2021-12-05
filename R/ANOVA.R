@@ -241,19 +241,28 @@ toSPSS.ANOVASPSS <- function(object,
   if (statistics == "descriptives") {
 
     if (object$type == "one-way") {
-      # format table nicely
+      ## format table nicely
       formatted <- formatSPSS(object$descriptives, digits = digits, ...)
-      # construct list defining header layout
-      header <- c("", names(object$descriptives))
-      lower <- which(header == "Lower Bound")
-      upper <- which(header == "Upper Bound")
-      header <- gsub(" ", "\n", header, fixed = TRUE)  # add line breaks
-      ciHeader <- list(header[lower:upper])
-      names(ciHeader) <- paste0(format(100*object$conf.level, digits = digits),
-                                "\\% Confidence\nInterval for Mean")
-      header <- c(as.list(header[seq_len(lower-1)]), ciHeader,
-                  as.list(header[-seq_len(upper)]))
-      # construct list containing all necessary information
+      ## construct header layout
+      cn <- c("", names(object$descriptives))
+      nc <- length(cn)
+      # merged header for confidence interval
+      lower <- grep("Lower", cn)
+      upper <- grep("Upper", cn)
+      ciText <- paste0(format(100*object$conf.level, digits = digits),
+                       "\\% Confidence\nInterval for Mean")
+      # top-level header
+      top <- data.frame(first = c(seq_len(lower-1), lower,
+                                  seq(from = upper+1, to = nc)),
+                        last = c(seq_len(lower-1), upper,
+                                 seq(from = upper+1, to = nc)),
+                        text = c(rep.int("", lower-1), ciText,
+                                 rep.int("", nc-upper)))
+      # bottom-level header
+      bottom <- wrapText(cn, limit = 8)
+      # construct header
+      header <- list(top, bottom)
+      ## construct list containing all necessary information
       spss <- list(table = formatted, main = "Descriptives", sub = sub,
                    header = header, rowNames = TRUE, info = 0)
     } else if (object$type == "two-way") {

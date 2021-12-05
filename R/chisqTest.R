@@ -200,7 +200,11 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
       main <- paste(object$variable[1], "*", object$variable[2],
                     "Crosstabulation")
       # construct list defining header layout
-      header <- list("", "", "", Foreign = colnames(object$observed), "Total")
+      cn <- c("", "", "", colnames(object$observed), "Total")
+      nc <- length(cn)
+      top <- data.frame(first = c(1:3, 4, nc), last = c(1:3, nc-1, nc),
+                        text = c("", "", "", object$variables[2], ""))
+      header <- list(top, cn)
       # define positions for minor grid lines
       minor <- data.frame(row = 2 * seq_len(object$r-1), first = 2,
                           last = c(ncol(crosstab)))
@@ -266,7 +270,7 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
       if (is.null(args$checkInt)) args$checkInt <- c(TRUE, FALSE, FALSE)
       formatted <- do.call(formatSPSS, args)
       # define header with line breaks
-      header <- c("", gsub("Sig.", "Sig.\n", names(chisq), fixed = TRUE))
+      header <- c("", wrapText(names(chisq), limit = 15))
       # define footnote
       footnote <- paste0(nTooSmall, " cells (", sprintf(fmt, pTooSmall),
                          "\\%) have expected count less than 5. ",
