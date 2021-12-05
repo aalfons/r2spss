@@ -52,9 +52,7 @@ parseHeaderLayout.list <- function(object, alignment, left, right, ...) {
 
     # split strings according to line breaks
     firstList <- strsplit(first$text, "\n", fixed = TRUE)
-    # firstList <- lapply(firstList, function(t) if (length(t) == 0) "" else t)
     secondList <- strsplit(second, "\n", fixed = TRUE)
-    # secondList <- lapply(secondList, function(t) if (length(t) == 0) "" else t)
 
     # determine heights of first and second header level
     firstHeight <- vapply(firstList, length, integer(1))
