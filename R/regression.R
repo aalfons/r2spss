@@ -298,7 +298,6 @@ toSPSS.regressionSPSS <- function(object,
       formatted <- do.call(formatSPSS, args)
     }
     # define header with line breaks
-    # header <- gsub("Sum of ", "Sum of\n", names(anovas))
     header <- wrapText(names(anovas), limit = 12)
     header[header == "Type"] <- ""
     # define footnotes

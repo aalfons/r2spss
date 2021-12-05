@@ -355,17 +355,11 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
         # part of data frame
         p <- data.frame("Sig. (2-tailed)" = object$test$p.value,
                         row.names = NULL, check.names = FALSE)
-        # part of header
-        pHeader <- as.list("Sig. (2-\ntailed)")
       } else {
         # part of data frame
         p <- data.frame("One-Sided p" = object$test$p.value/2,
                         "Two-Sided p" = object$test$p.value,
                         row.names = NULL,  check.names = FALSE)
-        # part of header
-        pNames <- wrapText(names(p), limit = wrap)
-        if (wrap < 9) pNames <- gsub("-", "-\n", pNames, fixed = TRUE)
-        pHeader <- list("Significance" = pNames)
       }
       # put test results in SPSS format
       if (object$type == "one-sample") {
@@ -402,36 +396,70 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
         }
         formatted <- do.call(formatSPSS, args)
       }
-      # define part of header for confidence interval
-      header <- wrapText(names(test), limit = wrap)
-      lower <- which(header == "Lower")
-      upper <- which(header == "Upper")
-      ciHeader <- list(header[lower:upper])
-      names(ciHeader) <- paste0(format(100*gamma, digits = digits),
-                                "\\% Confidence\nInterval of the\nDifference")
+      ## construct header
+      cn <- c(if (object$type == "paired" && !legacy) "", "", names(test))
+      # merged header for p-values
+      if (legacy) {
+        onesided <- twosided <- grep("2-tailed", cn, fixed = TRUE)
+        pText <- ""
+      } else {
+        onesided <- grep("One-Sided", cn, fixed = TRUE)
+        twosided <- grep("Two-Sided", cn, fixed = TRUE)
+        pText <- c("Significance")
+      }
+      # merged header for confidence interval
+      lower <- which(cn == "Lower")
+      upper <- which(cn == "Upper")
+      ciText <- paste0(format(100*gamma, digits = digits),
+                       "\\% Confidence\nInterval of the\nDifference")
+      # construct top-level and mid-level header
+      if (object$type == "one-sample") {
+        # top-level
+        topText <- paste("Test Value =",
+                         format(object$test$null.value, digits = digits))
+        top <- data.frame(first = c(1:2), last = c(1, length(cn)),
+                          text = c("", topText))
+        # mid-level
+        middle <- data.frame(first = c(seq_len(onesided-1), onesided,
+                                       seq(from = twosided+1, to = lower-1),
+                                       lower),
+                             last = c(seq_len(onesided-1), twosided,
+                                      seq(from = twosided+1, to = lower-1),
+                                      upper),
+                             text = c(rep.int("", onesided-1), pText,
+                                      rep.int("", lower-twosided-1),
+                                      ciText))
+      } else {
+        blank <- if (object$type == "paired" && !legacy) 2 else 1
+        # top-level
+        top <- data.frame(first = c(seq_len(blank), blank+1,
+                                    seq(from = upper+1, to = onesided-1),
+                                    onesided),
+                          last = c(seq_len(blank), upper,
+                                   seq(from = upper+1, to = onesided-1),
+                                   twosided),
+                          text = c(rep.int("", blank),
+                                   "Paired Differences",
+                                   rep.int("", onesided-upper-1), pText))
+        # mid-level
+        middle <- data.frame(first = c(seq_len(lower-1), lower,
+                                       seq(from = upper+1, to = length(cn))),
+                             last = c(seq_len(lower-1), upper,
+                                      seq(from = upper+1, to = length(cn))),
+                             text = c(rep.int("", lower-1), ciText,
+                                      rep.int("", length(cn)-upper)))
+      }
+      # construct bottom-level header
+      bottom <- c(wrapText(cn, limit = wrap))
+      if (legacy) bottom <- gsub("\n(2-", "(2-\n", bottom, fixed = TRUE)
+      else if (wrap < 9) bottom <- gsub("-", "-\n", bottom, fixed = TRUE)
+      header <- list(top, middle, bottom)
       # construct list containing all necessary information
       if (object$type == "one-sample") {
-        # define header
-        header <- c("", header)
-        header <- c(as.list(header[1:3]), pHeader, as.list(header[4+ncol(p)]),
-                    ciHeader)
-        # construct list
         spss <- list(table = formatted, main = main, header = header,
                      rowNames = TRUE, info = 0, version = version)
       } else if (object$type == "paired") {
-        # define header
-        if (legacy) {
-          header <- c("", header)
-          label <- NULL
-          haveLabel <- FALSE
-        } else {
-          header <- c("", "", header)
-          label <- "Pair 1"
-          haveLabel <- TRUE
-        }
-        header <- c(as.list(header[seq_len(haveLabel+4)]), ciHeader,
-                    as.list(header[haveLabel+(7:8)]), pHeader)
-        # construct list
+        label <- if (!legacy) "Pair 1"
         spss <- list(table = formatted, main = main, label = label,
                      header = header, rowNames = TRUE, info = 0,
                      version = version)
