@@ -68,7 +68,7 @@
 #'
 #' @keywords htest
 #'
-#' @importFrom stats anova aov as.formula lm qt
+#' @importFrom stats anova aov as.formula lm median qt
 #' @importFrom car Anova leveneTest
 #' @export
 
@@ -569,6 +569,7 @@ recodeSPSS <- function(x) {
 ## of observations to trim.  SPSS seems to have a different behavior.  With
 ## rounding to the nearest integer, results for Levene's test based no the
 ## trimmed means are closer to SPSS results, but still not identical.
+#' @importFrom stats median
 #' @export
 
 trimmedMean <- function(x, trim = 0.05) {

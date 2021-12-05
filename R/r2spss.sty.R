@@ -5,6 +5,7 @@
 
 
 ## function to write style file, either to R console or to an actual file
+#' @importFrom utils packageDate packageVersion
 #' @export
 
 r2spss.sty <- function(path = ".") {
