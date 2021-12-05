@@ -13,6 +13,7 @@
 # toLatex <- function(object, ...) UseMethod("toLatex")
 
 #' @importFrom utils toLatex
+#' @export
 
 toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
                                label = NULL, rowNames = TRUE, info = NULL,
@@ -115,8 +116,8 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
   # check major grid lines
   drawMajor <- !is.null(major)
   if (drawMajor) {
-    if (!is.numeric(major) || length(major) == 0) {
-      stop("'footnotes' must be a character vector of nonzero length")
+    if (!is.numeric(major)) {
+      stop("'major' must be an integer vector")
     }
     major <- sort(as.integer(major))
     keep <- (major > 0) & (major < d[1])
@@ -143,7 +144,7 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
       partialMinor <- FALSE
       # perform checks
       if (!is.numeric(minor)) {
-        stop("'footnotes' must be an integer vector or data.frame")
+        stop("'minor' must be an integer vector or data.frame")
       }
       minor <- sort(as.integer(minor))
       keep <- (minor > 0) & (minor < d[1])
