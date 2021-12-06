@@ -2,15 +2,24 @@
 % Please edit documentation in R/chisqTest.R
 \name{chisqTest}
 \alias{chisqTest}
+\alias{toSPSS.chisqTestSPSS}
 \alias{print.chisqTestSPSS}
 \title{\eqn{\chi^{2}}{Chi-squared} Tests}
 \usage{
 chisqTest(data, variables, p = NULL)
 
+\method{toSPSS}{chisqTestSPSS}(
+  object,
+  statistics = c("test", "frequencies"),
+  version = c("modern", "legacy"),
+  digits = c(1, 3),
+  ...
+)
+
 \method{print}{chisqTestSPSS}(
   x,
   statistics = c("frequencies", "test"),
-  theme = c("modern", "legacy"),
+  version = c("modern", "legacy"),
   digits = c(1, 3),
   ...
 )
@@ -27,20 +36,28 @@ for the columns of the crosstabulation).}
 \item{p}{a vector of probabilities for the categories in the
 goodness-of-fit test.}
 
-\item{x}{an object of class \code{"chisqTestSPSS"} as returned by function
-\code{chisqTest}.}
+\item{object, x}{an object of class \code{"chisqTestSPSS"} as returned by
+function \code{chisqTest}.}
 
-\item{statistics}{a character vector specifying which LaTeX tables should
-be printed.  Available options are \code{"frequencies"} for a table of the
-observed and expected frequencies, and \code{"test"} for test results.  The
-default is to print both tables.}
+\item{statistics}{a character string or vector specifying which SPSS tables
+to produce.  Available options are \code{"frequencies"} for a table of the
+observed and expected frequencies, and \code{"test"} for test results.  For
+the \code{toSPSS} method, only one option is allowed (the default is the
+table of test results), but the \code{print} method allows several options
+(the default is to print all tables).}
+
+\item{version}{a character string specifying whether the table should
+mimic the content and look of recent SPSS versions (\code{"modern"}) or
+older versions (<24; \code{"legacy"}).  The main difference in terms of
+content is that small p-values are displayed differently.}
 
 \item{digits}{an integer vector giving the number of digits after the comma
-to be printed in the LaTeX tables.  The first element corresponds to the
-number of digits in the table of frequencies, and the second element
+to be printed in the SPSS tables.  The first element corresponds to the
+number of digits for the expected frequencies, and the second element
 corresponds to the number of digits in the table for the test.}
 
-\item{\dots}{currently ignored.}
+\item{\dots}{additional arguments to be passed down to
+\code{\link{formatSPSS}}.}
 }
 \value{
 An object of class \code{"chisqTestSPSS"} with the following components:
@@ -66,18 +83,33 @@ An object of class \code{"chisqTestSPSS"} with the following components:
   or \code{"independence"}).}
 }
 
+The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+which contains all relevant information in the required format to produce
+the LaTeX table.  See \code{\link[=toLatex.toSPSS]{toLatex}} for possible
+components and how to further customize the LaTeX table based on the
+returned object.
+
 The \code{print} method produces a LaTeX table that mimics the look of SPSS
-output (version <24).
+output.
 }
 \description{
 Perform a \eqn{\chi^{2}}{chi-squared} goodness-of-fit test or a
 \eqn{\chi^{2}}{chi-squared} test on independence on variables of
 a data set.  The output is printed as a LaTeX table that mimics
-the look of SPSS output (version <24).
+the look of SPSS output.
+}
+\details{
+The \code{print} method first calls the \code{toSPSS} method followed by
+\code{\link[=toLatex.toSPSS]{toLatex}}.  Further customization can be
+done by calling those two functions separately, and modifying the object
+returned by \code{toSPSS}.
 }
 \note{
 The test on independence also reports the results of a likelihood
 ratio test.
+
+LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
+may require several LaTeX compilations to be displayed correctly.
 }
 \examples{
 # load data

@@ -2,15 +2,24 @@
 % Please edit documentation in R/kruskalTest.R
 \name{kruskalTest}
 \alias{kruskalTest}
+\alias{toSPSS.kruskalTestSPSS}
 \alias{print.kruskalTestSPSS}
 \title{Kruskal-Wallis Test}
 \usage{
 kruskalTest(data, variable, group)
 
+\method{toSPSS}{kruskalTestSPSS}(
+  object,
+  statistics = c("test", "ranks"),
+  version = c("modern", "legacy"),
+  digits = NULL,
+  ...
+)
+
 \method{print}{kruskalTestSPSS}(
   x,
   statistics = c("ranks", "test"),
-  theme = c("modern", "legacy"),
+  version = c("modern", "legacy"),
   digits = 2:3,
   ...
 )
@@ -23,19 +32,31 @@ interest.}
 
 \item{group}{a character string specifying a grouping variable.}
 
-\item{x}{an object of class \code{"kruskalTestSPSS"} as returned by
+\item{object, x}{an object of class \code{"kruskalTestSPSS"} as returned by
 function \code{kruskalTest}.}
 
-\item{statistics}{a character vector specifying which LaTeX tables should
-be printed.  Available options are \code{"ranks"} for a summary of the ranks
-and \code{"test"} for test results.  The default is to print both tables.}
+\item{statistics}{a character string or vector specifying which SPSS tables
+to produce.  Available options are \code{"ranks"} for a summary of the ranks
+and \code{"test"} for test results.  For the \code{toSPSS} method, only one
+option is allowed (the default is the table of test results), but the
+\code{print} method allows several options (the default is to print all
+tables).}
 
-\item{digits}{an integer vector giving the number of digits after the comma
-to be printed in the LaTeX tables.  The first element corresponds to the
-number of digits in table with the summary of the ranks, and the second
-element corresponds to the number of digits in the table for the test.}
+\item{version}{a character string specifying whether the table should
+mimic the content and look of recent SPSS versions (\code{"modern"}) or
+older versions (<24; \code{"legacy"}).  The main differences in terms of
+content are the label of the test statistic and that small p-values are
+displayed differently.}
 
-\item{\dots}{currently ignored.}
+\item{digits}{for the \code{toSPSS} method, an integer giving the number of
+digits after the comma to be printed in the SPSS table.  For the
+\code{print} method, this should be an integer vector of length 2, with the
+first element corresponding to the number of digits in table with the
+summary of the ranks, and the second element corresponding to the number of
+digits in the table for the test.}
+
+\item{\dots}{additional arguments to be passed down to
+\code{\link{formatSPSS}}.}
 }
 \value{
 An object of class \code{"kruskalTestSPSS"} with the following components:
@@ -50,12 +71,28 @@ An object of class \code{"kruskalTestSPSS"} with the following components:
   grouping variable.}
 }
 
+The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+which contains all relevant information in the required format to produce
+the LaTeX table.  See \code{\link[=toLatex.toSPSS]{toLatex}} for possible
+components and how to further customize the LaTeX table based on the
+returned object.
+
 The \code{print} method produces a LaTeX table that mimics the look of SPSS
-output (version <24).
+output.
 }
 \description{
 Perform a Kruskal-Wallis test on variables of a data set.  The output is
-printed as a LaTeX table that mimics the look of SPSS output (version <24).
+printed as a LaTeX table that mimics the look of SPSS output.
+}
+\details{
+The \code{print} method first calls the \code{toSPSS} method followed by
+\code{\link[=toLatex.toSPSS]{toLatex}}.  Further customization can be
+done by calling those two functions separately, and modifying the object
+returned by \code{toSPSS}.
+}
+\note{
+LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
+may require several LaTeX compilations to be displayed correctly.
 }
 \examples{
 # load data

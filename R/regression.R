@@ -6,37 +6,75 @@
 #' Linear Regression
 #'
 #' Perform linear regression on variables of a data set.  The output is printed
-#' as a LaTeX table that mimics the look of SPSS output (version <24), and plots
-#' of the results mimic the look of SPSS graphs.
+#' as a LaTeX table that mimics the look of SPSS output, and plots of the
+#' results mimic the look of SPSS graphs.
+#'
+#' The \code{print} method first calls the \code{toSPSS} method followed by
+#' \code{\link[=toLatex.toSPSS]{toLatex}}.  Further customization can be
+#' done by calling those two functions separately, and modifying the object
+#' returned by \code{toSPSS}.
 #'
 #' @param \dots  for \code{regression}, at least one formula specifying a
 #' regression model.  Different models can be compared by supplying multiple
-#' formulas.  For the \code{plot} method, additional arguments to be passed
-#' down, in particular graphical parameters (see also \code{\link{histSPSS}}
-#' and \code{\link{plotSPSS}}).  For other methods, this is currently ignored.
+#' formulas.  For  the \code{toSPSS} and \code{print} methods, additional
+#' arguments to be passed down to \code{\link{formatSPSS}}.  For the
+#' \code{plot} method, additional arguments to be passed down to
+#' \code{\link{histSPSS}} or \code{\link{plotSPSS}}, in particular graphical
+#' parameters.  For other methods, this is currently ignored.
 #' @param data  a data frame containing the variables.
 #' @param labels  a character or numeric vector giving labels for the
 #' regression models in the output tables.
+#' @param object,x  an object of class \code{"regressionSPSS"} as returned by
+#' function \code{regression}.
+#' @param statistics  a character string or vector specifying which SPSS tables
+#' to produce.  Available options are \code{"summary"} for model summaries,
+#' \code{"anova"} for ANOVA results, and \code{"estimates"} for estimated
+#' coefficients.  For the \code{toSPSS} method, only one option is allowed
+#' (the default is the table of ANOVA results), but the \code{print} method
+#' allows several options (the default is to print all tables).
 #' @param change  a logical indicating whether tests on the
-#' \eqn{R^2}{R-squared} change should be included in model summaries.
+#' \eqn{R^2}{R-squared} change should be included in the table with model
+#' summaries (if \code{statistics = "summary"}).  The default is \code{FALSE}.
+#' @param version  a character string specifying whether the table should
+#' mimic the content and look of recent SPSS versions (\code{"modern"}) or
+#' older versions (<24; \code{"legacy"}).  The main difference in terms of
+#' content is that small p-values are displayed differently.
+#' @param standardized  a logical indicating whether to return standardized
+#' residuals and fitted values (\code{TRUE}), or residuals and fitted values on
+#' their original scale (\code{FALSE}).
+#' @param y  ignored (only included because it is defined for the generic
+#' function \code{\link[graphics]{plot}}).
+#' @param which  a character string specifying which plot to produce.  Possible
+#' values are \code{"histogram"} for a histogram of the residuals, or
+#' \code{"scatter"} for a scatterplot of the standardized residuals against the
+#' standardized fitted values.
+#' @param main,xlab,ylab  the plot title and axis labels.
 #'
 #' @return  An object of class \code{"regressionSPSS"} with the following
 #' components:
 #' \describe{
 #'   \item{\code{models}}{a list in which each component is an ojbect of class
 #'   \code{"lm"} as returned by function \code{\link[stats]{lm}}.}
+#'   \item{\code{summaries}}{a list in which each component is an ojbect of
+#'   class \code{"summary.lm"} as returned by the
+#'   \code{\link[stats:summary.lm]{summary}} method for objects of class
+#'   \code{"lm"}.}
 #'   \item{\code{response}}{a character string containing the name of the
 #'   response variable.}
 #'   \item{\code{method}}{a character string specifying whether the nested
 #'   models are increasing in dimension by entering additional variables
 #'   (\code{"enter"}) or decreasing in dimension by removing variables
 #'   (\code{"remove"}).}
-#'   \item{\code{change}}{a logical indicating whether tests on the
-#'   \eqn{R^2}{R-squared} change are included in model summaries.}
 #' }
 #'
+#' The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+#' which contains all relevant information in the required format to produce
+#' the LaTeX table.  See \code{\link[=toLatex.toSPSS]{toLatex}} for possible
+#' components and how to further customize the LaTeX table based on the
+#' returned object.
+#'
 #' The \code{print} method produces a LaTeX table that mimics the look of SPSS
-#' output (version <24).
+#' output.
 #'
 #' The \code{coef}, \code{df.residual}, \code{fitted} and \code{residuals}
 #' methods return the coefficients, residual degrees of freedom, fitted
@@ -45,6 +83,10 @@
 #'
 #' Similarly, the \code{plot} method creates the specified plot for the
 #' \emph{last} model.
+#'
+#' @note
+#' LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
+#' may require several LaTeX compilations to be displayed correctly.
 #'
 #' @author Andreas Alfons
 #'
@@ -73,9 +115,8 @@
 #'                                     Foreign,
 #'                    logMarketValue ~ Age + AgeSq + Contract +
 #'                                     Foreign + Position,
-#'                    data = Eredivisie, labels = 2:4,
-#'                    change = TRUE)
-#' fit3                             # print LaTeX table
+#'                    data = Eredivisie, labels = 2:4)
+#' print(fit3, change  = TRUE)      # print LaTeX table
 #' plot(fit3, which = "histogram")  # diagnostic plot
 #'
 #' @keywords multivariate
@@ -83,14 +124,13 @@
 #' @importFrom stats lm model.frame na.pass
 #' @export
 
-regression <- function(..., data, labels = NULL, change = FALSE) {
+regression <- function(..., data, labels = NULL) {
 
   ## initializations
   formulas <- list(...)
   if (is.null(labels)) labels <- seq_along(formulas)
   names(formulas) <- labels
   nFormulas <- length(formulas)
-  change <- isTRUE(change)
   # check if response is the same in all models
   response <- vapply(formulas, function(x) as.character(x[[2]]), character(1))
   response <- unique(response)
@@ -147,18 +187,20 @@ regression <- function(..., data, labels = NULL, change = FALSE) {
 
   ## return results
   out <- list(models=models, summaries=summaries, response=response,
-              method=method, change=change)
+              method=method)
   class(out) <- "regressionSPSS"
   out
 }
 
 
-## convert R results to all necessary information for SPSS-like table
+#' @rdname regression
+#' @importFrom stats aggregate anova model.matrix model.response pf
 #' @export
 
 toSPSS.regressionSPSS <- function(object,
                                   statistics = c("estimates", "anova", "summary"),
-                                  version = c("modern", "legacy"), ...) {
+                                  change = FALSE, version = c("modern", "legacy"),
+                                  ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
@@ -181,7 +223,8 @@ toSPSS.regressionSPSS <- function(object,
   if (statistics == "summary") {
 
     ## initializations
-    wrap <- if(object$change) 90 else 50
+    change <- isTRUE(change)
+    wrap <- if(change) 90 else 50
     ## compute model fit statistics in SPSS format
     rsq <- vapply(summaries, "[[", numeric(1), "r.squared")
     adjrsq <- vapply(summaries, "[[", numeric(1), "adj.r.squared")
@@ -191,7 +234,7 @@ toSPSS.regressionSPSS <- function(object,
                        "Std. Error of the Estimate" = sigma,
                        row.names = labels, check.names = FALSE)
     ## if requested, compute change statistics in SPSS format
-    if (object$change) {
+    if (change) {
       # extract degrees of freedom of each model
       df <- vapply(summaries, function(s) as.integer(s$fstatistic[2:3]),
                    integer(2))
@@ -228,7 +271,7 @@ toSPSS.regressionSPSS <- function(object,
     }
     ## format table nicely
     cn <- c("Model", names(fits))
-    if (object$change && !legacy) {
+    if (change && !legacy) {
       args <- list(fits, ...)
       if (is.null(args$pValue)) {
         args$pValue <- grepl("Sig.", names(fits), fixed = TRUE)
@@ -237,11 +280,11 @@ toSPSS.regressionSPSS <- function(object,
     } else formatted <- formatSPSS(fits, ...)
     ## define header with line breaks
     cn <- c("Model", names(fits))
-    limit <- rep_len(if (object$change) 10 else 15, length(cn))
+    limit <- rep_len(if (change) 10 else 15, length(cn))
     limit[grepl("Adjusted", cn, fixed = TRUE)] <- 9
     header <- wrapText(cn, limit = limit)
     # add a top-level header if we have change statistics
-    if (object$change) {
+    if (change) {
       # top-level header
       first <- which(cn == "R Square Change")
       last <- grep("Sig.", cn)
@@ -262,7 +305,7 @@ toSPSS.regressionSPSS <- function(object,
     spss <- list(table = formatted, main = "Model Summary",
                  header = header, rowNames = TRUE, info = 0,
                  footnotes = footnotes)
-    if (object$change) spss$version <- version
+    if (change) spss$version <- version
 
   } else if (statistics == "anova") {
 
@@ -389,35 +432,26 @@ toSPSS.regressionSPSS <- function(object,
 
 
 #' @rdname regression
-#'
-#' @param x,object  an object of class \code{"regressionSPSS"} as returned by
-#' function \code{regression}.
-#' @param digits  an integer giving the number of digits after the comma to be
-#' printed in the LaTeX tables.
-#' @param statistics  a character vector specifying which LaTeX tables should
-#' be printed.  Available options are \code{"summary"} for model summaries,
-#' \code{"anova"} for ANOVA results, and \code{"estimates"} for estimated
-#' coefficients.  The default is to print all tables.
-#'
-#' @importFrom stats aggregate anova model.matrix model.response pf
 #' @export
 
 print.regressionSPSS <- function(x,
-                            statistics = c("summary", "anova", "estimates"),
-                            theme = c("modern", "legacy"), ...) {
+                                 statistics = c("summary", "anova", "estimates"),
+                                 change = FALSE, version = c("modern", "legacy"),
+                                 ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  theme <- match.arg(theme)
+  version <- match.arg(version)
 
   ## print LaTeX table for descriptives
   if ("summary" %in% statistics) {
     cat("\n")
     # put frequencies into SPSS format
-    spss <- toSPSS(x, statistics = "summary", version = theme, ...)
+    spss <- toSPSS(x, statistics = "summary", change = change,
+                   version = version, ...)
     # print LaTeX table
-    toLatex(spss, theme = theme)
+    toLatex(spss, version = version)
     cat("\n")
     count <- count + 1
   }
@@ -427,9 +461,9 @@ print.regressionSPSS <- function(x,
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
     # put frequencies into SPSS format
-    spss <- toSPSS(x, statistics = "anova", version = theme, ...)
+    spss <- toSPSS(x, statistics = "anova", version = version, ...)
     # print LaTeX table
-    toLatex(spss, theme = theme)
+    toLatex(spss, version = version)
     cat("\n")
   }
 
@@ -438,9 +472,9 @@ print.regressionSPSS <- function(x,
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
     # put frequencies into SPSS format
-    spss <- toSPSS(x, statistics = "estimates", version = theme, ...)
+    spss <- toSPSS(x, statistics = "estimates", version = version, ...)
     # print LaTeX table
-    toLatex(spss, theme = theme)
+    toLatex(spss, version = version)
     cat("\n")
   }
 
@@ -483,11 +517,6 @@ fitted.regressionSPSS <- function(object, standardized = FALSE, ...) {
 
 
 #' @rdname regression
-#'
-#' @param standardized  a logical indicating whether to return standardized
-#' residuals and fitted values (\code{TRUE}), or residuals and fitted values on
-#' their original scale (\code{FALSE}).
-#'
 #' @importFrom stats df.residual
 #' @export
 
@@ -506,15 +535,6 @@ residuals.regressionSPSS <- function(object, standardized = FALSE, ...) {
 
 
 #' @rdname regression
-#'
-#' @param y  ignored (only included because it is defined for the generic
-#' function \code{\link[graphics]{plot}}).
-#' @param which  a character string specifying which plot to produce.  Possible
-#' values are \code{"histogram"} for a histogram of the residuals, or
-#' \code{"scatter"} for a scatterplot of the standardized residuals against the
-#' standardized fitted values.
-#' @param main,xlab,ylab  the plot title and axis labels.
-#'
 #' @export
 
 plot.regressionSPSS <- function(x, y, which = c("histogram", "scatter"),

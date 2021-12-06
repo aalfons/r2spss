@@ -2,12 +2,15 @@
 % Please edit documentation in R/descriptives.R
 \name{descriptives}
 \alias{descriptives}
+\alias{toSPSS.descriptivesSPSS}
 \alias{print.descriptivesSPSS}
 \title{Descriptive Statistics}
 \usage{
 descriptives(data, variables)
 
-\method{print}{descriptivesSPSS}(x, theme = c("modern", "legacy"), ...)
+\method{toSPSS}{descriptivesSPSS}(object, digits = 2, ...)
+
+\method{print}{descriptivesSPSS}(x, version = c("modern", "legacy"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -15,13 +18,18 @@ descriptives(data, variables)
 \item{variables}{a character vector specifying numeric variables for which
 to compute descriptive statistics.}
 
-\item{x}{an object of class \code{"descriptivesSPSS"} as returned by
+\item{object, x}{an object of class \code{"descriptivesSPSS"} as returned by
 function \code{descriptives}.}
 
-\item{\dots}{currently ignored.}
-
 \item{digits}{an integer giving the number of digits after the comma to be
-printed in the LaTeX table.}
+printed in the SPSS table.}
+
+\item{\dots}{additional arguments to be passed down to
+\code{\link{formatSPSS}}.}
+
+\item{version}{a character string specifying whether the table should
+mimic the look of recent SPSS versions (\code{"modern"}) or older versions
+(<24; \code{"legacy"}).}
 }
 \value{
 An object of class \code{"descriptivesSPSS"} with the following components:
@@ -33,13 +41,29 @@ An object of class \code{"descriptivesSPSS"} with the following components:
   \item{\code{n}}{an integer giving the number of observations.}
 }
 
+The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+which contains all relevant information in the required format to produce
+the LaTeX table.  See \code{\link[=toLatex.toSPSS]{toLatex}} for possible
+components and how to further customize the LaTeX table based on the
+returned object.
+
 The \code{print} method produces a LaTeX table that mimics the look of SPSS
-output (version <24).
+output.
 }
 \description{
 Compute descriptive statistics of numeric variables of a data set (number of
 observations, minimum, maximum, mean, standard deviaiton).  The output is
-printed as a LaTeX table that mimics the look of SPSS output (version <24).
+printed as a LaTeX table that mimics the look of SPSS output.
+}
+\details{
+The \code{print} method first calls the \code{toSPSS} method followed by
+\code{\link[=toLatex.toSPSS]{toLatex}}.  Further customization can be
+done by calling those two functions separately, and modifying the object
+returned by \code{toSPSS}.
+}
+\note{
+LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
+may require several LaTeX compilations to be displayed correctly.
 }
 \examples{
 # load data

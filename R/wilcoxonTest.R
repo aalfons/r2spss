@@ -7,8 +7,12 @@
 #'
 #' Perform a Wilcoxon signed rank test for a paired sample or a Wilcoxon rank
 #' sum test for independent samples on variables of a data set.  The output
-#' is printed as a LaTeX table that mimics the look of SPSS output (version
-#' <24).
+#' is printed as a LaTeX table that mimics the look of SPSS output.
+#'
+#' The \code{print} method first calls the \code{toSPSS} method followed by
+#' \code{\link[=toLatex.toSPSS]{toLatex}}.  Further customization can be
+#' done by calling those two functions separately, and modifying the object
+#' returned by \code{toSPSS}.
 #'
 #' @param data  a data frame containing the variables.
 #' @param variables  a character vector specifying numeric variable(s) to be
@@ -23,6 +27,26 @@
 #' should also return the p-value of the exact test.  The default is
 #' \code{FALSE}.  Note that the p-value of the asymptotic test is always
 #' returned.
+#' @param object,x  an object of class \code{"wilcoxonTestSPSS"} as returned by
+#' function \code{wilcoxonTest}.
+#' @param statistics  a character string or vector specifying which SPSS tables
+#' to produce.  Available options are \code{"ranks"} for a summary of the ranks
+#' and \code{"test"} for test results.  For the \code{toSPSS} method, only one
+#' option is allowed (the default is the table of test results), but the
+#' \code{print} method allows several options (the default is to print all
+#' tables).
+#' @param version  a character string specifying whether the table should
+#' mimic the content and look of recent SPSS versions (\code{"modern"}) or
+#' older versions (<24; \code{"legacy"}).  The main difference in terms of
+#' content is that small p-values are displayed differently.
+#' @param digits  for the \code{toSPSS} method, an integer giving the number of
+#' digits after the comma to be printed in the SPSS table.  For the
+#' \code{print} method, this should be an integer vector of length 2, with the
+#' first element corresponding to the number of digits in table with the
+#' summary of the ranks, and the second element corresponding to the number of
+#' digits in the table for the test.
+#' @param \dots additional arguments to be passed down to
+#' \code{\link{formatSPSS}}.
 #'
 #' @return  An object of class \code{"wilcoxonTestSPSS"} with the following
 #' components:
@@ -35,25 +59,35 @@
 #'   relevant numeric variable(s).}
 #'   \item{\code{n}}{an integer giving the number of observations (only
 #'   paired-sample test).}
+#'   \item{\code{u}}{numeric; the Mann-Whitney U test statistic (only
+#'   independent-samples test).}
 #'   \item{\code{w}}{numeric; the Wilcoxon rank sum test statistic (only
 #'   independent-samples test).}
 #'   \item{\code{asymptotic}}{a list containing the results of the Wilcoxon
 #'   rank sum test using the normal approximation (only independent-samples
 #'   test).}
-#'   \item{\code{exact}}{a list containing the test statistic of the exact
-#'   Wilcoxon rank sum test test, and if requested the corresponding p-value
-#'   (only independent-samples test).}
+#'   \item{\code{exact}}{if requested, the corresponding p-value of the exact
+#'   Wilcoxon rank sum test test (only independent-samples test).}
 #'   \item{\code{group}}{a character string containing the name of the
 #'   grouping variable (only independent-samples test).}
 #'   \item{\code{type}}{a character string giving the type of Wilcoxon test
 #'   performed \code{"paired"} or \code{"independent"}).}
 #' }
 #'
+#' The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+#' which contains all relevant information in the required format to produce
+#' the LaTeX table.  See \code{\link[=toLatex.toSPSS]{toLatex}} for possible
+#' components and how to further customize the LaTeX table based on the
+#' returned object.
+#'
 #' The \code{print} method produces a LaTeX table that mimics the look of SPSS
-#' output (version <24).
+#' output.
 #'
 #' @note The Wilcoxon rank sum test also reports the value of the equivalent
 #' Mann-Whitney U test statistic.
+#'
+#' LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
+#' may require several LaTeX compilations to be displayed correctly.
 #'
 #' @author Andreas Alfons
 #'
@@ -169,7 +203,7 @@ wilcoxonTest <- function(data, variables, group = NULL, exact = FALSE) {
 }
 
 
-## convert R results to all necessary information for SPSS-like table
+#' @rdname wilcoxonTest
 #' @export
 
 toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
@@ -294,28 +328,16 @@ toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
 
 
 #' @rdname wilcoxonTest
-#'
-#' @param x  an object of class \code{"wilcoxonTestSPSS"} as returned by
-#' function \code{wilcoxonTest}.
-#' @param digits  an integer vector giving the number of digits after the comma
-#' to be printed in the LaTeX tables.  The first element corresponds to the
-#' number of digits in table with the summary of the ranks, and the second
-#' element corresponds to the number of digits in the table for the test.
-#' @param statistics  a character vector specifying which LaTeX tables should
-#' be printed.  Available options are \code{"ranks"} for a summary of the ranks
-#' and \code{"test"} for test results.  The default is to print both tables.
-#' @param \dots currently ignored.
-#'
 #' @export
 
 print.wilcoxonTestSPSS <- function(x, statistics = c("ranks", "test"),
-                                   theme = c("modern", "legacy"),
+                                   version = c("modern", "legacy"),
                                    digits = 2:3, ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  theme <- match.arg(theme)
+  version <- match.arg(version)
   digits <- rep_len(digits, 2)
 
   ## print LaTeX table for ranks
@@ -323,9 +345,9 @@ print.wilcoxonTestSPSS <- function(x, statistics = c("ranks", "test"),
     cat("\n")
     # put table into SPSS format
     spss <- toSPSS(x, digits = digits[1], statistics = "ranks",
-                   version = theme, ...)
+                   version = version, ...)
     # print LaTeX table
-    toLatex(spss, theme = theme)
+    toLatex(spss, version = version)
     cat("\n")
     count <- count + 1
   }
@@ -336,110 +358,10 @@ print.wilcoxonTestSPSS <- function(x, statistics = c("ranks", "test"),
     else cat("\\medskip\n")
     # put test results into SPSS format
     spss <- toSPSS(x, digits = digits[2], statistics = "test",
-                   version = theme, ...)
+                   version = version, ...)
     # print LaTeX table
-    toLatex(spss, theme = theme)
+    toLatex(spss, version = version)
     cat("\n")
   }
 
 }
-
-# print.wilcoxonTestSPSS <- function(x, statistics = c("ranks", "test"),
-#                                    theme = c("modern", "legacy"),
-#                                    digits = 2:3, ...) {
-#
-#   ## initializations
-#   count <- 0
-#   statistics <- match.arg(statistics, several.ok=TRUE)
-#
-#   ## print LaTeX table for ranks
-#   if ("ranks" %in% statistics) {
-#     formatted <- formatSPSS(x$statistics, digits=digits[1])
-#     # print LaTeX table
-#     cat("\n")
-#     if (x$type == "paired") {
-#       formatted[, "N"] <- paste0(formatted[, "N"], "$^\\text{", c("a", "b"), "}$")
-#       cat("\\begin{tabular}{|ll|r|r|r|}\n")
-#       cat("\\noalign{\\smallskip}\n")
-#       cat("\\multicolumn{5}{c}{\\textbf{Ranks}} \\\\\n")
-#       cat("\\noalign{\\smallskip}\\hline\n")
-#       cat(" & & \\multicolumn{1}{|c|}{N} & \\multicolumn{1}{|c|}{Mean Rank} & \\multicolumn{1}{|c|}{Sum of Ranks} \\\\\n")
-#       cat("\\hline\n")
-#       cat(x$variables[2], "-", x$variables[1], "&", rownames(formatted)[1], "&", paste0(formatted[1, ], collapse=" & "), "\\\\\n")
-#       cat(" &", rownames(formatted)[2], "&", paste(formatted[2, ], collapse=" & "), "\\\\\n")
-#       cat(" & Ties & ", x$n - sum(x$statistics$N), "$^\\text{c}$ & & \\\\\n", sep="")
-#       cat(" & Total &", x$n, "& & \\\\\n")
-#       cat("\\hline\\noalign{\\smallskip}\n")
-#       cat("\\multicolumn{5}{l}{", "a. ", x$variables[2], " < ", x$variables[1], "} \\\\\n", sep="")
-#       cat("\\multicolumn{5}{l}{", "b. ", x$variables[2], " > ", x$variables[1], "} \\\\\n", sep="")
-#       cat("\\multicolumn{5}{l}{", "c. ", x$variables[2], " = ", x$variables[1], "} \\\\\n", sep="")
-#     } else if (x$type == "independent") {
-#       cat("\\begin{tabular}{|ll|r|r|r|}\n")
-#       cat("\\noalign{\\smallskip}\n")
-#       cat("\\multicolumn{5}{c}{\\textbf{Ranks}} \\\\\n")
-#       cat("\\noalign{\\smallskip}\\hline\n")
-#       cat(" &", x$group, "& \\multicolumn{1}{|c|}{N} & \\multicolumn{1}{|c|}{Mean Rank} & \\multicolumn{1}{|c|}{Sum of Ranks} \\\\\n")
-#       cat("\\hline\n")
-#       cat(x$variables, "&", rownames(formatted)[1], "&", paste0(formatted[1, ], collapse=" & "), "\\\\\n")
-#       cat(" &", rownames(formatted)[2], "&", paste0(formatted[2, ], collapse=" & "), "\\\\\n")
-#       cat(" & Total &", sum(x$statistics$N), "& & \\\\\n")
-#       cat("\\hline\\noalign{\\smallskip}\n")
-#     } else stop("type of test not supported")
-#     # finalize LaTeX table
-#     cat("\\end{tabular}\n")
-#     cat("\n")
-#     count <- count + 1
-#   }
-#
-#   ## print LaTeX table for test
-#   if ("test" %in% statistics) {
-#
-#     ## collect output for test
-#     if (x$type == "paired") {
-#       test <- c(x$test$statistic, x$test$p.value)
-#       formatted <- formatSPSS(test, digits=digits[2])
-#       min <- which.min(x$statistics[, "Sum of Ranks"])
-#     } else if (x$type == "independent") {
-#       haveExact <- !is.null(x$exact$p.value)
-#       test <- c(x$exact$statistic, x$w, x$asymptotic$statistic,
-#                 x$asymptotic$p.value, x$exact$p.value)
-#       formatted <- formatSPSS(test, digits=digits[2])
-#     } else stop("type of test not supported")
-#
-#     ## print LaTeX table
-#     if (count == 0) cat("\n")
-#     if (x$type == "paired") {
-#       cat("\\begin{tabular}{|l|r|}\n")
-#       cat("\\noalign{\\smallskip}\n")
-#       cat("\\multicolumn{2}{c}{\\textbf{Test Statistics}$^{\\text{a}}$} \\\\\n")
-#       cat("\\noalign{\\smallskip}\\hline\n")
-#       cat(" & \\multicolumn{1}{|c|}{", paste(x$variables[2], "-", x$variables[1]), "} \\\\\n", sep="")
-#       cat("\\hline\n")
-#       cat("Z & ", formatted[1], "$^\\text{b}$ \\\\\n", sep="")
-#       cat("Asymp. Sig. (2-tailed) &", formatted[2], "\\\\\n")
-#       cat("\\hline\\noalign{\\smallskip}\n")
-#       cat("\\multicolumn{2}{l}{a. Wilcoxon Signed Ranks Test} \\\\\n")
-#       cat("\\multicolumn{2}{l}{b. Based on", c("negative", "positive")[min], "ranks.} \\\\\n")
-#     } else if (x$type == "independent") {
-#       cat("\\begin{tabular}{|l|r|}\n")
-#       cat("\\noalign{\\smallskip}\n")
-#       cat("\\multicolumn{2}{c}{\\textbf{Test Statistics}$^{\\text{a}}$} \\\\\n")
-#       cat("\\noalign{\\smallskip}\\hline\n")
-#       cat(" & \\multicolumn{1}{|c|}{", x$variables, "} \\\\\n", sep="")
-#       cat("\\hline\n")
-#       cat("Mann-Whitney U &", formatted[1], "\\\\\n")
-#       cat("Wilcoxon W &", formatted[2], "\\\\\n")
-#       cat("Z &", formatted[3], "\\\\\n")
-#       cat("Asymp. Sig. (2-tailed) &", formatted[4], "\\\\\n")
-#       if (haveExact) {
-#         cat("Exact Sig. [2*(1-tailed Sig.)] &", formatted[5], "$^\\text{b}$ \\\\\n", sep="")
-#       }
-#       cat("\\hline\\noalign{\\smallskip}\n")
-#       cat("\\multicolumn{2}{l}{a. Grouping Variable: ", x$group, "} \\\\\n", sep="")
-#       cat("\\multicolumn{2}{l}{b. Not corrected for ties.} \\\\\n")
-#     } else stop("type of test not supported")
-#     # finalize LaTeX table
-#     cat("\\end{tabular}\n")
-#     cat("\n")
-#   }
-# }

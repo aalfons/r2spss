@@ -20,10 +20,10 @@
 #' @param group  a character vector specifying one or two grouping variables.
 #' @param conf.level  a number between 0 and 1 giving the confidence level of
 #' the confidence interval.
-#' @param object,x  an object of class \code{"ANOVASPSS"} as returned by function
-#' \code{ANOVA}.
+#' @param object,x  an object of class \code{"ANOVASPSS"} as returned by
+#' function \code{ANOVA}.
 #' @param statistics  a character string or vector specifying which SPSS tables
-#' to produce.   Available options are \code{"descriptives"} for descriptive
+#' to produce.  Available options are \code{"descriptives"} for descriptive
 #' statistics, \code{"variance"} for Levene's test on homogeneity of the
 #' variances, and \code{"test"} for ANOVA results.  For the \code{toSPSS}
 #' method, only one option is allowed (the default is the table of ANOVA
@@ -31,12 +31,12 @@
 #' is to print all tables).
 #' @param version  a character string specifying whether the table should
 #' mimic the content and look of recent SPSS versions (\code{"modern"}) or
-#' older versions (<24; \code{"legacy"}).  The main differences are that
-#' recent versions include different variations of Levene's test, and that
-#' small p-values are displayed differently.
+#' older versions (<24; \code{"legacy"}).  The main differences in terms of
+#' content are that recent versions include different variations of Levene's
+#' test, and that small p-values are displayed differently.
 #' @param digits  an integer giving the number of digits after the comma to be
-#' printed in the LaTeX tables.
-#' @param \dots  for  the \code{toSPSS} and \code{print} method, additional
+#' printed in the SPSS tables.
+#' @param \dots  for  the \code{toSPSS} and \code{print} methods, additional
 #' arguments to be passed down to \code{\link{formatSPSS}}.  For the
 #' \code{plot} method, additional arguments to be passed down to
 #' \code{\link{linesSPSS}}, in particular graphical parameters.
@@ -65,9 +65,9 @@
 #'   (\code{"one-way"} or \code{"two-way"}).}
 #' }
 #'
-#' The \code{toSPSS} method returns an object of class \code{"toSPSS"} which
-#' contains all relevant information in the required format to produce the
-#' LaTeX table.  See \code{\link[=toLatex.toSPSS]{toLatex}} for possible
+#' The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+#' which contains all relevant information in the required format to produce
+#' the LaTeX table.  See \code{\link[=toLatex.toSPSS]{toLatex}} for possible
 #' components and how to further customize the LaTeX table based on the
 #' returned object.
 #'
@@ -78,15 +78,15 @@
 #' of the ANOVA results.
 #'
 #' @note
-#' LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
-#' may require several LaTeX compilations to be displayed correctly.
-#'
 #' The test statistic and p-value for Levene's test based on the trimmed mean
 #' (only returned for \code{version = "modern"}) differ slightly from those
 #' returned by SPSS.  Function \code{\link{trimmedMean}} rounds how many
 #' observations to trim in a different manner than base \R's
 #' \code{\link{mean}}, which brings the results closer to those of SPSS, but
 #' they are still not identical.
+#'
+#' LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
+#' may require several LaTeX compilations to be displayed correctly.
 #'
 #' @author Andreas Alfons
 #'
@@ -267,7 +267,6 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
 }
 
 
-## convert R results to all necessary information for SPSS-like table
 #' @rdname ANOVA
 #' @export
 

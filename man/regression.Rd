@@ -2,6 +2,7 @@
 % Please edit documentation in R/regression.R
 \name{regression}
 \alias{regression}
+\alias{toSPSS.regressionSPSS}
 \alias{print.regressionSPSS}
 \alias{coef.regressionSPSS}
 \alias{df.residual.regressionSPSS}
@@ -10,12 +11,21 @@
 \alias{plot.regressionSPSS}
 \title{Linear Regression}
 \usage{
-regression(..., data, labels = NULL, change = FALSE)
+regression(..., data, labels = NULL)
+
+\method{toSPSS}{regressionSPSS}(
+  object,
+  statistics = c("estimates", "anova", "summary"),
+  change = FALSE,
+  version = c("modern", "legacy"),
+  ...
+)
 
 \method{print}{regressionSPSS}(
   x,
   statistics = c("summary", "anova", "estimates"),
-  theme = c("modern", "legacy"),
+  change = FALSE,
+  version = c("modern", "legacy"),
   ...
 )
 
@@ -40,25 +50,35 @@ regression(..., data, labels = NULL, change = FALSE)
 \arguments{
 \item{\dots}{for \code{regression}, at least one formula specifying a
 regression model.  Different models can be compared by supplying multiple
-formulas.  For the \code{plot} method, additional arguments to be passed
-down, in particular graphical parameters (see also \code{\link{histSPSS}}
-and \code{\link{plotSPSS}}).  For other methods, this is currently ignored.}
+formulas.  For  the \code{toSPSS} and \code{print} methods, additional
+arguments to be passed down to \code{\link{formatSPSS}}.  For the
+\code{plot} method, additional arguments to be passed down to
+\code{\link{histSPSS}} or \code{\link{plotSPSS}}, in particular graphical
+parameters.  For other methods, this is currently ignored.}
 
 \item{data}{a data frame containing the variables.}
 
 \item{labels}{a character or numeric vector giving labels for the
 regression models in the output tables.}
 
-\item{change}{a logical indicating whether tests on the
-\eqn{R^2}{R-squared} change should be included in model summaries.}
-
-\item{x, object}{an object of class \code{"regressionSPSS"} as returned by
+\item{object, x}{an object of class \code{"regressionSPSS"} as returned by
 function \code{regression}.}
 
-\item{statistics}{a character vector specifying which LaTeX tables should
-be printed.  Available options are \code{"summary"} for model summaries,
+\item{statistics}{a character string or vector specifying which SPSS tables
+to produce.  Available options are \code{"summary"} for model summaries,
 \code{"anova"} for ANOVA results, and \code{"estimates"} for estimated
-coefficients.  The default is to print all tables.}
+coefficients.  For the \code{toSPSS} method, only one option is allowed
+(the default is the table of ANOVA results), but the \code{print} method
+allows several options (the default is to print all tables).}
+
+\item{change}{a logical indicating whether tests on the
+\eqn{R^2}{R-squared} change should be included in the table with model
+summaries (if \code{statistics = "summary"}).  The default is \code{FALSE}.}
+
+\item{version}{a character string specifying whether the table should
+mimic the content and look of recent SPSS versions (\code{"modern"}) or
+older versions (<24; \code{"legacy"}).  The main difference in terms of
+content is that small p-values are displayed differently.}
 
 \item{standardized}{a logical indicating whether to return standardized
 residuals and fitted values (\code{TRUE}), or residuals and fitted values on
@@ -73,9 +93,6 @@ values are \code{"histogram"} for a histogram of the residuals, or
 standardized fitted values.}
 
 \item{main, xlab, ylab}{the plot title and axis labels.}
-
-\item{digits}{an integer giving the number of digits after the comma to be
-printed in the LaTeX tables.}
 }
 \value{
 An object of class \code{"regressionSPSS"} with the following
@@ -83,18 +100,26 @@ components:
 \describe{
   \item{\code{models}}{a list in which each component is an ojbect of class
   \code{"lm"} as returned by function \code{\link[stats]{lm}}.}
+  \item{\code{summaries}}{a list in which each component is an ojbect of
+  class \code{"summary.lm"} as returned by the
+  \code{\link[stats:summary.lm]{summary}} method for objects of class
+  \code{"lm"}.}
   \item{\code{response}}{a character string containing the name of the
   response variable.}
   \item{\code{method}}{a character string specifying whether the nested
   models are increasing in dimension by entering additional variables
   (\code{"enter"}) or decreasing in dimension by removing variables
   (\code{"remove"}).}
-  \item{\code{change}}{a logical indicating whether tests on the
-  \eqn{R^2}{R-squared} change are included in model summaries.}
 }
 
+The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+which contains all relevant information in the required format to produce
+the LaTeX table.  See \code{\link[=toLatex.toSPSS]{toLatex}} for possible
+components and how to further customize the LaTeX table based on the
+returned object.
+
 The \code{print} method produces a LaTeX table that mimics the look of SPSS
-output (version <24).
+output.
 
 The \code{coef}, \code{df.residual}, \code{fitted} and \code{residuals}
 methods return the coefficients, residual degrees of freedom, fitted
@@ -106,8 +131,18 @@ Similarly, the \code{plot} method creates the specified plot for the
 }
 \description{
 Perform linear regression on variables of a data set.  The output is printed
-as a LaTeX table that mimics the look of SPSS output (version <24), and plots
-of the results mimic the look of SPSS graphs.
+as a LaTeX table that mimics the look of SPSS output, and plots of the
+results mimic the look of SPSS graphs.
+}
+\details{
+The \code{print} method first calls the \code{toSPSS} method followed by
+\code{\link[=toLatex.toSPSS]{toLatex}}.  Further customization can be
+done by calling those two functions separately, and modifying the object
+returned by \code{toSPSS}.
+}
+\note{
+LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
+may require several LaTeX compilations to be displayed correctly.
 }
 \examples{
 # load data
@@ -134,9 +169,8 @@ fit3 <- regression(logMarketValue ~ Age + AgeSq,
                                     Foreign,
                    logMarketValue ~ Age + AgeSq + Contract +
                                     Foreign + Position,
-                   data = Eredivisie, labels = 2:4,
-                   change = TRUE)
-fit3                             # print LaTeX table
+                   data = Eredivisie, labels = 2:4)
+print(fit3, change  = TRUE)      # print LaTeX table
 plot(fit3, which = "histogram")  # diagnostic plot
 
 }

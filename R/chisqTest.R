@@ -8,7 +8,12 @@
 #' Perform a \eqn{\chi^{2}}{chi-squared} goodness-of-fit test or a
 #' \eqn{\chi^{2}}{chi-squared} test on independence on variables of
 #' a data set.  The output is printed as a LaTeX table that mimics
-#' the look of SPSS output (version <24).
+#' the look of SPSS output.
+#'
+#' The \code{print} method first calls the \code{toSPSS} method followed by
+#' \code{\link[=toLatex.toSPSS]{toLatex}}.  Further customization can be
+#' done by calling those two functions separately, and modifying the object
+#' returned by \code{toSPSS}.
 #'
 #' @param data  a data frame containing the variables.
 #' @param variables  a character vector specifying the categorical variable(s)
@@ -18,6 +23,24 @@
 #' for the columns of the crosstabulation).
 #' @param p  a vector of probabilities for the categories in the
 #' goodness-of-fit test.
+#' @param object,x  an object of class \code{"chisqTestSPSS"} as returned by
+#' function \code{chisqTest}.
+#' @param statistics  a character string or vector specifying which SPSS tables
+#' to produce.  Available options are \code{"frequencies"} for a table of the
+#' observed and expected frequencies, and \code{"test"} for test results.  For
+#' the \code{toSPSS} method, only one option is allowed (the default is the
+#' table of test results), but the \code{print} method allows several options
+#' (the default is to print all tables).
+#' @param version  a character string specifying whether the table should
+#' mimic the content and look of recent SPSS versions (\code{"modern"}) or
+#' older versions (<24; \code{"legacy"}).  The main difference in terms of
+#' content is that small p-values are displayed differently.
+#' @param digits  an integer vector giving the number of digits after the comma
+#' to be printed in the SPSS tables.  The first element corresponds to the
+#' number of digits for the expected frequencies, and the second element
+#' corresponds to the number of digits in the table for the test.
+#' @param \dots additional arguments to be passed down to
+#' \code{\link{formatSPSS}}.
 #'
 #' @return
 #' An object of class \code{"chisqTestSPSS"} with the following components:
@@ -43,11 +66,21 @@
 #'   or \code{"independence"}).}
 #' }
 #'
-#' The \code{print} method produces a LaTeX table that mimics the look of SPSS
-#' output (version <24).
+#' The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+#' which contains all relevant information in the required format to produce
+#' the LaTeX table.  See \code{\link[=toLatex.toSPSS]{toLatex}} for possible
+#' components and how to further customize the LaTeX table based on the
+#' returned object.
 #'
-#' @note The test on independence also reports the results of a likelihood
+#' The \code{print} method produces a LaTeX table that mimics the look of SPSS
+#' output.
+#'
+#' @note
+#' The test on independence also reports the results of a likelihood
 #' ratio test.
+#'
+#' LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
+#' may require several LaTeX compilations to be displayed correctly.
 #'
 #' @author Andreas Alfons
 #'
@@ -142,21 +175,19 @@ chisqTest <- function(data, variables, p = NULL) {
 }
 
 
-## convert R results to all necessary information for SPSS-like table
+#' @rdname chisqTest
 #' @export
 
 toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
                                  version = c("modern", "legacy"),
-                                 digits = NULL, ...) {
+                                 digits = c(1, 3), ...) {
   ## initializations
   statistics <- match.arg(statistics)
+  digits <- rep_len(digits, 2)
 
   ## put requested results into SPSS format
   if (statistics == "frequencies") {
 
-    # initializations
-    if (is.null(digits)) digits <- 1
-    else digits <- digits[1]
     # extract frequencies
     observed <- object$observed
     expected <- object$expected
@@ -170,7 +201,7 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
                                 Residual = observed - expected,
                                 check.names = FALSE)
       # format table nicely
-      formatted <- formatSPSS(frequencies, digits = digits, ...)
+      formatted <- formatSPSS(frequencies, digits = digits[1], ...)
       # construct list containing all necessary information
       spss <- list(table = formatted, main = object$variables,
                    header = TRUE, rowNames = TRUE, info = 0)
@@ -181,7 +212,7 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
       expected <- cbind(expected, Total = rowSums(expected))
       expected <- rbind(expected, Total = colSums(expected))
       # number format for expected counts
-      fmt <- paste0("%.", digits, "f")
+      fmt <- paste0("%.", digits[1], "f")
       # create cross table in SPSS format
       rowNames <- rownames(observed)
       countLabels <- c("Count", "Expected Count")
@@ -217,8 +248,6 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
   } else if (statistics == "test") {
 
     # initializations
-    if (is.null(digits)) digits <- c(3, 1)
-    else digits <- rep_len(digits, 2)
     version <- match.arg(version)
     legacy <- version == "legacy"
     # check too small expected counts
@@ -226,14 +255,14 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
     pTooSmall <- nTooSmall / length(object$expected)
     smallest <- min(object$expected)
     # number format for percentage of cells in footnote
-    fmt <- paste0("%.", digits[2], "f")
+    fmt <- paste0("%.", digits[1], "f")
     # prepare necessary information
     if (object$type == "goodness-of-fit") {
       # extract results
       rn <- c("Chi-Square", "df", "Asymp. Sig.")
       values <- unlist(object$chisq)
       # format results nicely
-      args <- list(values, digits = digits[1], ...)
+      args <- list(values, digits = digits[2], ...)
       if (is.null(args$pValue)) args$pValue <- c(FALSE, FALSE, !legacy)
       if (is.null(args$checkInt)) args$checkInt <- c(FALSE, TRUE, FALSE)
       formatted <- do.call(formatSPSS, args)
@@ -265,7 +294,7 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
                                                       NA_real_),
                           check.names = FALSE, row.names = rn)
       # format table nicely
-      args <- list(chisq, digits = digits[1], ...)
+      args <- list(chisq, digits = digits[2], ...)
       if (is.null(args$pValue)) args$pValue <- c(FALSE, FALSE, !legacy)
       if (is.null(args$checkInt)) args$checkInt <- c(TRUE, FALSE, FALSE)
       formatted <- do.call(formatSPSS, args)
@@ -294,39 +323,26 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
 
 
 #' @rdname chisqTest
-#'
-#' @param x  an object of class \code{"chisqTestSPSS"} as returned by function
-#' \code{chisqTest}.
-#' @param digits  an integer vector giving the number of digits after the comma
-#' to be printed in the LaTeX tables.  The first element corresponds to the
-#' number of digits in the table of frequencies, and the second element
-#' corresponds to the number of digits in the table for the test.
-#' @param statistics  a character vector specifying which LaTeX tables should
-#' be printed.  Available options are \code{"frequencies"} for a table of the
-#' observed and expected frequencies, and \code{"test"} for test results.  The
-#' default is to print both tables.
-#' @param \dots currently ignored.
-#'
 #' @export
 
 print.chisqTestSPSS <- function(x, statistics = c("frequencies", "test"),
-                                theme = c("modern", "legacy"),
+                                version = c("modern", "legacy"),
                                 digits = c(1, 3), ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  theme <- match.arg(theme)
+  version <- match.arg(version)
   digits <- rep_len(digits, 2)
 
   ## print LaTeX table for frequencies
   if ("frequencies" %in% statistics) {
     cat("\n")
     # put frequencies into SPSS format
-    spss <- toSPSS(x, digits = digits[1], statistics = "frequencies",
-                   version = theme, ...)
+    spss <- toSPSS(x, digits = digits, statistics = "frequencies",
+                   version = version, ...)
     # print LaTeX table
-    toLatex(spss, theme = theme)
+    toLatex(spss, version = version)
     cat("\n")
     count <- count + 1
   }
@@ -336,10 +352,10 @@ print.chisqTestSPSS <- function(x, statistics = c("frequencies", "test"),
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
     # put test results into SPSS format
-    spss <- toSPSS(x, digits = rev(digits), statistics = "test",
-                   version = theme, ...)
+    spss <- toSPSS(x, digits = digits, statistics = "test",
+                   version = version, ...)
     # print LaTeX table
-    toLatex(spss, theme = theme)
+    toLatex(spss, version = version)
     cat("\n")
   }
 

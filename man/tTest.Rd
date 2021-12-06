@@ -2,15 +2,24 @@
 % Please edit documentation in R/tTest.R
 \name{tTest}
 \alias{tTest}
+\alias{toSPSS.tTestSPSS}
 \alias{print.tTestSPSS}
 \title{t Tests}
 \usage{
 tTest(data, variables, group = NULL, mu = 0, conf.level = 0.95)
 
+\method{toSPSS}{tTestSPSS}(
+  object,
+  statistics = c("test", "statistics"),
+  version = c("modern", "legacy"),
+  digits = 3,
+  ...
+)
+
 \method{print}{tTestSPSS}(
   x,
   statistics = c("statistics", "test"),
-  theme = c("modern", "legacy"),
+  version = c("modern", "legacy"),
   digits = 3,
   ...
 )
@@ -35,18 +44,29 @@ t test.}
 \item{conf.level}{a number between 0 and 1 giving the confidence level of
 the confidence interval.}
 
-\item{x}{an object of class \code{"tTestSPSS"} as returned by function
-\code{tTest}.}
+\item{object, x}{an object of class \code{"tTestSPSS"} as returned by
+function \code{tTest}.}
 
-\item{statistics}{a character vector specifying which LaTeX tables should
-be printed.  Available options are \code{"statistics"} for descriptive
-statistics and \code{"test"} for test results.  The default is to print both
-tables.}
+\item{statistics}{a character string or vector specifying which SPSS tables
+to produce.  Available options are \code{"statistics"} for descriptive
+statistics and \code{"test"} for test results.  For the \code{toSPSS}
+method, only one option is allowed (the default is the table of test
+results), but the \code{print} method allows several options (the default
+is to print all tables).}
+
+\item{version}{a character string specifying whether the table should
+mimic the content and look of recent SPSS versions (\code{"modern"}) or
+older versions (<24; \code{"legacy"}).  The main differences in terms of
+content are that recent SPSS versions show a one-sided p-value in addition
+to the two-sided p-value, and that small p-values are displayed differently.
+For the paired-sample test, recent versions of SPSS also display a label
+\emph{Pair 1} for the selected pair of variables.}
 
 \item{digits}{an integer giving the number of digits after the comma to be
-printed in the LaTeX tables.}
+printed in the SPSS tables.}
 
-\item{\dots}{currently ignored.}
+\item{\dots}{additional arguments to be passed down to
+\code{\link{formatSPSS}}.}
 }
 \value{
 An object of class \code{"tTestSPSS"} with the following
@@ -74,14 +94,29 @@ components:
   (\code{"one-sample"}, \code{"paired"}, or \code{"independent"}).}
 }
 
+The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+which contains all relevant information in the required format to produce
+the LaTeX table.  See \code{\link[=toLatex.toSPSS]{toLatex}} for possible
+components and how to further customize the LaTeX table based on the
+returned object.
+
 The \code{print} method produces a LaTeX table that mimics the look of SPSS
-output (version <24).
+output.
 }
 \description{
 Perform a one-sample t test, a paired-sample t test or an
 independent-samples t test on variables of a data set.  The output
-is printed as a LaTeX table that mimics the look of SPSS output
-(version <24).
+is printed as a LaTeX table that mimics the look of SPSS output.
+}
+\details{
+The \code{print} method first calls the \code{toSPSS} method followed by
+\code{\link[=toLatex.toSPSS]{toLatex}}.  Further customization can be
+done by calling those two functions separately, and modifying the object
+returned by \code{toSPSS}.
+}
+\note{
+LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
+may require several LaTeX compilations to be displayed correctly.
 }
 \examples{
 ## one-sample and paired-sample t test

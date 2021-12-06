@@ -7,11 +7,25 @@
 #'
 #' Compute descriptive statistics of numeric variables of a data set (number of
 #' observations, minimum, maximum, mean, standard deviaiton).  The output is
-#' printed as a LaTeX table that mimics the look of SPSS output (version <24).
+#' printed as a LaTeX table that mimics the look of SPSS output.
+#'
+#' The \code{print} method first calls the \code{toSPSS} method followed by
+#' \code{\link[=toLatex.toSPSS]{toLatex}}.  Further customization can be
+#' done by calling those two functions separately, and modifying the object
+#' returned by \code{toSPSS}.
 #'
 #' @param data  a data frame containing the variables.
 #' @param variables  a character vector specifying numeric variables for which
 #' to compute descriptive statistics.
+#' @param object,x  an object of class \code{"descriptivesSPSS"} as returned by
+#' function \code{descriptives}.
+#' @param digits  an integer giving the number of digits after the comma to be
+#' printed in the SPSS table.
+#' @param \dots additional arguments to be passed down to
+#' \code{\link{formatSPSS}}.
+#' @param version  a character string specifying whether the table should
+#' mimic the look of recent SPSS versions (\code{"modern"}) or older versions
+#' (<24; \code{"legacy"}).
 #'
 #' @return
 #' An object of class \code{"descriptivesSPSS"} with the following components:
@@ -23,8 +37,18 @@
 #'   \item{\code{n}}{an integer giving the number of observations.}
 #' }
 #'
+#' The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+#' which contains all relevant information in the required format to produce
+#' the LaTeX table.  See \code{\link[=toLatex.toSPSS]{toLatex}} for possible
+#' components and how to further customize the LaTeX table based on the
+#' returned object.
+#'
 #' The \code{print} method produces a LaTeX table that mimics the look of SPSS
-#' output (version <24).
+#' output.
+#'
+#' @note
+#' LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
+#' may require several LaTeX compilations to be displayed correctly.
 #'
 #' @author Andreas Alfons
 #'
@@ -74,7 +98,7 @@ descriptives <- function(data, variables) {
 }
 
 
-## convert R results to all necessary information for SPSS-like table
+#' @rdname descriptives
 #' @export
 
 toSPSS.descriptivesSPSS <- function(object, digits = 2, ...) {
@@ -100,20 +124,13 @@ toSPSS.descriptivesSPSS <- function(object, digits = 2, ...) {
 
 
 #' @rdname descriptives
-#'
-#' @param x  an object of class \code{"descriptivesSPSS"} as returned by
-#' function \code{descriptives}.
-#' @param digits  an integer giving the number of digits after the comma to be
-#' printed in the LaTeX table.
-#' @param \dots currently ignored.
-#'
 #' @export
 
-print.descriptivesSPSS <- function(x, theme = c("modern", "legacy"), ...) {
+print.descriptivesSPSS <- function(x, version = c("modern", "legacy"), ...) {
   # initializations
-  theme <- match.arg(theme)
+  version <- match.arg(version)
   # put table of results into SPSS format
   spss <- toSPSS(x, ...)
   # print LaTeX table
-  toLatex(spss, theme = theme)
+  toLatex(spss, version = version)
 }

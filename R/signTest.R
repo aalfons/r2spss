@@ -6,8 +6,12 @@
 #' Sign Test
 #'
 #' Perform a sign test for a paired sample on variables of a data set.  The
-#' output is printed as a LaTeX table that mimics the look of SPSS output
-#' (version <24).
+#' output is printed as a LaTeX table that mimics the look of SPSS output.
+#'
+#' The \code{print} method first calls the \code{toSPSS} method followed by
+#' \code{\link[=toLatex.toSPSS]{toLatex}}.  Further customization can be
+#' done by calling those two functions separately, and modifying the object
+#' returned by \code{toSPSS}.
 #'
 #' @param data  a data frame containing the variables.
 #' @param variables  a character vector specifying two numeric variables
@@ -15,6 +19,20 @@
 #' @param exact  a logical indicating whether or not to include the exact
 #' p-value using the binomial distribution.  Note that the p-value using the
 #' normal approximation is always reported.
+#' @param object,x  an object of class \code{"signTestSPSS"} as returned by
+#' function \code{signTest}.
+#' @param statistics  a character string or vector specifying which SPSS tables
+#' to produce.   Available options are \code{"frequencies"} for a summary of
+#' the frequencies and \code{"test"} for test results.  For the \code{toSPSS}
+#' method, only one option is allowed (the default is the table of test
+#' results), but the \code{print} method allows several options (the default
+#' is to print all tables).
+#' @param version  a character string specifying whether the table should
+#' mimic the content and look of recent SPSS versions (\code{"modern"}) or
+#' older versions (<24; \code{"legacy"}).  The main difference in terms of
+#' content is that small p-values are displayed differently.
+#' @param \dots additional arguments to be passed down to
+#' \code{\link{formatSPSS}}.
 #'
 #' @return  An object of class \code{"signTestSPSS"} with the following
 #' components:
@@ -31,8 +49,18 @@
 #'   \item{\code{n}}{an integer giving the number of observations.}
 #' }
 #'
+#' The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+#' which contains all relevant information in the required format to produce
+#' the LaTeX table.  See \code{\link[=toLatex.toSPSS]{toLatex}} for possible
+#' components and how to further customize the LaTeX table based on the
+#' returned object.
+#'
 #' The \code{print} method produces a LaTeX table that mimics the look of SPSS
-#' output (version <24).
+#' output.
+#'
+#' @note
+#' LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
+#' may require several LaTeX compilations to be displayed correctly.
 #'
 #' @author Andreas Alfons
 #'
@@ -89,7 +117,7 @@ signTest <- function(data, variables, exact = FALSE) {
 }
 
 
-## convert R results to all necessary information for SPSS-like table
+#' @rdname signTest
 #' @export
 
 toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
@@ -161,34 +189,23 @@ toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
 }
 
 #' @rdname signTest
-#'
-#' @param x  an object of class \code{"signTestSPSS"} as returned by function
-#' \code{signTest}.
-#' @param digits  an integer giving the number of digits after the comma to be
-#' printed in the LaTeX tables.
-#' @param statistics  a character vector specifying which LaTeX tables should
-#' be printed.  Available options are \code{"frequencies"} for a summary of the
-#' frequencies and \code{"test"} for test results.  The default is to print
-#' both tables.
-#' @param \dots currently ignored.
-#'
 #' @export
 
 print.signTestSPSS <- function(x, statistics = c("frequencies", "test"),
-                               theme = c("modern", "legacy"), ...) {
+                               version = c("modern", "legacy"), ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  theme <- match.arg(theme)
+  version <- match.arg(version)
 
   ## print LaTeX table for ranks
   if ("frequencies" %in% statistics) {
     cat("\n")
     # put table into SPSS format
-    spss <- toSPSS(x, statistics = "frequencies", version = theme, ...)
+    spss <- toSPSS(x, statistics = "frequencies", version = version, ...)
     # print LaTeX table
-    toLatex(spss, theme = theme)
+    toLatex(spss, version = version)
     cat("\n")
     count <- count + 1
   }
@@ -198,9 +215,9 @@ print.signTestSPSS <- function(x, statistics = c("frequencies", "test"),
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
     # put test results into SPSS format
-    spss <- toSPSS(x, statistics = "test", version = theme, ...)
+    spss <- toSPSS(x, statistics = "test", version = version, ...)
     # print LaTeX table
-    toLatex(spss, theme = theme)
+    toLatex(spss, version = version)
     cat("\n")
   }
 

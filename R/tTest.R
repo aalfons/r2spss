@@ -7,8 +7,12 @@
 #'
 #' Perform a one-sample t test, a paired-sample t test or an
 #' independent-samples t test on variables of a data set.  The output
-#' is printed as a LaTeX table that mimics the look of SPSS output
-#' (version <24).
+#' is printed as a LaTeX table that mimics the look of SPSS output.
+#'
+#' The \code{print} method first calls the \code{toSPSS} method followed by
+#' \code{\link[=toLatex.toSPSS]{toLatex}}.  Further customization can be
+#' done by calling those two functions separately, and modifying the object
+#' returned by \code{toSPSS}.
 #'
 #' @param data  a data frame containing the variables.
 #' @param variables  a character vector specifying numeric variable(s) to be
@@ -24,6 +28,25 @@
 #' t test.
 #' @param conf.level  a number between 0 and 1 giving the confidence level of
 #' the confidence interval.
+#' @param object,x  an object of class \code{"tTestSPSS"} as returned by
+#' function \code{tTest}.
+#' @param statistics  a character string or vector specifying which SPSS tables
+#' to produce.  Available options are \code{"statistics"} for descriptive
+#' statistics and \code{"test"} for test results.  For the \code{toSPSS}
+#' method, only one option is allowed (the default is the table of test
+#' results), but the \code{print} method allows several options (the default
+#' is to print all tables).
+#' @param version  a character string specifying whether the table should
+#' mimic the content and look of recent SPSS versions (\code{"modern"}) or
+#' older versions (<24; \code{"legacy"}).  The main differences in terms of
+#' content are that recent SPSS versions show a one-sided p-value in addition
+#' to the two-sided p-value, and that small p-values are displayed differently.
+#' For the paired-sample test, recent versions of SPSS also display a label
+#' \emph{Pair 1} for the selected pair of variables.
+#' @param digits  an integer giving the number of digits after the comma to be
+#' printed in the SPSS tables.
+#' @param \dots additional arguments to be passed down to
+#' \code{\link{formatSPSS}}.
 #'
 #' @return  An object of class \code{"tTestSPSS"} with the following
 #' components:
@@ -50,8 +73,18 @@
 #'   (\code{"one-sample"}, \code{"paired"}, or \code{"independent"}).}
 #' }
 #'
+#' The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+#' which contains all relevant information in the required format to produce
+#' the LaTeX table.  See \code{\link[=toLatex.toSPSS]{toLatex}} for possible
+#' components and how to further customize the LaTeX table based on the
+#' returned object.
+#'
 #' The \code{print} method produces a LaTeX table that mimics the look of SPSS
-#' output (version <24).
+#' output.
+#'
+#' @note
+#' LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
+#' may require several LaTeX compilations to be displayed correctly.
 #'
 #' @author Andreas Alfons
 #'
@@ -171,7 +204,8 @@ tTest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
 }
 
 
-## convert R results to all necessary information for SPSS-like table
+#' @rdname tTest
+#' @importFrom stats qt
 #' @export
 
 toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
@@ -476,36 +510,24 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
 
 
 #' @rdname tTest
-#'
-#' @param x  an object of class \code{"tTestSPSS"} as returned by function
-#' \code{tTest}.
-#' @param digits  an integer giving the number of digits after the comma to be
-#' printed in the LaTeX tables.
-#' @param statistics  a character vector specifying which LaTeX tables should
-#' be printed.  Available options are \code{"statistics"} for descriptive
-#' statistics and \code{"test"} for test results.  The default is to print both
-#' tables.
-#' @param \dots currently ignored.
-#'
-#' @importFrom stats qt
 #' @export
 
 print.tTestSPSS <- function(x, statistics = c("statistics", "test"),
-                            theme = c("modern", "legacy"), digits = 3, ...) {
+                            version = c("modern", "legacy"), digits = 3, ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  theme <- match.arg(theme)
+  version <- match.arg(version)
 
   ## print LaTeX table for ranks
   if ("statistics" %in% statistics) {
     cat("\n")
     # put table into SPSS format
     spss <- toSPSS(x, digits = digits, statistics = "statistics",
-                   version = theme, ...)
+                   version = version, ...)
     # print LaTeX table
-    toLatex(spss, theme = theme)
+    toLatex(spss, version = version)
     cat("\n")
     count <- count + 1
   }
@@ -516,140 +538,10 @@ print.tTestSPSS <- function(x, statistics = c("statistics", "test"),
     else cat("\\medskip\n")
     # put test results into SPSS format
     spss <- toSPSS(x, digits = digits, statistics = "test",
-                   version = theme, ...)
+                   version = version, ...)
     # print LaTeX table
-    toLatex(spss, theme = theme)
+    toLatex(spss, version = version)
     cat("\n")
   }
 
 }
-
-# print.tTestSPSS <- function(x, digits = 3,
-#                             statistics = c("statistics", "test"),
-#                             ...) {
-#
-#   ## initializations
-#   count <- 0
-#   statistics <- match.arg(statistics, several.ok=TRUE)
-#
-#   ## print LaTeX table for test
-#   if ("test" %in% statistics) {
-#
-#     ## collect output for test
-#     if (x$type == "one-sample") {
-#       est <- x$test$estimate
-#       mu <- x$test$null.value
-#       ci <- x$test$conf.int - mu
-#       gamma <- attr(ci, "conf.level")
-#       test <- data.frame(t=x$test$statistic, df=as.integer(x$test$parameter),
-#                          "Sig."=x$test$p.value, "Mean Difference"=est-mu,
-#                          Lower=ci[1], Upper=ci[2], check.names=FALSE,
-#                          row.names=x$variables)
-#       formatted <- formatSPSS(test, digits=digits)
-#     } else if (x$type == "paired") {
-#       df <- as.integer(x$test$parameter)
-#       ci <- x$test$conf.int
-#       gamma <- attr(ci, "conf.level")
-#       alpha <- 1 - gamma
-#       se <- diff(ci) / (2 * qt(1-alpha/2, df=df))
-#       sd <- se * sqrt(x$n)
-#       rn <- paste0(x$variables, collapse=" - ")
-#       test <- data.frame(Mean=x$test$estimate, "Std. Deviation"=sd,
-#                          "Std. Error Mean"=se, Lower=ci[1], Upper=ci[2],
-#                          t=x$test$statistic, df=df, "Sig."=x$test$p.value,
-#                          check.names=FALSE, row.names=rn)
-#       formatted <- formatSPSS(test, digits=digits)
-#     } else if (x$type == "independent") {
-#       levene <- data.frame("F"=x$levene[, "F value"],
-#                            "Sig."=x$levene[, "Pr(>F)"],
-#                            check.names=FALSE, row.names=NULL)
-#       # equal variances assumed
-#       est <- x$pooled$estimate[1] - x$pooled$estimate[2]
-#       df <- as.integer(x$pooled$parameter)
-#       ci <- x$pooled$conf.int
-#       gamma <- attr(ci, "conf.level")
-#       alpha <- 1 - gamma
-#       se <- diff(ci) / (2 * qt(1-alpha/2, df=df))
-#       pooled <- data.frame(t=x$pooled$statistic, df=df, "Sig."=x$pooled$p.value,
-#                            "Mean Difference"=est, "Std. Error Difference"=se,
-#                            Lower=ci[1], Upper=ci[2], check.names=FALSE,
-#                            row.names=NULL)
-#       # equal variances not assumed
-#       est <- x$satterthwaite$estimate[1] - x$satterthwaite$estimate[2]
-#       df <- x$satterthwaite$parameter
-#       ci <- x$satterthwaite$conf.int
-#       gamma <- attr(ci, "conf.level")
-#       alpha <- 1 - gamma
-#       se <- diff(ci) / (2 * qt(1-alpha/2, df=df))
-#       satterthwaite <- data.frame(t=x$satterthwaite$statistic, df=df,
-#                                   "Sig."=x$satterthwaite$p.value,
-#                                   "Mean Difference"=est,
-#                                   "Std. Error Difference"=se,
-#                                   Lower=ci[1], Upper=ci[2],
-#                                   check.names=FALSE, row.names=NULL)
-#       # combine tests
-#       formatted <- rbind(formatSPSS(pooled, digits=digits),
-#                          formatSPSS(satterthwaite, digits=digits))
-#       formatted <- cbind(formatSPSS(levene, digits=digits), formatted)
-#     } else stop("type of test not supported")
-#
-#     ## print LaTeX table
-#     if (count == 0) cat("\n")
-#     if (x$type == "one-sample") {
-#       cat("\\begin{tabular}{|l|r|r|r|r|r|r|}\n")
-#       cat("\\noalign{\\smallskip}\n")
-#       cat("\\multicolumn{7}{c}{\\textbf{One-Sample Test}} \\\\\n")
-#       cat("\\noalign{\\smallskip}\\hline\n")
-#       cat(" & \\multicolumn{6}{|c|}{Test Value = ", format(x$test$null.value, digits=digits), "} \\\\\n", sep="")
-#       cat("\\cline{2-7}\n")
-#       cat(" & & & & & \\multicolumn{2}{|c|}{", format(100*gamma, digits=digits), "\\% Confidence} \\\\\n", sep="")
-#       cat(" & & & & & \\multicolumn{2}{|c|}{Interval of the} \\\\\n")
-#       cat(" & & & \\multicolumn{1}{|c|}{Sig. (2-} & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{2}{|c|}{Difference} \\\\\n")
-#       cat("\\cline{6-7}\n")
-#       cat(" & \\multicolumn{1}{|c|}{t} & \\multicolumn{1}{|c|}{df} & \\multicolumn{1}{|c|}{tailed)} & \\multicolumn{1}{|c|}{Difference} & \\multicolumn{1}{|c|}{Lower} & \\multicolumn{1}{|c|}{Upper} \\\\\n")
-#       cat("\\hline\n")
-#       cat(rownames(formatted), "&", paste0(formatted, collapse=" & "), "\\\\\n")
-#     } else if (x$type == "paired") {
-#       cat("\\begin{tabular}{|l|r|r|r|r|r|r|r|r|}\n")
-#       cat("\\noalign{\\smallskip}\n")
-#       cat("\\multicolumn{9}{c}{\\textbf{Paired Samples Test}} \\\\\n")
-#       cat("\\noalign{\\smallskip}\\hline\n")
-#       cat(" & \\multicolumn{5}{|c|}{Paired Differences} & & & \\\\\n", sep="")
-#       cat("\\cline{2-6}\n")
-#       cat(" & & & & \\multicolumn{2}{|c|}{", format(100*gamma, digits=digits), "\\% Confidence} & & & \\\\\n", sep="")
-#       cat(" & & & \\multicolumn{1}{|c|}{Std.} & \\multicolumn{2}{|c|}{Interval of the} & & & \\\\\n")
-#       cat(" & & \\multicolumn{1}{|c|}{Std.} & \\multicolumn{1}{|c|}{Error} & \\multicolumn{2}{|c|}{Difference} & & & \\multicolumn{1}{|c|}{Sig. (2-} \\\\\n")
-#       cat("\\cline{5-6}\n")
-#       cat(" & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Deviation} & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Lower} & \\multicolumn{1}{|c|}{Upper} & \\multicolumn{1}{|c|}{t} & \\multicolumn{1}{|c|}{df} & \\multicolumn{1}{|c|}{tailed)} \\\\\n")
-#       cat("\\hline\n")
-#       cat(rownames(formatted), "&", paste0(formatted, collapse=" & "), "\\\\\n")
-#     } else if (x$type == "independent") {
-#       cat("\\begin{tabular}{|ll|r|r|r|r|r|r|r|r|r|}\n")
-#       cat("\\noalign{\\smallskip}\n")
-#       cat("\\multicolumn{11}{c}{\\textbf{Independent Samples Test}} \\\\\n")
-#       cat("\\noalign{\\smallskip}\\hline\n")
-#       cat(" & & \\multicolumn{2}{|c|}{Levene's Test} & \\multicolumn{7}{|c|}{} \\\\\n", sep="")
-#       cat(" & & \\multicolumn{2}{|c|}{for Equality} & \\multicolumn{7}{|c|}{} \\\\\n", sep="")
-#       cat(" & & \\multicolumn{2}{|c|}{of Variances} & \\multicolumn{7}{|c|}{t-test for Equality of Means} \\\\\n", sep="")
-#       cat("\\cline{3-11}\n")
-#       cat(" & & & & & & & & & \\multicolumn{2}{|c|}{", format(100*gamma, digits=digits), "\\% Confidence} \\\\\n", sep="")
-#       cat(" & & & & & & & & & \\multicolumn{2}{|c|}{Interval of the} \\\\\n")
-#       cat(" & & & & & & \\multicolumn{1}{|c|}{Sig. (2-} & \\multicolumn{1}{|c|}{Mean} & \\multicolumn{1}{|c|}{Std. Error} & \\multicolumn{2}{|c|}{Difference} \\\\\n")
-#       cat("\\cline{10-11}\n")
-#       cat(" & & \\multicolumn{1}{|c|}{F} & \\multicolumn{1}{|c|}{Sig.} & \\multicolumn{1}{|c|}{t} & \\multicolumn{1}{|c|}{df} & \\multicolumn{1}{|c|}{tailed)} & \\multicolumn{1}{|c|}{Difference} & \\multicolumn{1}{|c|}{Difference} & \\multicolumn{1}{|c|}{Lower} & \\multicolumn{1}{|c|}{Upper} \\\\\n")
-#       cat("\\hline\n")
-#       cat(x$variables, "& Equal &", paste0(formatted[1,], collapse=" & "), "\\\\\n")
-#       cat(" & variances & & & & & & & & & \\\\\n")
-#       cat(" & assumed & & & & & & & & & \\\\\n")
-#       cat("\\hline\n")
-#       cat(" & Equal &", paste0(formatted[2,], collapse=" & "), "\\\\\n")
-#       cat(" & variances & & & & & & & & & \\\\\n")
-#       cat(" & not & & & & & & & & & \\\\\n")
-#       cat(" & assumed & & & & & & & & & \\\\\n")
-#     } else stop("type of test not supported")
-#     # finalize LaTeX table
-#     cat("\\hline\\noalign{\\smallskip}\n")
-#     cat("\\end{tabular}\n")
-#     cat("\n")
-#   }
-# }

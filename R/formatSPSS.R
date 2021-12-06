@@ -6,11 +6,27 @@
 #' Format Objects
 #'
 #' Format an object for printing, mostly used to print numeric data in the same
-#' way as SPSS.  This is mainly for internal use in \code{\link{print}} methods.
+#' way as SPSS.  This is mainly for internal use in \code{\link{toSPSS}} and
+#' \code{\link{print}} methods.
 #'
 #' @param object  an \R object.  Currently methods are implemented
 #' for vectors, matrices, and data frames.  The default method calls
 #' \code{\link{as.character}}.
+#' @param digits  an integer giving the number of digits after the comma to
+#' display.
+#' @param pValue  a logical indicating whether small positive values should be
+#' indicated as below the threshold defined by \code{digits}, e.g.,
+#' \code{"<.001"} if \code{digits = 3}.  This is used for formatting p-values
+#' in LaTeX tables that mimic the look of SPSS.  For the \code{"numeric"}
+#' method, a logical vector indicates the behavior for each element of
+#' \code{object}.  For the \code{"matrix"} or \code{"data.frame"} methods, a
+#' logical vector indicates the behavior for each column of \code{object}.
+#' @param checkInt  a logical indicating whether to check for integer values
+#' and format them as such, e.g., to format the integer \code{2} as \code{"2"}
+#' instead of \code{"2.000"} if \code{digits = 3}.  For the \code{"numeric"}
+#' method, a logical vector indicates the behavior for each element of
+#' \code{object}.  For the \code{"matrix"} or \code{"data.frame"} methods, a
+#' logical vector indicates the behavior for each column of \code{object}.
 #' @param \dots  additional arguments passed down to methods.
 #'
 #' @return A character vector, matrix, or data frame containing the formatted
@@ -51,10 +67,6 @@ formatSPSS.integer <- function(object, ...) {
 
 
 #' @rdname formatSPSS
-#'
-#' @param digits  an integer giving the number of digits after the comma to
-#' display.
-#'
 #' @export
 
 formatSPSS.numeric <- function(object, digits = 3, pValue = FALSE,

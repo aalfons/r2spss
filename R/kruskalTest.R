@@ -6,12 +6,38 @@
 #' Kruskal-Wallis Test
 #'
 #' Perform a Kruskal-Wallis test on variables of a data set.  The output is
-#' printed as a LaTeX table that mimics the look of SPSS output (version <24).
+#' printed as a LaTeX table that mimics the look of SPSS output.
+#'
+#' The \code{print} method first calls the \code{toSPSS} method followed by
+#' \code{\link[=toLatex.toSPSS]{toLatex}}.  Further customization can be
+#' done by calling those two functions separately, and modifying the object
+#' returned by \code{toSPSS}.
 #'
 #' @param data  a data frame containing the variables.
 #' @param variable  a character string specifying the numeric variable of
 #' interest.
 #' @param group  a character string specifying a grouping variable.
+#' @param object,x  an object of class \code{"kruskalTestSPSS"} as returned by
+#' function \code{kruskalTest}.
+#' @param statistics  a character string or vector specifying which SPSS tables
+#' to produce.  Available options are \code{"ranks"} for a summary of the ranks
+#' and \code{"test"} for test results.  For the \code{toSPSS} method, only one
+#' option is allowed (the default is the table of test results), but the
+#' \code{print} method allows several options (the default is to print all
+#' tables).
+#' @param version  a character string specifying whether the table should
+#' mimic the content and look of recent SPSS versions (\code{"modern"}) or
+#' older versions (<24; \code{"legacy"}).  The main differences in terms of
+#' content are the label of the test statistic and that small p-values are
+#' displayed differently.
+#' @param digits  for the \code{toSPSS} method, an integer giving the number of
+#' digits after the comma to be printed in the SPSS table.  For the
+#' \code{print} method, this should be an integer vector of length 2, with the
+#' first element corresponding to the number of digits in table with the
+#' summary of the ranks, and the second element corresponding to the number of
+#' digits in the table for the test.
+#' @param \dots additional arguments to be passed down to
+#' \code{\link{formatSPSS}}.
 #'
 #' @return
 #' An object of class \code{"kruskalTestSPSS"} with the following components:
@@ -26,8 +52,18 @@
 #'   grouping variable.}
 #' }
 #'
+#' The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+#' which contains all relevant information in the required format to produce
+#' the LaTeX table.  See \code{\link[=toLatex.toSPSS]{toLatex}} for possible
+#' components and how to further customize the LaTeX table based on the
+#' returned object.
+#'
 #' The \code{print} method produces a LaTeX table that mimics the look of SPSS
-#' output (version <24).
+#' output.
+#'
+#' @note
+#' LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
+#' may require several LaTeX compilations to be displayed correctly.
 #'
 #' @author Andreas Alfons
 #'
@@ -80,7 +116,7 @@ kruskalTest <- function(data, variable, group) {
 }
 
 
-## convert R results to all necessary information for SPSS-like table
+#' @rdname kruskalTest
 #' @export
 
 toSPSS.kruskalTestSPSS <- function(object, statistics = c("test", "ranks"),
@@ -147,28 +183,16 @@ toSPSS.kruskalTestSPSS <- function(object, statistics = c("test", "ranks"),
 
 
 #' @rdname kruskalTest
-#'
-#' @param x  an object of class \code{"kruskalTestSPSS"} as returned by
-#' function \code{kruskalTest}.
-#' @param digits  an integer vector giving the number of digits after the comma
-#' to be printed in the LaTeX tables.  The first element corresponds to the
-#' number of digits in table with the summary of the ranks, and the second
-#' element corresponds to the number of digits in the table for the test.
-#' @param statistics  a character vector specifying which LaTeX tables should
-#' be printed.  Available options are \code{"ranks"} for a summary of the ranks
-#' and \code{"test"} for test results.  The default is to print both tables.
-#' @param \dots currently ignored.
-#'
 #' @export
 
 print.kruskalTestSPSS <- function(x, statistics = c("ranks", "test"),
-                                  theme = c("modern", "legacy"),
+                                  version = c("modern", "legacy"),
                                   digits = 2:3, ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  theme <- match.arg(theme)
+  version <- match.arg(version)
   digits <- rep_len(digits, 2)
 
   ## print LaTeX table for ranks
@@ -176,9 +200,9 @@ print.kruskalTestSPSS <- function(x, statistics = c("ranks", "test"),
     cat("\n")
     # put table into SPSS format
     spss <- toSPSS(x, digits = digits[1], statistics = "ranks",
-                   version = theme, ...)
+                   version = version, ...)
     # print LaTeX table
-    toLatex(spss, theme = theme)
+    toLatex(spss, version = version)
     cat("\n")
     count <- count + 1
   }
@@ -189,9 +213,9 @@ print.kruskalTestSPSS <- function(x, statistics = c("ranks", "test"),
     else cat("\\medskip\n")
     # put test results into SPSS format
     spss <- toSPSS(x, digits = digits[2], statistics = "test",
-                   version = theme, ...)
+                   version = version, ...)
     # print LaTeX table
-    toLatex(spss, theme = theme)
+    toLatex(spss, version = version)
     cat("\n")
   }
 
