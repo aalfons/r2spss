@@ -24,10 +24,21 @@ affiliations:
 
 With a focus on creating teaching materials, the add-on package `r2spss` [@r2spss] for the statistical computing environment `R` [@R] allows to create graphics and `LaTeX` [e.g., @LaTeX] tables that to look like output of the statistical software platform `SPSS` [@SPSS].  The package provides functionality for techniques that are typically covered in introductory statistics classes: descriptive statistics, common hypothesis tests, ANOVA, and linear regression, as well as boxplots, histograms, scatterplots, and line plots (including profile plots).
 
+<!--
+The package allows to create tables and graphics that mimic recent versions of SPSS, as well as a simpler look of older versions (`SPSS` changed the look of the output in version 24) (TODO: check that it was indeed in version 24).
+-->
+
 
 # Statement of need
 
 Many academic programs in the social sciences or economics require to teach statistics with `SPSS` [@SPSS].  Preparing teaching materials in this case typically involves copying-and-pasting `SPSS` output into documents or slides, which is cumbersome and prone to errors.  Moreover, this approach is not scalable for regular updates of the materials, or for individualizing assignments and exams in order to combat fraud.  On the other hand, tools such as package `knitr` [@xie15; @knitr] for integrating the statistical computing environment `R` [@R] and the document preparation system `LaTeX` [e.g., @LaTeX] make preparing teaching materials easier, less error-prone, and more scalable.  There are even specialized tools such as package `exams` [@gruen09; @zeileis14; @exams] that allow assignments and exams to be individualized in a scalable manner.  Package `r2spss` makes it possible to leverage those developments for creating teaching materials with `SPSS` output by mocking up such output with `R`.
+
+
+# LaTeX requirements
+
+<!--
+Style file `r2spss.sty`, which includes all `LaTeX` requirements, can be created with  function `r2spss.sty()` from package `r2spss`. Then the command `\usepackage{r2spss}` should be included in the preamble of the `LaTeX` document. Tables that mimic recent version of `SPSS` output may require several compilations of the `LaTeX` document in order to be displayed correctly.
+-->
 
 
 # Example: Linear regression
