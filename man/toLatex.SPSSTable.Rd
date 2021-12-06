@@ -163,6 +163,10 @@ The \code{"data.frame"} method allows to extend the functionality of
 \pkg{r2spss} with additional LaTeX tables that mimic the look of SPSS
 output.
 }
+\note{
+LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
+may require several LaTeX compilations to be displayed correctly.
+}
 \examples{
 ## Kruskal-Wallis test example
 

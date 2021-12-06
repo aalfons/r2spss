@@ -88,13 +88,13 @@
 #' # load data
 #' data("Eredivisie")
 #'
-#' # test whether playing position and dummy variable for
-#' # foreign players are independent
-#' chisqTest(Eredivisie, c("Position", "Foreign"))
-#'
 #' # test whether the traditional Dutch 4-3-3 (total football)
 #' # is still reflected in player composition
 #' chisqTest(Eredivisie, "Position", p = c(1, 4, 3, 3)/11)
+#'
+#' # test whether playing position and dummy variable for
+#' # foreign players are independent
+#' chisqTest(Eredivisie, c("Position", "Foreign"))
 #'
 #' @keywords htest
 #'

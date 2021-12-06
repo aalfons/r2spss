@@ -128,6 +128,10 @@
 #'
 #' @return  Nothing is returned, the function is called for its side effects.
 #'
+#' @note
+#' LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})
+#' may require several LaTeX compilations to be displayed correctly.
+#'
 #' @author Andreas Alfons
 #'
 #' @examples
