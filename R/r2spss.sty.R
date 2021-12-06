@@ -5,10 +5,39 @@
 
 
 ## function to write style file, either to R console or to an actual file
+#' Create the LaTeX style file for 'r2spss'
+#'
+#' Create the LaTeX style file required to compile LaTeX documents that include
+#' tables created by package \pkg{r2spss}.  You can put the resulting file
+#' \emph{r2spss.sty} in the folder containing your LaTeX document, and you
+#' should include \preformatted{\usepackage{r2spss}} in the preamble of your
+#' LaTeX document.
+#'
+#' @param path  a character string specifying the path to the folder in which
+#' to put the style file, or \code{NULL} (the default) to print the contents
+#' of the style file to the standard output connection (usually the \R
+#' console).
+#'
+#' @return  Nothing is returned, the function is called for its side effects.
+#'
+#' @author Andreas Alfons
+#'
+#' @examples
+#' # print contents of style file
+#' r2spss.sty()
+#'
+#' \dontrun{
+#'
+#'   # put file 'r2spss.sty' in the current working directory
+#'   r2spss.sty(".")
+#' }
+#'
+#' @keywords IO
+#'
 #' @importFrom utils packageDate packageVersion
 #' @export
 
-r2spss.sty <- function(path = ".") {
+r2spss.sty <- function(path = NULL) {
 
   # determine file name
   if (is.null(path)) file <- ""  # write to standard output (usually R console)
@@ -48,7 +77,7 @@ r2spss.sty <- function(path = ".") {
   cat("\\RequirePackage{makecell}\n\n", file = file)
 
   # write LaTeX statements to define colors
-  cat("% define colors\n", file = file)
+  cat("% define colors for modern theme\n", file = file)
   cat("\\definecolor{graySPSS}{gray}{0.87}\n", file = file)
   cat("\\definecolor{lightgraySPSS}{RGB}{250,250,252}\n", file = file,
       append = TRUE)
