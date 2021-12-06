@@ -80,8 +80,8 @@
 #' @note
 #' The test statistic and p-value for Levene's test based on the trimmed mean
 #' (only returned for \code{version = "modern"}) differ slightly from those
-#' returned by SPSS.  Function \code{\link{trimmedMean}} rounds how many
-#' observations to trim in a different manner than base \R's
+#' returned by SPSS.  Function \code{\link{trimmedMean}} rounds the number of
+#' observations to be trimmed in a different manner than the base \R function
 #' \code{\link{mean}}, which brings the results closer to those of SPSS, but
 #' they are still not identical.
 #'
@@ -593,29 +593,3 @@ recodeSPSS <- function(x) {
   n <- length(l)
   factor(as.character(x), levels=c(l[n], l[-n]))
 }
-
-
-## Compute the trimmed mean.  This function assumes that there are no
-## missing values.  Base R function mean() always rounds down the number
-## of observations to trim.  SPSS seems to have a different behavior.  With
-## rounding to the nearest integer, results for Levene's test based no the
-## trimmed means are closer to SPSS results, but still not identical.
-#' @importFrom stats median
-#' @export
-
-trimmedMean <- function(x, trim = 0.05) {
-  # number of observations
-  n <- length(x)
-  # trim observations from both ends
-  if (trim > 0 && n > 0) {
-    # low <- floor(n * trim) + 1  # default R behavior
-    low <- round(n * trim) + 1    #
-    high <- n + 1 - low
-    if (low <= high) {
-      x <- sort.int(x, partial = unique(c(low, high)))[low:high]
-    } else median(x, na.rm = FALSE)
-  }
-  # comupte mean
-  mean(x, na.rm = FALSE)
-}
-

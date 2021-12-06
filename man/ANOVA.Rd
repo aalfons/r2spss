@@ -126,8 +126,8 @@ returned by \code{toSPSS}.
 \note{
 The test statistic and p-value for Levene's test based on the trimmed mean
 (only returned for \code{version = "modern"}) differ slightly from those
-returned by SPSS.  Function \code{\link{trimmedMean}} rounds how many
-observations to trim in a different manner than base \R's
+returned by SPSS.  Function \code{\link{trimmedMean}} rounds the number of
+observations to be trimmed in a different manner than the base \R function
 \code{\link{mean}}, which brings the results closer to those of SPSS, but
 they are still not identical.
 
