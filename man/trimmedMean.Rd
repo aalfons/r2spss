@@ -12,6 +12,9 @@ trimmedMean(x, trim = 0.05)
 \item{trim}{numeric; the fraction of observations to be trimmed from each
 tail of \code{x} before computing the mean (defaults to 0.05).}
 }
+\value{
+The trimmed mean of the values in \code{x} as a single numeric value.
+}
 \description{
 Compute the trimmed mean.  This function differs from the implementation of
 the trimmed mean in the base \R function \code{\link{mean}} in the following

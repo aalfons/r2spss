@@ -23,7 +23,8 @@
 #' @param trim  numeric; the fraction of observations to be trimmed from each
 #' tail of \code{x} before computing the mean (defaults to 0.05).
 #'
-#' @value  The trimmed mean of the values in \code{x} as a single numeric value.
+#' @return
+#' The trimmed mean of the values in \code{x} as a single numeric value.
 #'
 #' @seealso \code{\link{mean}}
 #'

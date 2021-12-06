@@ -4,15 +4,203 @@
 # --------------------------------------
 
 
-## header ... can also be character vector with different names or a list
-##            that defines the hierarchy  (see, e.g. tTest() for an example
-##            on how to do this).  Line separators break up the header into
-##            different lines.
-
-## @export
-# toLatex <- function(object, ...) UseMethod("toLatex")
-
+#' Print LaTeX tables that mimic the look of SPSS output
+#'
+#' Use information from an \R object to print a LaTeX table that mimics the
+#' look of SPSS output.  Typically, one would first call \code{\link{toSPSS}}
+#' with an object returned by a function in \pkg{r2spss}, and then call
+#' \code{toLatex} with the resulting object of class \code{"SPSSTable"} to
+#' print the LaTeX table.  Note that the \code{print} methods in \pkg{r2spss}
+#' perform these two steps at once, but calling \code{\link{toSPSS}} and
+#' \code{toLatex} separately can be useful for customization of the LaTeX
+#' table.
+#'
+#' The \code{"SPSSTable"} method takes component \code{table} of the object and
+#' supplies it to the \code{data.frame} method, with additional components in
+#' the object being passed as additional arguments.
+#'
+#' The \code{"data.frame"} method allows to extend the functionality of
+#' \pkg{r2spss} with additional LaTeX tables that mimic the look of SPSS
+#' output.
+#'
+#' @param object  an object of class \code{"SPSSTable"} as returned by
+#' \code{toSPSS} methods, or a \code{data.frame}.
+#' @param main  a single character string defining the main title of the SPSS
+#' table, or \code{NULL} to suppress the main title.
+#' @param sub  a single character string defining the sub-title of the SPSS
+#' table, or \code{NULL} to suppress the sub-title.
+#' @param header  a logical indicating whether to include a header in the SPSS
+#' table based on the column names of \code{object} (defaults to \code{TRUE}).
+#' Alternatively, it is possible to supply a character vector giving the
+#' header of each column, or a list defining a complex header layout with
+#' merged header cells.  In the latter case, the list can have up to three
+#' components, with each component defining one level of the header.  The last
+#' list component should be a character vector giving the bottom-level header
+#' of each column.  The other list components should be data frames with the
+#' following columns:
+#' \describe{
+#'   \item{\code{first}}{an integer vecot giving the first column of each
+#'   (merged) header cell.}
+#'   \item{\code{last}}{an integer vector giving the last column of each
+#'   (merged) header cell.}
+#'   \item{\code{text}}{a character vector containing the text of each (merged)
+#'   header cell.}
+#' }
+#' Line breaks (character \code{\\n}) can be included to wrap the text of a
+#' header cell over several rows.
+#' @param label  a character string giving a label to be added as the first
+#' column of the table, or \code{NULL} to suppress such a column.  In many
+#' SPSS tables, this contains the name of a variable used in the analysis.
+#' @param rowNames  a logical indicating whether to add the row names of
+#' \code{object} as a column in the SPSS table (defaults to \code{TRUE}).
+#' Alternatively, it is possible to supply a character vector giving the
+#' row labels to be added as a column.  Line breaks (character \code{\\n}) can
+#' be included to wrap the text of a row label over several rows.
+#' @param info  an integer giving the number of columns in the SPSS table that
+#' contain auxiliary information on the results.  This has an effect of the
+#' default formatting, alignment, and borders.  The default is 0 if
+#' \code{rowNames} is \code{FALSE} and 1 otherwise.  Note that a column defined
+#' by \code{label} and a column defined by \code{rowNames} are always added to
+#' \code{info} if the former are supplied.
+#' @param alignment  a list with components \code{header} and \code{table},
+#' with each component being a character vector that contains the LaTeX
+#' alignment specifiers of the header and table body, respectively, of each
+#' column.  Permissible alignment specifiers are \code{"l"} for left-aligned,
+#' \code{"c"} for centered, and \code{"r"} for right aligned.  The default is
+#' left-aligned for the header and table body of the columns containing
+#' auxiliary information, and centered and right-aligned, respectively, for the
+#' header and table body of the columns containing the actual results.  It
+#' should not be necessary to set the column alignment manually.
+#' @param border  a logical vector indicating which (outer and inner) vertical
+#' borders should be drawn.  The default is that tables that mimic recent
+#' versions of SPSS (\code{version = "modern"}) draw only borders in between
+#' columns that contain the actual results, whereas tables that mimic older
+#' versions of SPSS (\code{version = "legacy"}) draw all borders except in
+#' between columns containing auxiliary information.  It should not be
+#' necessary to set the vertical borders manually.
+#' @param footnotes  a character vector giving footnotes to be added below the
+#' SPSS table, or \code{NULL} to suppress footnotes.  Alternatively, it is
+#' possible to supply a data frame with the following columns:
+#' \describe{
+#'   \item{\code{marker}}{character vector giving footnote markers to be
+#'   included in a cell of the SPSS table.  For footnotes without a marker,
+#'   an empty character string can be used.}
+#'   \item{\code{row}}{an integer vector specifying the row of the SPSS table
+#'   in which to include each footnote marker, or \code{NA} for footnotes
+#'   without a marker.  In addition, the character strings \code{"main"} and
+#'   \code{"sub"} can be used to include footnote markers in the main title
+#'   and sub-title, respectively.}
+#'   \item{\code{column}}{an integer vector specifying the column of the SPSS
+#'   table in which to include each footnote marker, or \code{NA} for footnotes
+#'   without a marker or footnote markers in the main title or sub-title.}
+#'   \item{\code{text}}{a character vector containing the text of each
+#'   footnote.}
+#' }
+#' @param major  an integer vector specifying the rows of the SPSS table after
+#' which to draw major grid lines (which always stretch across all columns o
+#' the table), or \code{NULL} to suppress any major grid lines.  This is only
+#' relevant for drawing lines in between rows of the table body.  Horizontal
+#' table borders are always drawn.
+#' @param minor  an integer vector specifying the rows of the SPSS table after
+#' which to draw minor grid lines that stretch across all columns of the table,
+#' or \code{NULL} to suppress any minor grid lines.  Alternatively, this can
+#' be a data frame with the following columns defining partial lines:
+#' \describe{
+#'   \item{\code{row}}{an integer vector specifying the rows of the SPSS table
+#'   after which to draw minor grid lines.}
+#'   \item{\code{first}}{an integer vector specifying the first column of each
+#'   partial line.}
+#'   \item{\code{last}}{an integer vector specifying the last column of each
+#'   partial line.}
+#' }
+#' @param version  a character string specifying whether the table should
+#' mimic the look of recent SPSS versions (\code{"modern"}) or older versions
+#' (<24; \code{"legacy"}).  For the \code{"SPSSTable"} method, note that also
+#' the \emph{content} of some tables generated by functions in \pkg{r2spss} is
+#' different for current and older SPSS versions.  These objects contain a
+#' component \code{"version"} which will passed to the \code{"data.frame"}
+#' method to ensure that the content and look of the table match.  Other
+#' tables have the same content irrespective of the SPSS version, and this
+#' argument controls the look of those tables.
+#' @param \dots  for the \code{"data.frame"} method, additional arguments to be
+#' passed to \code{\link{formatSPSS}}.  For the \code{"SPSSTable"} method,
+#' additional arguments are currently ignored.
+#'
+#' @return  Nothing is returned, the function is called for its side effects.
+#'
+#' @author Andreas Alfons
+#'
+#' @examples
+#' ## Kruskal-Wallis test example
+#'
+#' # load data
+#' data("Eredivisie")
+#'
+#' # compute a Kruskual-Wallis test to investigate whether
+#' # market values differ by playing position
+#' kw <- kruskalTest(Eredivisie, "MarketValue",
+#'                   group = "Position")
+#'
+#' # convert to an object of class "SPSSTable" that
+#' # contains the table with the test results
+#' kwSPSS <- toSPSS(kw, statistics = "test")
+#' kwSPSS
+#'
+#' # blank out the number of degrees of freedom to ask
+#' # an assignment question about it
+#' kwSPSS$table[2, 1] <- "???"
+#'
+#' # print the LaTeX table to be included in the assignment
+#' toLatex(kwSPSS)
+#'
+#'
+#' ## t test example
+#'
+#' # load data
+#' data("Exams")
+#'
+#' # test whether the average grade on the resit
+#' # differs from 5.5 (minimum passing grade)
+#' t <- tTest(Exams, "Resit", mu = 5.5)
+#'
+#' # convert to an object of class "SPSSTable" that
+#' # contains the table with the test results
+#' tSPSS <- toSPSS(t, statistics = "test")
+#'
+#' # this is an example of a complex header layout
+#' tSPSS$header
+#'
+#' # add additional line breaks in bottom-level header
+#' tSPSS$header[[3]] <- gsub("-", "-\n", tSPSS$header[[3]],
+#'                           fixed = TRUE)
+#'
+#' # print the LaTeX table
+#' toLatex(tSPSS)
+#'
+#' @keywords print
+#'
 #' @importFrom utils toLatex
+#' @export
+
+toLatex.SPSSTable <- function(object, version = c("modern", "legacy"), ...) {
+  # object of class "SPSSTable" contains all the relevant information that
+  # needs to be passed down to the data.frame method
+  args <- object
+  # first argument needs to be renamed to be in line with function definition
+  rename <- names(args) == "table"
+  names(args)[rename] <- "object"
+  # For some methods, the information in the table has changed as well for
+  # newer versions of SPSS, and not just the appearance of the table.  In that
+  # case, the appearance needs to match the version of the table.  Otherwise,
+  # the appearance is defined by argument 'version'.
+  which <- grep("version", names(args), fixed = TRUE)
+  if (length(which) == 0) args$version <- match.arg(version)
+  # call workhorse method
+  do.call(toLatex, args)
+}
+
+
+#' @rdname toLatex.SPSSTable
 #' @export
 
 toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,

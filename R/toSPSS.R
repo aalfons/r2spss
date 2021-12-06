@@ -4,34 +4,54 @@
 # --------------------------------------
 
 
-## generic function to convert R objects into an object of class
-## "SPSSTable", which contains all the necessary information for printing
-## the specific table in the style of SPSS output.  This allows for easy
-## customization of the SPSS-like output, e.g., to blank out information on the
-## degrees of freedom for use in an exam question.
-
+#' Convert R objects to SPSS-style tables
+#'
+#' Generic function to convert an \R object into an object that contains all
+#' necessary information for printing a LaTeX table that mimics the look of
+#' SPSS output.
+#'
+#' @param object  an \R object for which a \code{toSPSS} method exists, such
+#' as objects returned by functions in \pkg{r2spss}.
+#' @param \dots  additional arguments passed down to methods.
+#'
+#' @return
+#' In order to work as expected, methods of \code{toSPSS} should return an
+#' object of class \code{"SPSSTable"}.  It should include a component
+#' \code{table} that contains a data frame, which can be supplied as the
+#' first argument to \code{\link[=toLatex.data.frame]{toLatex}} to print
+#' a LaTeX table that mimics the look of SPSS output.  Additional components
+#' of the returned object define additional arguments to be passed to the
+#' \code{"data.frame"} method of \code{\link[=toLatex.data.frame]{toLatex}}.
+#'
+#' @author Andreas Alfons
+#'
+#' @examples
+#' # load data
+#' data("Eredivisie")
+#'
+#' # compute a Kruskual-Wallis test to investigate whether
+#' # market values differ by playing position
+#' kw <- kruskalTest(Eredivisie, "MarketValue",
+#'                   group = "Position")
+#'
+#' # convert to an object of class "SPSSTable" that
+#' # contains the table with the test results
+#' kwSPSS <- toSPSS(kw, statistics = "test")
+#' kwSPSS
+#'
+#' # blank out the number of degrees of freedom to ask
+#' # an assignment question about it
+#' kwSPSS$table[2, 1] <- "???"
+#'
+#' # print the LaTeX table to be included in the assignment
+#' toLatex(kwSPSS)
+#'
+#' @keywords manip
+#'
 #' @export
+
 toSPSS <- function(object, ...) UseMethod("toSPSS")
 
 
 #' @export
 print.SPSSTable <- function(x, ...) print(unclass(x), ...)
-
-
-#' @export
-toLatex.SPSSTable <- function(object, version = c("modern", "legacy"), ...) {
-  # object of class "SPSSTable" contains all the relevant information that
-  # needs to be passed down to the workhorse method
-  args <- object
-  # first argument needs to be renamed to be in line with function definition
-  rename <- names(args) == "table"
-  names(args)[rename] <- "object"
-  # For some methods, the information in the table has changed as well for
-  # newer versions of SPSS, and not just the appearance of the table.  In that
-  # case, the appearance needs to match the version of the table.  Otherwise,
-  # the appearance is defined by argument 'theme'.
-  which <- grep("version", names(args), fixed = TRUE)
-  if (length(which) == 0) args$version <- match.arg(version)
-  # call workhorse method
-  do.call(toLatex, args)
-}

@@ -102,7 +102,7 @@ following components:
 
 The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
 which contains all relevant information in the required format to produce
-the LaTeX table.  See \code{\link[=toLatex.toSPSS]{toLatex}} for possible
+the LaTeX table.  See \code{\link[=toLatex.SPSSTable]{toLatex}} for possible
 components and how to further customize the LaTeX table based on the
 returned object.
 
@@ -119,7 +119,7 @@ the results mimics the look of SPSS graphs.
 }
 \details{
 The \code{print} method first calls the \code{toSPSS} method followed by
-\code{\link[=toLatex.toSPSS]{toLatex}}.  Further customization can be
+\code{\link[=toLatex.SPSSTable]{toLatex}}.  Further customization can be
 done by calling those two functions separately, and modifying the object
 returned by \code{toSPSS}.
 }
