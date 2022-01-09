@@ -4,7 +4,7 @@
 % the part in between the lines needs to in the preamble of the LaTeX document
 % ----------------------------------------------------------------------------
 % % additional packages
-% \usepackage{amsmath}  % only requirement for theme = "legacy"
+% \usepackage{amsmath}  % only requirement for version = "legacy"
 % \usepackage{colortbl}
 %
 % % define colors
@@ -51,6 +51,7 @@ opts_chunk$set(fig.path = "figures/figure-", fig.width = 4.5, fig.height = 4.5,
 <<echo=FALSE, results="hide", message=FALSE, warning=FALSE>>=
 library("r2spss")
 data("Eredivisie")
+data("Exams")
 # log-transform market values
 Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
 # squared values of age
@@ -62,28 +63,120 @@ Eredivisie$AgeSq <- Eredivisie$Age^2
 fit <- regression(logMarketValue ~ Age + AgeSq,
                   logMarketValue ~ Age + AgeSq + Contract + Foreign,
                   data = Eredivisie)
-# print(fit, statistics = "estimates", theme = "legacy")
-# print(fit, statistics = "estimates", theme = "modern")
-fit
+print(fit, version = "legacy")
+print(fit, version = "modern")
 @
 \end{center}
 
+\newpage
 \begin{center}
 <<echo=FALSE, results="asis">>=
 oneway <- ANOVA(Eredivisie, "logMarketValue", group = "Position")
-# print(oneway, statistics = "variance", theme = "legacy")
-# print(oneway, statistics = "variance", theme = "modern")
-oneway
+print(oneway, version = "legacy")
+print(oneway, version = "modern")
 @
 \end{center}
 
+\newpage
+\begin{center}
+<<echo=FALSE, results="asis">>=
+oneway <- kruskalTest(Eredivisie, "MarketValue", group = "Position")
+print(oneway, version = "legacy")
+print(oneway, version = "modern")
+@
+\end{center}
+
+\newpage
 \begin{center}
 <<echo=FALSE, results="asis">>=
 twoway <- ANOVA(Eredivisie, "logMarketValue",
                 c(group = "Position", "Foreign"))
-# print(twoway, statistics = "descriptives", theme = "legacy")
-# print(twoway, statistics = "descriptives", theme = "modern")
-twoway
+print(twoway, version = "legacy")
+print(twoway, version = "modern")
+@
+\end{center}
+
+\newpage
+\begin{center}
+<<echo=FALSE, results="asis">>=
+test <- chisqTest(Eredivisie, "Position", p = c(1, 4, 3, 3)/11)
+print(test, version = "legacy")
+print(test, version = "modern")
+@
+\end{center}
+
+\newpage
+\begin{center}
+<<echo=FALSE, results="asis">>=
+test <- chisqTest(Eredivisie, c("Position", "Foreign"))
+print(test, version = "legacy")
+print(test, version = "modern")
+@
+\end{center}
+
+\newpage
+\begin{center}
+<<echo=FALSE, results="asis">>=
+stats <- descriptives(Eredivisie, c("MarketValue", "logMarketValue", "Age"))
+print(stats, version = "legacy")
+print(stats, version = "modern")
+@
+\end{center}
+
+\newpage
+\begin{center}
+<<echo=FALSE, results="asis">>=
+sign <- signTest(Exams, c("Regular", "Resit"), exact = TRUE)
+print(sign, version = "legacy")
+print(sign, version = "modern")
+@
+\end{center}
+
+\newpage
+\begin{center}
+<<echo=FALSE, results="asis">>=
+signedRank <- wilcoxonTest(Exams, c("Regular", "Resit"))
+print(signedRank, version = "legacy")
+print(signedRank, version = "modern")
+@
+\end{center}
+
+\newpage
+\begin{center}
+<<echo=FALSE, results="asis">>=
+rankSum <- wilcoxonTest(Eredivisie, "MarketValue", group = "Foreign")
+print(rankSum, version = "legacy")
+print(rankSum, version = "modern")
+@
+\end{center}
+
+\newpage
+\begin{center}
+<<echo=FALSE, results="asis">>=
+onesample <- tTest(Exams, "Resit", mu = 5.5)
+print(onesample, version = "legacy")
+print(onesample, version = "modern")
+@
+\end{center}
+
+\newpage
+\begin{center}
+\footnotesize
+<<echo=FALSE, results="asis">>=
+paired <- tTest(Exams, c("Resit", "Regular"))
+print(paired, version = "legacy")
+print(paired, version = "modern")
+@
+\end{center}
+
+\newpage
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+<<echo=FALSE, results="asis">>=
+twosample <- tTest(Eredivisie, "logMarketValue", group = "Foreign")
+print(twosample, version = "legacy")
+print(twosample, version = "modern")
 @
 \end{center}
 

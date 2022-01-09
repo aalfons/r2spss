@@ -62,10 +62,11 @@ Eredivisie$AgeSq <- Eredivisie$Age^2
 
 \begin{frame}[fragile]{ANOVA}
 \begin{center}
-{\small
+\setlength{\tabcolsep}{3pt}
+{\tiny
 <<echo=FALSE, results="asis">>=
-foo <- ANOVA(Eredivisie, "logMarketValue", group = "Position")
-print(foo, statistics = "variance", theme = "modern")
+twosample <- tTest(Eredivisie, "logMarketValue", group = "Foreign")
+print(twosample, statistics = "test", theme = "modern")
 @
 }
 \end{center}
