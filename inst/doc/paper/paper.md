@@ -4,7 +4,7 @@ tags:
 - R
 - SPSS
 - statistics
-- teaching
+- teaching materials
 date: "21 November 2021"
 output:
   html_document:
