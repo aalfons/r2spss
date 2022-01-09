@@ -358,7 +358,8 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
       main <- paste0(main, insertFootnotes$main)
     }
     # get LaTeX statement(s)
-    latexMain <- latexTitle(main, columns = columns, alignment = "c")
+    latexMain <- latexTitle(main, columns = columns, alignment = "c",
+                            version = version)
   } else latexMain <- NULL
   if (writeSub) {
     # if supplied, insert footnote markers
@@ -366,7 +367,8 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
       sub <- paste0(sub, insertFootnotes$sub)
     }
     # get LaTeX statement(s)
-    latexSub <- latexMulticolumn(sub, columns = columns, alignment = "l")
+    latexSub <- latexMulticolumn(sub, columns = columns, alignment = "l",
+                                 version = version)
   } else latexSub <- NULL
 
   ## if supplied, write table header
@@ -484,12 +486,14 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
       # writing footnotes is more elaborate if markers are supplied
       for (i in seq_len(nrow(footnotes))) {
         footnote <- parseFootnoteText(footnotes$text[i], footnotes$marker[i])
-        cat(latexMulticolumn(footnote, columns = columns, alignment = "l"))
+        cat(latexMulticolumn(footnote, columns = columns, alignment = "l",
+                             version = version))
       }
     } else if (is.character(footnotes)) {
       # simply write footnotes with \mulitcolumn statements
       for (footnote in footnotes) {
-        cat(latexMulticolumn(footnote, columns = columns, alignment = "l"))
+        cat(latexMulticolumn(footnote, columns = columns, alignment = "l",
+                             version = version))
       }
     }
   }
@@ -550,7 +554,7 @@ latexBeginTabular <- function(alignment, border, nrow, ncol,
     # specify environment
     environment <- "NiceTabular"
     # specify borders
-    border <- ifelse(border, "!{\\color{darkgraySPSS}\\vrule}", "")
+    border <- ifelse(border, "/", "")
     # define font colors for the info columns
     font <- rep.int(c(">{\\color{blueSPSS}}", ""), ncol)
     # full specifications per column except left border of first column
@@ -560,7 +564,8 @@ latexBeginTabular <- function(alignment, border, nrow, ncol,
   lines <- paste0("\\begin{", environment, "}{", border[1],
          paste0(specs, collapse = ""), "}\n")
   if (!legacy) {
-    lines <- c(lines, "\\CodeBefore\n",
+    lines <- c("\\NiceMatrixOptions{custom-line = {letter = /, color = darkgraySPSS}}\n",
+               lines, "\\CodeBefore\n",
                sprintf("  \\rectanglecolor{graySPSS}{%d-1}{%d-%d}\n",
                        nrow[1]+1, nrow[1]+nrow[2], ncol[1]),
                sprintf("  \\rectanglecolor{lightgraySPSS}{%d-%d}{%d-%d}\n",
@@ -585,13 +590,29 @@ latexEndTabular <- function(version = "modern") {
 # alignment ... character string containing an alignment specifier for the
 #               merged cell.  The default is "c" for centered.
 
-latexTitle <- function(text, columns = 1, alignment = "c") {
+latexTitle <- function(text, columns = 1, alignment = "c", version = "modern") {
   # split text string according to line breaks
   text <- strsplit(text, split = "\n", fixed = TRUE)[[1]]
   # create LaTeX statement
-  sprintf("\\multicolumn{%d}{%s}{\\textbf{%s}} \\\\\n",
+  if (version == "legacy") {
+    # create \multicolumn statement
+    sprintf("\\multicolumn{%d}{%s}{\\textbf{%s}} \\\\\n",
           columns, alignment, text)
-
+  } else {
+    # create \Block statement
+    command <- sprintf("\\Block[%s]{1-%d}{\\textbf{%s}}",
+                       alignment, columns, text)
+    # \Block doesn't work like \multicolumn: for proper alignment of the table,
+    # we still need to add column separators '&' for all merged cells
+    if (columns > 1) {
+      suffix <- paste(rep.int("&", columns - 1), collapse = " ")
+      command <- paste(command, suffix)
+    }
+    # add line end
+    command <- paste(command,  "\\\\\n")
+    # return LaTeX statement
+    command
+  }
 }
 
 
@@ -604,11 +625,28 @@ latexTitle <- function(text, columns = 1, alignment = "c") {
 # alignment ... character string containing an alignment specifier for the
 #               merged cell.  The default is "l" for left-aligned.
 
-latexMulticolumn <- function(text, columns = 1, alignment = "l") {
+latexMulticolumn <- function(text, columns = 1, alignment = "l",
+                             version = "modern") {
   # split text string according to line breaks
   text <- strsplit(text, split = "\n", fixed = TRUE)[[1]]
   # create LaTeX statement
-  sprintf("\\multicolumn{%d}{%s}{%s} \\\\\n", columns, alignment, text)
+  if (version == "legacy") {
+    # create \multicolumn statement
+    sprintf("\\multicolumn{%d}{%s}{%s} \\\\\n", columns, alignment, text)
+  } else {
+    # create \Block statement
+    command <- sprintf("\\Block[%s]{1-%d}{%s}", alignment, columns, text)
+    # \Block doesn't work like \multicolumn: for proper alignment of the table,
+    # we still need to add column separators '&' for all merged cells
+    if (columns > 1) {
+      suffix <- paste(rep.int("&", columns - 1), collapse = " ")
+      command <- paste(command, suffix)
+    }
+    # add line end
+    command <- paste(command,  "\\\\\n")
+    # return LaTeX statement
+    command
+  }
 }
 
 
