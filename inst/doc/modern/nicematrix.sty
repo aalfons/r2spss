@@ -6,7 +6,7 @@
 %%
 %% nicematrix.dtx  (with options: `package')
 %% 
-%% Copyright (C) 2018-2022 by F. Pantigny
+%% Copyright (C) 2018-2021 by F. Pantigny
 %% 
 %% This file may be distributed and/or modified under the
 %% conditions of the LaTeX Project Public License, either
@@ -19,8 +19,8 @@
 %% LaTeX version 2005/12/01 or later.
 %% 
 %% THIS IS A TEST VERSION: NEVER RELEASED ON CTAN
-\def\myfileversion{6.5x}
-\def\myfiledate{2022/01/06}
+\def\myfileversion{6.5y}
+\def\myfiledate{2022/01/10}
 \RequirePackage{pgfcore}
 \usepgfmodule{shapes}
 \RequirePackage{l3keys2e}
@@ -568,8 +568,8 @@
   }
 \keys_define:nn { NiceMatrix / Global }
   {
-    delimiters .code:n =
-      \keys_set:nn { NiceMatrix / delimiters } { #1 } ,
+    custom-line .code:n = \__nicematrix_custom_line:n { #1 } ,
+    delimiters .code:n = \keys_set:nn { NiceMatrix / delimiters } { #1 } ,
     delimiters .value_required:n = true ,
     rules .code:n = \keys_set:nn { NiceMatrix / rules } { #1 } ,
     rules .value_required:n = true ,
@@ -1840,73 +1840,6 @@
           }
       }
   }
-\keys_define:nn { NiceMatrix / ColumnTypes }  { }
-\keys_define:nn { NiceMatrix / NiceMatrixOptions }
-  { custom-line .code:n = \__nicematrix_custom_line:n { #1 } }
-\keys_define:nn { NiceMatrix / Custom-Line }
-  {
-    letter .str_set:N = \l__nicematrix_letter_str ,
-    letter .value_required:n = true ,
-    letter .initial:n = ,
-    command .str_set:N = \l__nicematrix_command_str ,
-    command .value_required:n = true ,
-    command .initial:n = ,
-    multiplicity .int_set:N = \l_tmpc_int ,
-    multiplicity .initial:n = 1 ,
-    multiplicity .value_required:n = true ,
-  }
-\cs_new_protected:Npn \__nicematrix_custom_line:n #1
-  {
-    \keys_set_known:nn { NiceMatrix / Custom-Line } { #1 }
-    \bool_lazy_and:nnTF
-      { \str_if_empty_p:N \l__nicematrix_letter_str }
-      { \str_if_empty_p:N \l__nicematrix_command_str }
-      { \__nicematrix_error:n { No~letter~and~no~command } }
-      {
-        \exp_args:Nnx \keys_define:nn { NiceMatrix / ColumnTypes }
-          {
-            \l__nicematrix_letter_str .code:n =
-              { \__nicematrix_custom_line_i:n { \exp_not:n { #1 } } }
-          }
-        \str_if_empty:NF \l__nicematrix_command_str
-          { \exp_args:NnV \__nicematrix_define_h_custom_line:nn { #1 } \l_tmpc_int }
-      }
-  }
-\cs_new_protected:Npn \__nicematrix_define_h_custom_line:nn #1 #2
-  {
-    \cs_new:cpn \l__nicematrix_command_str
-      {
-        \noalign
-          {
-            \skip_vertical:n
-              {
-                \dim_eval:n
-                  { \arrayrulewidth * #2 + \doublerulesep * ( #2 - 1) }
-              }
-            \tl_gput_right:Nx \g__nicematrix_internal_code_after_tl
-              { \__nicematrix_hline:n { #1 , position = \int_eval:n { \c@iRow + 1 } } }
-          }
-      }
-  }
-\cs_new_protected:Npn \__nicematrix_custom_line_i:n #1
-  {
-    \tl_gput_right:Nx \g__nicematrix_preamble_tl
-      {
-        \exp_not:N !
-          {
-            \skip_horizontal:n
-              {
-                \dim_eval:n
-                  {
-                    \arrayrulewidth * \l_tmpc_int
-                    + \doublerulesep * ( \l_tmpc_int - 1)
-                  }
-              }
-          }
-      }
-    \tl_gput_right:Nx \g__nicematrix_internal_code_after_tl
-      { \__nicematrix_vline:n { #1 , position = \__nicematrix_succ:n \c@jCol } }
-  }
 \cs_new_protected:Npn \__nicematrix_patch_preamble_i:n #1
   {
     \tl_gput_right:Nn \g__nicematrix_preamble_tl
@@ -2340,9 +2273,17 @@
         \seq_gput_left:Nn \g__nicematrix_multicolumn_sizes_seq { #1 }
         \seq_gput_right:Nx \g__nicematrix_pos_of_blocks_seq
           {
-            { \int_use:N \c@iRow }
+            {
+              \int_compare:nNnTF \c@jCol = 0
+                { \int_eval:n { \c@iRow + 1 } }
+                { \int_use:N \c@iRow }
+            } % modified 2022/01/10
             { \int_eval:n { \c@jCol + 1 } }
-            { \int_use:N \c@iRow }
+            {
+              \int_compare:nNnTF \c@jCol = 0
+                { \int_eval:n { \c@iRow + 1 } }
+                { \int_use:N \c@iRow }
+            } % modified 2022/01/10
             { \int_eval:n { \c@jCol + #1 } }
             { } % for the name of the block
           }
@@ -4412,7 +4353,7 @@
     nb-rows .initial:n = 1 ,
     rowcolor .tl_set:N = \l_tmpc_tl ,
     rowcolor .value_required:n = true ,
-    rowcolor .initial:n = \c_empty_tl ,
+    rowcolor .initial:n = ,
     unknown .code:n = \__nicematrix_error:n { Unknown~key~for~RowStyle }
   }
 \NewDocumentCommand \__nicematrix_RowStyle:n { O { } m }
@@ -4842,8 +4783,8 @@
     start .int_set:N = \l__nicematrix_start_int ,
     start .initial:n = 1 ,
     end .int_set:N = \l__nicematrix_end_int ,
-    letter .code:n = { } ,
-    command .code:n = { }
+    letter .code:n = \prg_do_nothing: ,
+    command .code:n = \prg_do_nothing:
   }
 \keys_define:nn { NiceMatrix / RulesBis }
   {
@@ -4855,7 +4796,10 @@
     color .code:n = \__nicematrix_set_CT@arc@: #1 \q_stop ,
     color .value_required:n = true ,
     sep-color .code:n = \__nicematrix_set_CT@drsc@: #1 \q_stop ,
-    sep-color .value_required:n = true
+    sep-color .value_required:n = true ,
+    tikz .tl_set:N = \l__nicematrix_tikz_rule_tl ,
+    tikz .value_required:n = true ,
+    tikz .initial:n =
   }
 \cs_new_protected:Npn \__nicematrix_vline:n #1
   {
@@ -4934,7 +4878,11 @@
     \keys_set:nV { NiceMatrix / RulesBis } \l__nicematrix_other_keys_tl
     \bool_if:NTF \l__nicematrix_dotted_bool
       \__nicematrix_vline_iv:
-      \__nicematrix_vline_iii:
+      {
+        \tl_if_empty:NTF \l__nicematrix_tikz_rule_tl
+          \__nicematrix_vline_iii:
+          \__nicematrix_vline_v:
+      }
   }
 \cs_new_protected:Npn \__nicematrix_vline_iii:
   {
@@ -4996,8 +4944,26 @@
     \dim_set_eq:NN \l__nicematrix_y_initial_dim \pgf@y
     \__nicematrix_qpoint:n { row - \int_eval:n { \l__nicematrix_local_end_int + 1 } }
     \dim_set_eq:NN \l__nicematrix_y_final_dim \pgf@y
+    \CT@arc@
     \__nicematrix_draw_line:
     \endpgfpicture
+  }
+\cs_new_protected:Npn \__nicematrix_vline_v:
+  {
+    \begin {tikzpicture }
+    \pgfrememberpicturepositiononpagetrue
+    \pgf@relevantforpicturesizefalse
+    \__nicematrix_qpoint:n { row - \int_use:N \l__nicematrix_local_start_int }
+    \dim_set_eq:NN \l_tmpa_dim \pgf@y
+    \__nicematrix_qpoint:n { col - \int_use:N \l__nicematrix_position_int }
+    \dim_set_eq:NN \l_tmpb_dim \pgf@x
+    \__nicematrix_qpoint:n { row - \int_eval:n { \l__nicematrix_local_end_int + 1 } }
+    \dim_set_eq:NN \l_tmpc_dim \pgf@y
+    \exp_args:NV \tikzset \l__nicematrix_tikz_rule_tl
+    \use:x { \exp_not:N \draw [ \l__nicematrix_tikz_rule_tl ] }
+      ( \l_tmpb_dim , \l_tmpa_dim ) --
+      ( \l_tmpb_dim , \l_tmpc_dim ) ;
+    \end { tikzpicture }
   }
 \cs_new_protected:Npn \__nicematrix_draw_vlines:
   {
@@ -5093,7 +5059,11 @@
     \keys_set:nV { NiceMatrix / RulesBis } \l__nicematrix_other_keys_tl
     \bool_if:NTF \l__nicematrix_dotted_bool
       \__nicematrix_hline_iv:
-      \__nicematrix_hline_iii:
+      {
+        \tl_if_empty:NTF \l__nicematrix_tikz_rule_tl
+          \__nicematrix_hline_iii:
+          \__nicematrix_hline_v:
+      }
   }
 \cs_new_protected:Npn \__nicematrix_hline_iii:
   {
@@ -5169,8 +5139,26 @@
         \tl_if_eq:NnF \g__nicematrix_right_delim_tl )
           { \dim_gsub:Nn \l__nicematrix_x_final_dim { 0.5 \l__nicematrix_inter_dots_dim } }
       }
+    \CT@arc@
     \__nicematrix_draw_line:
     \endpgfpicture
+  }
+\cs_new_protected:Npn \__nicematrix_hline_v:
+  {
+    \begin { tikzpicture }
+    \pgfrememberpicturepositiononpagetrue
+    \pgf@relevantforpicturesizefalse
+    \__nicematrix_qpoint:n { col - \int_use:N \l__nicematrix_local_start_int }
+    \dim_set_eq:NN \l_tmpa_dim \pgf@x
+    \__nicematrix_qpoint:n { row - \int_use:N \l__nicematrix_position_int }
+    \dim_set_eq:NN \l_tmpb_dim \pgf@y
+    \__nicematrix_qpoint:n { col - \int_eval:n { \l__nicematrix_local_end_int + 1 } }
+    \dim_set_eq:NN \l_tmpc_dim \pgf@x
+    \exp_args:NV \tikzset \l__nicematrix_tikz_rule_tl
+    \use:x { \exp_not:N \draw [ \l__nicematrix_tikz_rule_tl ] }
+      ( \l_tmpa_dim , \l_tmpb_dim ) --
+      ( \l_tmpc_dim , \l_tmpb_dim ) ;
+    \end { tikzpicture }
   }
 \cs_new_protected:Npn \__nicematrix_draw_hlines:
   {
@@ -5214,6 +5202,84 @@
           }
       }
     \ifnum 0 = `{ \fi }
+  }
+\keys_define:nn { NiceMatrix / ColumnTypes }  { }
+\cs_new_protected:Npn \__nicematrix_custom_line:n #1
+  {
+    \keys_set_known:nn { NiceMatrix / Custom-Line } { #1 }
+    \bool_lazy_and:nnTF
+      { \str_if_empty_p:N \l__nicematrix_letter_str }
+      { \str_if_empty_p:N \l__nicematrix_command_str }
+      { \__nicematrix_error:n { No~letter~and~no~command } }
+      {
+        \str_if_empty:NF \l__nicematrix_letter_str
+          {
+            \int_compare:nNnTF { \str_count:N \l__nicematrix_letter_str } = 1
+              {
+                \exp_args:NnV \tl_if_in:NnTF
+                  \c__nicematrix_forbidden_letters_str \l__nicematrix_letter_str
+                  { \__nicematrix_error:n { Forbidden~letter } }
+                  {
+                    \exp_args:Nnx \keys_define:nn { NiceMatrix / ColumnTypes }
+                      {
+                        \l__nicematrix_letter_str .code:n =
+                          { \__nicematrix_custom_line_i:n { \exp_not:n { #1 } } }
+                      }
+                  }
+              }
+              { \__nicematrix_error:n { Several~letters } }
+          }
+        \str_if_empty:NF \l__nicematrix_command_str
+          { \exp_args:NnV \__nicematrix_define_h_custom_line:nn { #1 } \l_tmpc_int }
+      }
+  }
+\str_const:Nn \c__nicematrix_forbidden_letters_str { lcrpmbVX:|()[]!@<> }
+\keys_define:nn { NiceMatrix / Custom-Line }
+  {
+    letter .str_set:N = \l__nicematrix_letter_str ,
+    letter .value_required:n = true ,
+    letter .initial:n = ,
+    command .str_set:N = \l__nicematrix_command_str ,
+    command .value_required:n = true ,
+    command .initial:n = ,
+    multiplicity .int_set:N = \l_tmpc_int ,
+    multiplicity .initial:n = 1 ,
+    multiplicity .value_required:n = true ,
+  }
+\cs_new_protected:Npn \__nicematrix_define_h_custom_line:nn #1 #2
+  {
+    \cs_set:cpn \l__nicematrix_command_str
+      {
+        \noalign
+          {
+            \skip_vertical:n
+              {
+                \dim_eval:n
+                  { \arrayrulewidth * #2 + \doublerulesep * ( #2 - 1) }
+              }
+            \tl_gput_right:Nx \g__nicematrix_internal_code_after_tl
+              { \__nicematrix_hline:n { #1 , position = \int_eval:n { \c@iRow + 1 } } }
+          }
+      }
+  }
+\cs_new_protected:Npn \__nicematrix_custom_line_i:n #1
+  {
+    \tl_gput_right:Nx \g__nicematrix_preamble_tl
+      {
+        \exp_not:N !
+          {
+            \skip_horizontal:n
+              {
+                \dim_eval:n
+                  {
+                    \arrayrulewidth * \l_tmpc_int
+                    + \doublerulesep * ( \l_tmpc_int - 1)
+                  }
+              }
+          }
+      }
+    \tl_gput_right:Nx \g__nicematrix_internal_code_after_tl
+      { \__nicematrix_vline:n { #1 , position = \__nicematrix_succ:n \c@jCol } }
   }
 \cs_new_protected:Npn \__nicematrix_test_hline_in_block:nnnnn #1 #2 #3 #4
   {
@@ -5901,7 +5967,7 @@
     b .value_forbidden:n = true ,
     name .tl_set:N = \l__nicematrix_block_name_str ,
     name .value_required:n = true ,
-    name .initial:n = \c_empty_tl ,
+    name .initial:n = ,
     unknown .code:n = \__nicematrix_error:n { Unknown~key~for~Block }
   }
 \cs_new_protected:Npn \__nicematrix_draw_blocks:
@@ -7410,6 +7476,17 @@
     (to~draw~horizontal~rules).\\
    However,~you~can~go~on.
   }
+\__nicematrix_msg_new:nn { Forbidden~letter }
+  {
+    You~can't~use~the~letter~'\l__nicematrix_letter_str'~for~a~customized~line.\\
+    If~you~go~on,~it~will~be~ignored.
+  }
+\__nicematrix_msg_new:nn { Several~letters }
+  {
+    You~must~use~only~one~letter~as~value~for~the~key~'letter'~(and~
+    have~used~'\l__nicematrix_letter_str').\\
+    If~you~go~on,~it~will~be~ignored.
+  }
 \__nicematrix_msg_new:nn { Delimiter~with~small }
   {
     You~can't~put~a~delimiter~in~the~preamble~of~your~\__nicematrix_full_name_env:\
@@ -7678,6 +7755,7 @@
     code-for-last-col,~
     code-for-last-row,~
     corners,~
+    custom-key,~
     create-extra-nodes,~
     create-medium-nodes,~
     create-large-nodes,~
@@ -7829,6 +7907,7 @@
     colortbl-like,~
     columns-width,~
     corners,~
+    custom-line,~
     create-extra-nodes,~
     create-medium-nodes,~
     create-large-nodes,~

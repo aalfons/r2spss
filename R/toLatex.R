@@ -593,26 +593,26 @@ latexEndTabular <- function(version = "modern") {
 latexTitle <- function(text, columns = 1, alignment = "c", version = "modern") {
   # split text string according to line breaks
   text <- strsplit(text, split = "\n", fixed = TRUE)[[1]]
-  # create LaTeX statement
-  if (version == "legacy") {
+  # # create LaTeX statement
+  # if (version == "legacy") {
     # create \multicolumn statement
     sprintf("\\multicolumn{%d}{%s}{\\textbf{%s}} \\\\\n",
           columns, alignment, text)
-  } else {
-    # create \Block statement
-    command <- sprintf("\\Block[%s]{1-%d}{\\textbf{%s}}",
-                       alignment, columns, text)
-    # \Block doesn't work like \multicolumn: for proper alignment of the table,
-    # we still need to add column separators '&' for all merged cells
-    if (columns > 1) {
-      suffix <- paste(rep.int("&", columns - 1), collapse = " ")
-      command <- paste(command, suffix)
-    }
-    # add line end
-    command <- paste(command,  "\\\\\n")
-    # return LaTeX statement
-    command
-  }
+  # } else {
+  #   # create \Block statement
+  #   command <- sprintf("\\Block[%s]{1-%d}{\\textbf{%s}}",
+  #                      alignment, columns, text)
+  #   # \Block doesn't work like \multicolumn: for proper alignment of the table,
+  #   # we still need to add column separators '&' for all merged cells
+  #   if (columns > 1) {
+  #     suffix <- paste(rep.int("&", columns - 1), collapse = " ")
+  #     command <- paste(command, suffix)
+  #   }
+  #   # add line end
+  #   command <- paste(command,  "\\\\\n")
+  #   # return LaTeX statement
+  #   command
+  # }
 }
 
 
@@ -629,24 +629,24 @@ latexMulticolumn <- function(text, columns = 1, alignment = "l",
                              version = "modern") {
   # split text string according to line breaks
   text <- strsplit(text, split = "\n", fixed = TRUE)[[1]]
-  # create LaTeX statement
-  if (version == "legacy") {
+  # # create LaTeX statement
+  # if (version == "legacy") {
     # create \multicolumn statement
     sprintf("\\multicolumn{%d}{%s}{%s} \\\\\n", columns, alignment, text)
-  } else {
-    # create \Block statement
-    command <- sprintf("\\Block[%s]{1-%d}{%s}", alignment, columns, text)
-    # \Block doesn't work like \multicolumn: for proper alignment of the table,
-    # we still need to add column separators '&' for all merged cells
-    if (columns > 1) {
-      suffix <- paste(rep.int("&", columns - 1), collapse = " ")
-      command <- paste(command, suffix)
-    }
-    # add line end
-    command <- paste(command,  "\\\\\n")
-    # return LaTeX statement
-    command
-  }
+  # } else {
+  #   # create \Block statement
+  #   command <- sprintf("\\Block[%s]{1-%d}{%s}", alignment, columns, text)
+  #   # \Block doesn't work like \multicolumn: for proper alignment of the table,
+  #   # we still need to add column separators '&' for all merged cells
+  #   if (columns > 1) {
+  #     suffix <- paste(rep.int("&", columns - 1), collapse = " ")
+  #     command <- paste(command, suffix)
+  #   }
+  #   # add line end
+  #   command <- paste(command,  "\\\\\n")
+  #   # return LaTeX statement
+  #   command
+  # }
 }
 
 
@@ -678,17 +678,20 @@ latexHeaderCell <- function(text = "", columns = 1, alignment = "c",
     # create \multicolumn statement
     sprintf("\\multicolumn{%d}{%s}{%s}", columns, spec, text)
   } else {
-    # create \Block statement and use text color 'blueSPSS'
-    command <- sprintf("\\Block[%s]{1-%d}{\\textcolor{blueSPSS}{%s}}",
-                       alignment, columns, text)
-    # \Block doesn't work like \multicolumn: for proper alignment of the table,
-    # we still need to add column separators '&' for all merged cells
-    if (columns > 1) {
-      suffix <- paste(rep.int("&", columns - 1), collapse = " ")
-      command <- paste(command, suffix)
-    }
-    # return LaTeX statement
-    command
+    # # create \Block statement and use text color 'blueSPSS'
+    # command <- sprintf("\\Block[%s]{1-%d}{\\textcolor{blueSPSS}{%s}}",
+    #                    alignment, columns, text)
+    # # \Block doesn't work like \multicolumn: for proper alignment of the table,
+    # # we still need to add column separators '&' for all merged cells
+    # if (columns > 1) {
+    #   suffix <- paste(rep.int("&", columns - 1), collapse = " ")
+    #   command <- paste(command, suffix)
+    # }
+    # # return LaTeX statement
+    # command
+    # create \multicolumn statement and use text color 'blueSPSS'
+    sprintf("\\multicolumn{%d}{%s}{\\textcolor{blueSPSS}{%s}}",
+            columns, alignment, text)
   }
 }
 
