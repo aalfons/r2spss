@@ -1,0 +1,85 @@
+\documentclass{article}
+\usepackage{nicematrix}
+
+\definecolor{darkgray}{gray}{0.66}
+
+
+\begin{document}
+
+
+%% show code for custom lines
+\begin{verbatim}
+\NiceMatrixOptions{%
+  custom-line = {letter = I, command = MyLine, color=darkgray}
+}
+\end{verbatim}
+
+%% define custom lines
+\NiceMatrixOptions{%
+  custom-line = {letter = I, command = MyLine, color=darkgray}
+}
+
+%% show code for first example
+\begin{verbatim}
+\begin{NiceTabular}{lcIcIc}
+\Block[c]{1-4}{Very long and descriptive table header} & & & \\
+\Hline
+& \Block[c]{1-2}{Long cell text} & & \\
+& 1 & 2 & 3 \\
+\Hline
+Part 1 & a & b& c\\
+\MyLine
+Part 2 & d & e & f\\
+\Hline
+\Block[l]{1-4}{Very long and descriptive table footer} & & & \\
+\end{NiceTabular}
+\end{verbatim}
+
+%% create output for first example
+\begin{NiceTabular}{lcIcIc}
+\Block[c]{1-4}{Very long and descriptive table header} & & & \\
+\Hline
+& \Block[c]{1-2}{Long cell text} & & \\
+& 1 & 2 & 3 \\
+\Hline
+Part 1 & a & b& c\\
+\MyLine
+Part 2 & d & e & f\\
+\Hline
+\Block[l]{1-4}{Very long and descriptive table footer} & & & \\
+\end{NiceTabular}
+
+
+\bigskip
+
+%% show code for second example
+\begin{verbatim}
+\begin{NiceTabular}{lcIcIc}
+\multicolumn{4}{c}{Very long and descriptive table header} \\
+\Hline
+& \multicolumn{2}{c}{Long cell text} & \\
+& 1 & 2 & 3 \\
+\Hline
+Part 1 & a & b& c\\
+\MyLine
+Part 2 & d & e & f\\
+\Hline
+\multicolumn{4}{l}{Very long and descriptive table footer} \\
+\end{NiceTabular}
+\end{verbatim}
+
+%% create output for second example
+\begin{NiceTabular}{lcIcIc}
+\multicolumn{4}{c}{Very long and descriptive table header} \\
+\Hline
+& \multicolumn{2}{c}{Long cell text} & \\
+& 1 & 2 & 3 \\
+\Hline
+Part 1 & a & b& c\\
+\MyLine
+Part 2 & d & e & f\\
+\Hline
+\multicolumn{4}{l}{Very long and descriptive table footer} \\
+\end{NiceTabular}
+
+\end{document}
