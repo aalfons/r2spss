@@ -11,7 +11,7 @@ tTest(data, variables, group = NULL, mu = 0, conf.level = 0.95)
 \method{toSPSS}{tTestSPSS}(
   object,
   statistics = c("test", "statistics"),
-  version = c("modern", "legacy"),
+  version = r2spssOptions$get("version"),
   digits = 3,
   ...
 )
@@ -19,7 +19,7 @@ tTest(data, variables, group = NULL, mu = 0, conf.level = 0.95)
 \method{print}{tTestSPSS}(
   x,
   statistics = c("statistics", "test"),
-  version = c("modern", "legacy"),
+  version = r2spssOptions$get("version"),
   digits = 3,
   ...
 )

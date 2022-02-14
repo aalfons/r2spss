@@ -120,7 +120,7 @@ kruskalTest <- function(data, variable, group) {
 #' @export
 
 toSPSS.kruskalTestSPSS <- function(object, statistics = c("test", "ranks"),
-                                   version = c("modern", "legacy"),
+                                   version = r2spssOptions$get("version"),
                                    digits = NULL, ...) {
 
   ## initializations
@@ -147,7 +147,7 @@ toSPSS.kruskalTestSPSS <- function(object, statistics = c("test", "ranks"),
 
     # initializations
     if (is.null(digits)) digits <- 3
-    version <- match.arg(version)
+    version <- match.arg(version, choices = getVersionOptions())
     legacy <- version == "legacy"
     # extract results
     # put test results into SPSS format
@@ -186,13 +186,13 @@ toSPSS.kruskalTestSPSS <- function(object, statistics = c("test", "ranks"),
 #' @export
 
 print.kruskalTestSPSS <- function(x, statistics = c("ranks", "test"),
-                                  version = c("modern", "legacy"),
+                                  version = r2spssOptions$get("version"),
                                   digits = 2:3, ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  version <- match.arg(version)
+  version <- match.arg(version, choices = getVersionOptions())
   digits <- rep_len(digits, 2)
 
   ## print LaTeX table for ranks

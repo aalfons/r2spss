@@ -126,9 +126,10 @@ toSPSS.descriptivesSPSS <- function(object, digits = 2, ...) {
 #' @rdname descriptives
 #' @export
 
-print.descriptivesSPSS <- function(x, version = c("modern", "legacy"), ...) {
+print.descriptivesSPSS <- function(x, version = r2spssOptions$get("version"),
+                                   ...) {
   # initializations
-  version <- match.arg(version)
+  version <- match.arg(version, choices = getVersionOptions())
   # put table of results into SPSS format
   spss <- toSPSS(x, ...)
   # print LaTeX table

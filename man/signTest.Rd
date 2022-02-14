@@ -11,14 +11,14 @@ signTest(data, variables, exact = FALSE)
 \method{toSPSS}{signTestSPSS}(
   object,
   statistics = c("test", "frequencies"),
-  version = c("modern", "legacy"),
+  version = r2spssOptions$get("version"),
   ...
 )
 
 \method{print}{signTestSPSS}(
   x,
   statistics = c("frequencies", "test"),
-  version = c("modern", "legacy"),
+  version = r2spssOptions$get("version"),
   ...
 )
 }

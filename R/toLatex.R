@@ -186,7 +186,8 @@
 #' @importFrom utils toLatex
 #' @export
 
-toLatex.SPSSTable <- function(object, version = c("modern", "legacy"), ...) {
+toLatex.SPSSTable <- function(object, version = r2spssOptions$get("version"),
+                              ...) {
   # object of class "SPSSTable" contains all the relevant information that
   # needs to be passed down to the data.frame method
   args <- object
@@ -198,7 +199,9 @@ toLatex.SPSSTable <- function(object, version = c("modern", "legacy"), ...) {
   # case, the appearance needs to match the version of the table.  Otherwise,
   # the appearance is defined by argument 'version'.
   which <- grep("version", names(args), fixed = TRUE)
-  if (length(which) == 0) args$version <- match.arg(version)
+  if (length(which) == 0) {
+    args$version <- match.arg(version, choices = getVersionOptions())
+  }
   # call workhorse method
   do.call(toLatex, args)
 }
@@ -211,7 +214,7 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
                                label = NULL, rowNames = TRUE, info = NULL,
                                alignment = NULL, border = NULL,
                                footnotes = NULL, major = NULL, minor = NULL,
-                               version = c("modern", "legacy"), ...) {
+                               version = r2spssOptions$get("version"), ...) {
 
   ## initializations
   d <- dim(object)
@@ -273,7 +276,7 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
     # TODO: perform checks
   }
   # check theme
-  version <- match.arg(version)
+  version <- match.arg(version, choices = getVersionOptions())
   legacy <- version == "legacy"
   # check border indicators
   if (is.null(border)) {

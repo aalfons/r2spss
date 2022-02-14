@@ -11,7 +11,7 @@ kruskalTest(data, variable, group)
 \method{toSPSS}{kruskalTestSPSS}(
   object,
   statistics = c("test", "ranks"),
-  version = c("modern", "legacy"),
+  version = r2spssOptions$get("version"),
   digits = NULL,
   ...
 )
@@ -19,7 +19,7 @@ kruskalTest(data, variable, group)
 \method{print}{kruskalTestSPSS}(
   x,
   statistics = c("ranks", "test"),
-  version = c("modern", "legacy"),
+  version = r2spssOptions$get("version"),
   digits = 2:3,
   ...
 )

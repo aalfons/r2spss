@@ -4,6 +4,11 @@
 # --------------------------------------
 
 
+## function to obtain possible values for argument 'version'
+
+getVersionOptions <- function() c("modern", "legacy")
+
+
 ## function to add line breaks in character strings to make sure that a given
 ## character limit is not exceeded per line
 # text .... a character vector for which each element will be wrapped

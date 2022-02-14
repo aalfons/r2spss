@@ -179,7 +179,7 @@ chisqTest <- function(data, variables, p = NULL) {
 #' @export
 
 toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
-                                 version = c("modern", "legacy"),
+                                 version = r2spssOptions$get("version"),
                                  digits = c(1, 3), ...) {
   ## initializations
   statistics <- match.arg(statistics)
@@ -248,7 +248,7 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
   } else if (statistics == "test") {
 
     # initializations
-    version <- match.arg(version)
+    version <- match.arg(version, choices = getVersionOptions())
     legacy <- version == "legacy"
     # check too small expected counts
     nTooSmall <- sum(object$expected < 5)
@@ -326,13 +326,13 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
 #' @export
 
 print.chisqTestSPSS <- function(x, statistics = c("frequencies", "test"),
-                                version = c("modern", "legacy"),
+                                version = r2spssOptions$get("version"),
                                 digits = c(1, 3), ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  version <- match.arg(version)
+  version <- match.arg(version, choices = getVersionOptions())
   digits <- rep_len(digits, 2)
 
   ## print LaTeX table for frequencies

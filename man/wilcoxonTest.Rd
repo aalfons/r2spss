@@ -11,7 +11,7 @@ wilcoxonTest(data, variables, group = NULL, exact = FALSE)
 \method{toSPSS}{wilcoxonTestSPSS}(
   object,
   statistics = c("test", "ranks"),
-  version = c("modern", "legacy"),
+  version = r2spssOptions$get("version"),
   digits = NULL,
   ...
 )
@@ -19,7 +19,7 @@ wilcoxonTest(data, variables, group = NULL, exact = FALSE)
 \method{print}{wilcoxonTestSPSS}(
   x,
   statistics = c("ranks", "test"),
-  version = c("modern", "legacy"),
+  version = r2spssOptions$get("version"),
   digits = 2:3,
   ...
 )

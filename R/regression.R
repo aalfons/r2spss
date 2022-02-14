@@ -199,12 +199,13 @@ regression <- function(..., data, labels = NULL) {
 
 toSPSS.regressionSPSS <- function(object,
                                   statistics = c("estimates", "anova", "summary"),
-                                  change = FALSE, version = c("modern", "legacy"),
+                                  change = FALSE,
+                                  version = r2spssOptions$get("version"),
                                   ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
-  version <- match.arg(version)
+  version <- match.arg(version, choices = getVersionOptions())
   legacy <- version == "legacy"
   models <- object$models
   k <- length(models)
@@ -436,13 +437,14 @@ toSPSS.regressionSPSS <- function(object,
 
 print.regressionSPSS <- function(x,
                                  statistics = c("summary", "anova", "estimates"),
-                                 change = FALSE, version = c("modern", "legacy"),
+                                 change = FALSE,
+                                 version = r2spssOptions$get("version"),
                                  ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  version <- match.arg(version)
+  version <- match.arg(version, choices = getVersionOptions())
 
   ## print LaTeX table for descriptives
   if ("summary" %in% statistics) {

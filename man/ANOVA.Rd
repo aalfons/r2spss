@@ -12,7 +12,7 @@ ANOVA(data, variable, group, conf.level = 0.95)
 \method{toSPSS}{ANOVASPSS}(
   object,
   statistics = c("test", "variance", "descriptives"),
-  version = c("modern", "legacy"),
+  version = r2spssOptions$get("version"),
   digits = 3,
   ...
 )
@@ -20,7 +20,7 @@ ANOVA(data, variable, group, conf.level = 0.95)
 \method{print}{ANOVASPSS}(
   x,
   statistics = c("descriptives", "variance", "test"),
-  version = c("modern", "legacy"),
+  version = r2spssOptions$get("version"),
   ...
 )
 

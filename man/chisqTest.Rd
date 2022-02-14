@@ -11,7 +11,7 @@ chisqTest(data, variables, p = NULL)
 \method{toSPSS}{chisqTestSPSS}(
   object,
   statistics = c("test", "frequencies"),
-  version = c("modern", "legacy"),
+  version = r2spssOptions$get("version"),
   digits = c(1, 3),
   ...
 )
@@ -19,7 +19,7 @@ chisqTest(data, variables, p = NULL)
 \method{print}{chisqTestSPSS}(
   x,
   statistics = c("frequencies", "test"),
-  version = c("modern", "legacy"),
+  version = r2spssOptions$get("version"),
   digits = c(1, 3),
   ...
 )

@@ -5,7 +5,7 @@
 \alias{toLatex.data.frame}
 \title{Print LaTeX tables that mimic the look of SPSS output}
 \usage{
-\method{toLatex}{SPSSTable}(object, version = c("modern", "legacy"), ...)
+\method{toLatex}{SPSSTable}(object, version = r2spssOptions$get("version"), ...)
 
 \method{toLatex}{data.frame}(
   object,
@@ -20,7 +20,7 @@
   footnotes = NULL,
   major = NULL,
   minor = NULL,
-  version = c("modern", "legacy"),
+  version = r2spssOptions$get("version"),
   ...
 )
 }

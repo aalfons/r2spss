@@ -121,7 +121,7 @@ signTest <- function(data, variables, exact = FALSE) {
 #' @export
 
 toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
-                                version = c("modern", "legacy"), ...) {
+                                version = r2spssOptions$get("version"), ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
@@ -153,7 +153,7 @@ toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
   } else if (statistics == "test") {
 
     # initializations
-    version <- match.arg(version)
+    version <- match.arg(version, choices = getVersionOptions())
     legacy <- version == "legacy"
     # extract results
     rn <- c("Z", "Asymp. Sig. (2-tailed)")
@@ -192,12 +192,12 @@ toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
 #' @export
 
 print.signTestSPSS <- function(x, statistics = c("frequencies", "test"),
-                               version = c("modern", "legacy"), ...) {
+                               version = r2spssOptions$get("version"), ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  version <- match.arg(version)
+  version <- match.arg(version, choices = getVersionOptions())
 
   ## print LaTeX table for ranks
   if ("frequencies" %in% statistics) {

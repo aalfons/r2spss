@@ -10,7 +10,7 @@ descriptives(data, variables)
 
 \method{toSPSS}{descriptivesSPSS}(object, digits = 2, ...)
 
-\method{print}{descriptivesSPSS}(x, version = c("modern", "legacy"), ...)
+\method{print}{descriptivesSPSS}(x, version = r2spssOptions$get("version"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}

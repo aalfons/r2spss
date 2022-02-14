@@ -17,7 +17,7 @@ regression(..., data, labels = NULL)
   object,
   statistics = c("estimates", "anova", "summary"),
   change = FALSE,
-  version = c("modern", "legacy"),
+  version = r2spssOptions$get("version"),
   ...
 )
 
@@ -25,7 +25,7 @@ regression(..., data, labels = NULL)
   x,
   statistics = c("summary", "anova", "estimates"),
   change = FALSE,
-  version = c("modern", "legacy"),
+  version = r2spssOptions$get("version"),
   ...
 )
 

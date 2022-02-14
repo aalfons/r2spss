@@ -272,7 +272,8 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
 
 toSPSS.ANOVASPSS <- function(object,
                              statistics = c("test", "variance", "descriptives"),
-                             version = c("modern", "legacy"), digits = 3, ...) {
+                             version = r2spssOptions$get("version"),
+                             digits = 3, ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
@@ -332,7 +333,7 @@ toSPSS.ANOVASPSS <- function(object,
   } else {
 
     ## initializations
-    version <- match.arg(version)
+    version <- match.arg(version, choices = getVersionOptions())
     legacy <- version == "legacy"
 
     if (statistics == "variance") {
@@ -489,12 +490,12 @@ toSPSS.ANOVASPSS <- function(object,
 
 print.ANOVASPSS <- function(x,
                             statistics = c("descriptives", "variance", "test"),
-                            version = c("modern", "legacy"), ...) {
+                            version = r2spssOptions$get("version"), ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  version <- match.arg(version)
+  version <- match.arg(version, choices = getVersionOptions())
 
   ## print LaTeX table for descriptives
   if ("descriptives" %in% statistics) {

@@ -207,7 +207,7 @@ wilcoxonTest <- function(data, variables, group = NULL, exact = FALSE) {
 #' @export
 
 toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
-                                    version = c("modern", "legacy"),
+                                    version = r2spssOptions$get("version"),
                                     digits = NULL, ...) {
 
   ## initializations
@@ -257,7 +257,7 @@ toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
 
     # initializations
     if (is.null(digits)) digits <- 3
-    version <- match.arg(version)
+    version <- match.arg(version, choices = getVersionOptions())
     legacy <- version == "legacy"
     # prepare necessary information
     if (object$type == "paired") {
@@ -331,13 +331,13 @@ toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
 #' @export
 
 print.wilcoxonTestSPSS <- function(x, statistics = c("ranks", "test"),
-                                   version = c("modern", "legacy"),
+                                   version = r2spssOptions$get("version"),
                                    digits = 2:3, ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  version <- match.arg(version)
+  version <- match.arg(version, choices = getVersionOptions())
   digits <- rep_len(digits, 2)
 
   ## print LaTeX table for ranks
