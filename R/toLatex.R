@@ -316,7 +316,7 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
     if (!all(keep)) {
       major <- major[keep]
       warning("some indices for major grid lines are out of bounds; ",
-              "those have been discarded")
+              "those have been discarded", call. = FALSE)
     }
   }
   # check minor grid lines
@@ -343,7 +343,7 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
       if (!all(keep)) {
         minor <- minor[keep]
         warning("some indices for minor grid lines are out of bounds; ",
-                "those have been discarded")
+                "those have been discarded", call. = FALSE)
       }
     }
   }
