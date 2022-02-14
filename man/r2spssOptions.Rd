@@ -3,7 +3,7 @@
 \docType{data}
 \name{r2spssOptions}
 \alias{r2spssOptions}
-\title{Current options for r2spss}
+\title{Options for package r2spss}
 \format{
 A list with the following two components:
 \describe{

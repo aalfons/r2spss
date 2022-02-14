@@ -51,7 +51,7 @@ initializeOptions = function(...) {
   list(get = get, set = set)
 }
 
-#' Current options for r2spss
+#' Options for package r2spss
 #'
 #' Retrieve or set global options for package \pkg{r2spss} (within the current
 #' \R session) via accessor functions.
