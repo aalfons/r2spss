@@ -41,10 +41,10 @@ teaching materials.  Rather than copying-and-pasting \proglang{SPSS} output
 into documents, \proglang{R} code that mocks up \proglang{SPSS} output can be
 integrated directly into dynamic \proglang{LaTeX} documents with tools such
 as the \proglang{R} package \pkg{knitr}.  Package \pkg{r2spss} provides
-functionality for methods that are typically covered in introductory statistics
-courses: descriptive statistics, common hypothesis tests, ANOVA, and linear
-regression, as well as boxplots, histograms, scatterplots, and line plots
-(including profile plots).
+functionality for statistical techniques that are typically covered in
+introductory statistics courses: descriptive statistics, common hypothesis
+tests, ANOVA, and linear regression, as well as boxplots, histograms,
+scatterplots, and line plots (including profile plots).
 }
 
 %% - \Keywords{} with LaTeX markup, at least one required
@@ -170,9 +170,9 @@ r2spss.sty(path = ".")
 
 After putting the style file in the folder that contains your \proglang{LaTeX}
 document, the following command should be included in the preamble of your
-\proglang{LaTeX} document.
+\proglang{LaTeX} document, i.e., somewhere in between \verb+\documentclass{}+
+and \verb+\begin{document}+.
 \begin{Code}
-% somewhere before \begin{document}
 \usepackage{r2spss}
 \end{Code}
 
@@ -214,7 +214,13 @@ However, \pkg{r2spss} requires a very recent version of \pkg{nicematrix}.  It
 is also important to note that tables using the \code{NiceTabular} environment
 may require several \proglang{LaTeX} compilations to be displayed correctly.
 For portability reasons, this vignette therefore only displays \proglang{LaTeX}
-tables that mimic the simpler look of older \proglang{SPSS} versions.
+tables that mimic the simpler look of older \proglang{SPSS} versions.  For
+convenience, such a global preference within an \proglang{R} session can be
+set with the accessor function \code{r2spssOptions$set()}.
+
+<<>>=
+r2spssOptions$set(version = "legacy")
+@
 
 
 \subsection[Dynamic documents and knitr options]%
@@ -289,8 +295,7 @@ football players in the \code{Eredivisie} data.
 %
 \begin{center}
 <<results="asis">>=
-desc <- descriptives(Eredivisie, c("Age", "Minutes", "logMarketValue"))
-print(desc, version = "legacy")
+descriptives(Eredivisie, c("Age", "Minutes", "logMarketValue"))
 @
 \end{center}
 
@@ -323,8 +328,7 @@ with a single variable as well as the value under the null-hypothesis.
 %
 \begin{center}
 <<results="asis">>=
-onesample <- tTest(Exams, "Resit", mu = 5.5)
-print(onesample, version = "legacy")
+tTest(Exams, "Resit", mu = 5.5)
 @
 \end{center}
 
@@ -337,8 +341,7 @@ corresponding variables to function \code{tTest()}.
 %
 \begin{center}
 <<results="asis">>=
-paired <- tTest(Exams, c("Resit", "Regular"))
-print(paired, version = "legacy")
+tTest(Exams, c("Resit", "Regular"))
 @
 \end{center}
 
@@ -383,13 +386,11 @@ Dutch and foreign football players.
 %
 \begin{center}
 <<eval=FALSE>>=
-twosample <- tTest(Eredivisie, "logMarketValue", group = "Foreign")
-print(twosample, version = "legacy")
+tTest(Eredivisie, "logMarketValue", group = "Foreign")
 @
 \footnotesize
 <<echo=FALSE, results="asis">>=
-twosample <- tTest(Eredivisie, "logMarketValue", group = "Foreign")
-print(twosample, version = "legacy")
+tTest(Eredivisie, "logMarketValue", group = "Foreign")
 @
 \end{center}
 
@@ -400,8 +401,7 @@ works with ranks instead of the observed values.
 %
 \begin{center}
 <<results="asis">>=
-rankSum <- wilcoxonTest(Eredivisie, "MarketValue", group = "Foreign")
-print(rankSum, version = "legacy")
+wilcoxonTest(Eredivisie, "MarketValue", group = "Foreign")
 @
 \end{center}
 
@@ -423,7 +423,7 @@ the average log market values for players on different positions.
 \begin{center}
 <<results="asis">>=
 oneway <- ANOVA(Eredivisie, "logMarketValue", group = "Position")
-print(oneway, version = "legacy")
+oneway
 @
 \end{center}
 
@@ -439,8 +439,7 @@ to use the logarithms of the market values for this test.
 %
 \begin{center}
 <<results="asis">>=
-kw <- kruskalTest(Eredivisie, "MarketValue", group = "Position")
-print(kw, version = "legacy")
+kruskalTest(Eredivisie, "MarketValue", group = "Position")
 @
 \end{center}
 
@@ -451,13 +450,14 @@ to function \code{ANOVA()}.
 <<results="asis">>=
 twoway <- ANOVA(Eredivisie, "logMarketValue",
                 group = c("Position", "Foreign"))
-print(twoway, version = "legacy")
+twoway
 @
 \end{center}
 
 We can again produce a profile plot with the \code{plot()} method for the
 resulting object.  Argument \code{which} can be used to specify which of the
-two grouping variables should be used on the $x$-axis of the profile plot.
+two grouping variables should be used on the $x$-axis of the profile plot, with
+the default being the first grouping variable.
 %
 <<fig.width=6, out.width = "0.7\\textwidth">>=
 plot(twoway)
@@ -480,8 +480,7 @@ $3/11$ for goalkeepers, defenders, midfielders, and forwards, respectively.
 %
 \begin{center}
 <<results="asis">>=
-goodness <- chisqTest(Eredivisie, "Position", p = c(1, 4, 3, 3)/11)
-print(goodness, version = "legacy")
+chisqTest(Eredivisie, "Position", p = c(1, 4, 3, 3)/11)
 @
 \end{center}
 
@@ -490,8 +489,7 @@ Furthermore, we can test whether the categorical variables \code{Position} and
 foreign players are the same for all playing positions.
 \begin{center}
 <<results="asis">>=
-independence <- chisqTest(Eredivisie, c("Position", "Foreign"))
-print(independence, version = "legacy")
+chisqTest(Eredivisie, c("Position", "Foreign"))
 @
 \end{center}
 
@@ -517,7 +515,7 @@ usual in \proglang{R}, we specify the regression models with formulas.
 fit <- regression(logMarketValue ~ Age + AgeSq,
                   logMarketValue ~ Age + AgeSq + Contract + Foreign,
                   data = Eredivisie)
-print(fit, version = "legacy")
+fit
 @
 \end{center}
 
@@ -528,7 +526,7 @@ on the change in $R^{2}$ from one model to the next.
 
 \begin{center}
 <<results="asis">>=
-print(fit, statistics = "summary", change = TRUE, version = "legacy")
+print(fit, statistics = "summary", change = TRUE)
 @
 \end{center}
 
