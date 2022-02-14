@@ -1,6 +1,9 @@
+# --------------------------------------
+# Author: Andreas Alfons
+#         Erasmus Universiteit Rotterdam
+# --------------------------------------
 
-
-# function to initialize and set default values for options
+# internal function to initialize and set default values for options
 initializeOptions = function(...) {
 
   # assign default values to options (they live in this environment)
@@ -48,7 +51,43 @@ initializeOptions = function(...) {
   list(get = get, set = set)
 }
 
-
-## object for package options
+#' Current options for r2spss
+#'
+#' Retrieve or set global options for package \pkg{r2spss} (within the current
+#' \R session) via accessor functions.
+#'
+#' Currently, the only available option is \code{version}, which controls
+#' tables and plots should mimic the content and look of recent SPSS versions
+#' (\code{"modern"}) or older versions (<24; \code{"legacy"}).
+#'
+#' @format A list with the following two components:
+#' \describe{
+#'   \item{\code{get(which, drop = TRUE)}}{an accessor function to retrieve
+#'   current options, which are usually returned as a named list.  Argument
+#'   \code{which} allows to select which options to retrieve.  If a single
+#'   option is selected, argument \code{drop} indicates whether only its value
+#'   should be returned (\code{TRUE}) or a list of length one (\code{FALSE}).}
+#'   \item{\code{set(...)}}{an accessor function to set certain options using
+#'   \code{name = value} pairs.}
+#' }
+#'
+#' @author Andreas Alfons
+#'
+#' @examples
+#' # retrieve list of options:
+#' r2spssOptions$get()
+#'
+#' # retrieve a single option:
+#' r2spssOptions$get("version")
+#'
+#' \dontrun{
+#'
+#' # set an option:
+#' r2spssOptions$set(version = "legacy")
+#' }
+#'
+#' @keywords utilities
+#'
 #' @export
+
 r2spssOptions <- initializeOptions(version = "modern")
