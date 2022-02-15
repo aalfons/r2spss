@@ -210,13 +210,13 @@ that mimic the look of recent SPSS version thereby build upon the
 \code{NiceTabular} environment, which is preferred for its seamless display of
 background colors in the table.
 
-However, \pkg{r2spss} requires a very recent version of \pkg{nicematrix}.  It
-is also important to note that tables using the \code{NiceTabular} environment
-may require several \proglang{LaTeX} compilations to be displayed correctly.
-For portability reasons, this vignette therefore only displays \proglang{LaTeX}
-tables that mimic the simpler look of older \proglang{SPSS} versions.  For
-convenience, such a global preference within an \proglang{R} session can be
-set with the accessor function \code{r2spssOptions$set()}.
+However, \pkg{r2spss} requires \pkg{nicematrix} version 6.5 (2022-01-23) or
+later.  It is also important to note that tables using the \code{NiceTabular}
+environment may require several \proglang{LaTeX} compilations to be displayed
+correctly.  For portability reasons, this vignette therefore only displays
+\proglang{LaTeX} tables that mimic the simpler look of older \proglang{SPSS}
+versions.  For convenience, such a global preference within an \proglang{R}
+session can be set with the accessor function \code{r2spssOptions$set()}.
 
 <<>>=
 r2spssOptions$set(version = "legacy")
