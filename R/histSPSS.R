@@ -66,7 +66,7 @@ histogramSPSS <- function(data, variable, normal = FALSE,
     geom_hline(yintercept = 0) +
     geom_vline(xintercept = xlim[1]) +
     theme_bw() +
-    theme(axis.title = element_text(face = "bold"),
+    theme(axis.title = element_text(face = "bold", size = 12),
           axis.ticks.length = unit(0, "points"),
           panel.border = element_blank(),
           panel.grid.major.x = element_blank(),
