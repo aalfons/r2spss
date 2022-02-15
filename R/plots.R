@@ -314,6 +314,9 @@ boxplotSPSS <- function(data, variables, group = NULL, xlab = NULL,
 #' produced.
 #' @param xlab,ylab  the axis labels for a simple scatterplot (the default is
 #' to use the variable names).  This is ignored for a scatterplot matrix.
+#' @param version  a character string specifying whether the plot should mimic
+#' the look of recent SPSS versions (\code{"modern"}) or older versions (<24;
+#' \code{"legacy"}).
 #' @param \dots  additional arguments to be passed down, in particular
 #' graphical parameters (see \code{\link[graphics]{par}}).
 #'
@@ -339,17 +342,19 @@ boxplotSPSS <- function(data, variables, group = NULL, xlab = NULL,
 #' @importFrom graphics box mtext par plot points rect
 #' @export
 
-plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL, ...) {
+plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL,
+                     version = r2spssOptions$get("version"), ...) {
   # initializations
   data <- as.data.frame(data)
   variables <- as.character(variables)
   if (length(variables) < 2) stop("at least two variables must be specified")
+  version <- match.arg(version, choices = getVersionOptions())
   # create plot
   if (length(variables) == 2) {
     if (is.null(xlab)) xlab <- variables[1]
     if (is.null(ylab)) ylab <- variables[2]
     .plot(data[, variables[1]], data[, variables[2]], xlab=xlab, ylab=ylab, ...)
-  } else .pairs(data[, variables], ...)
+  } else .pairs(data[, variables], version = version, ...)
 }
 
 # internal function for scatter plot with different defaults
@@ -383,9 +388,9 @@ plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL, ...) {
 }
 
 # internal function for scatterplot matrix with different defaults
-.pairs <- function(x, ..., frame.plot = TRUE, oma = NULL, bg = "#F0F0F0",
-                   main = NULL, font.main = 2, cex.main = 1.2,
-                   font.lab = 2, cex.lab = 1,
+.pairs <- function(x, version = "modern", ..., frame.plot = TRUE, oma = NULL,
+                   pch = NULL, col = "black", bg = NULL, main = NULL,
+                   font.main = 2, cex.main = 1.2, font.lab = NULL, cex.lab = 1,
                    # the following arguments are currently ignored
                    type = "p", log = "", sub = NULL, xlab = NULL,
                    ylab = NULL, ann = TRUE, axes = FALSE) {
@@ -396,34 +401,48 @@ plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL, ...) {
     top <- if (is.null(main) || nchar(main) == 0) 0 else 3
     oma <- c(2, 2, top, 0) + 0.1
   }
+  legacy <- version == "legacy"
+  # default values for graphical parameters depending on SPSS version to mimic
+  if (legacy) {
+    if (is.null(pch)) pch <- 1            # plot symbol
+    if (is.null(bg)) bg <- "#F0F0F0"      # here: background of plot area
+    if (is.null(font.lab)) font.lab <- 2  # variable names in bold
+  } else {
+    if (is.null(pch)) pch <- 21           # plot symbol
+    if (is.null(bg)) bg <- "#009CEE"      # here: fill color of points
+    if (is.null(font.lab)) font.lab <- 1  # variable names in normal font
+  }
   # set plot margins
-  op <- par(mfrow=c(p, p), mar=c(0, 0, 0, 0), oma=oma)
+  op <- par(mfrow = c(p, p), mar = c(0, 0, 0, 0), oma = oma)
   on.exit(par(op))
   # create plots
   for (i in seq_len(p)) {
     for (j in seq_len(p)) {
       # initialize current plot
-      plot(x[, j], x[, i], type="n", ann=FALSE, axes=FALSE, ...)
+      plot(x[, j], x[, i], type = "n", ann = FALSE, axes = FALSE, ...)
       # plot background
-      usr <- par("usr")
-      rect(usr[1], usr[3], usr[2], usr[4], col=bg, border=NA)
+      if (legacy) {
+        usr <- par("usr")
+        rect(usr[1], usr[3], usr[2], usr[4], col = bg, border = NA)
+      }
       # add frame around plot
       if (frame.plot) box()
       # add points
       if (i != j) {
-        points(x[, j], x[, i], ...)
+        points(x[, j], x[, i], pch = pch, col = col, bg = bg, ...)
       }
       # add variable labels
       if (j == 1) {
-        mtext(labels[i], side=2, line=0.25, font=font.lab, cex=cex.lab)
+        mtext(labels[i], side = 2, line = 0.25, font = font.lab, cex = cex.lab)
       }
       if (i == p) {
-        mtext(labels[j], side=1, line=0.5, font=font.lab, cex=cex.lab)
+        mtext(labels[j], side = 1, line = 0.5, font = font.lab, cex = cex.lab)
       }
     }
   }
   # add title
-  mtext(main, side=3, line=1, outer=TRUE, font=font.main, cex=cex.main)
+  mtext(main, side = 3, line = 1, outer = TRUE,
+        font = font.main, cex = cex.main)
 }
 
 

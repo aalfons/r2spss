@@ -4,7 +4,14 @@
 \alias{plotSPSS}
 \title{Scatterplot and Scatterplot Matrix}
 \usage{
-plotSPSS(data, variables, xlab = NULL, ylab = NULL, ...)
+plotSPSS(
+  data,
+  variables,
+  xlab = NULL,
+  ylab = NULL,
+  version = r2spssOptions$get("version"),
+  ...
+)
 }
 \arguments{
 \item{data}{a data frame containing the variables to be plotted.}
@@ -17,6 +24,10 @@ produced.}
 
 \item{xlab, ylab}{the axis labels for a simple scatterplot (the default is
 to use the variable names).  This is ignored for a scatterplot matrix.}
+
+\item{version}{a character string specifying whether the plot should mimic
+the look of recent SPSS versions (\code{"modern"}) or older versions (<24;
+\code{"legacy"}).}
 
 \item{\dots}{additional arguments to be passed down, in particular
 graphical parameters (see \code{\link[graphics]{par}}).}
