@@ -567,7 +567,7 @@ latexBeginTabular <- function(alignment, border, nrow, ncol,
   lines <- paste0("\\begin{", environment, "}{", border[1],
          paste0(specs, collapse = ""), "}\n")
   if (!legacy) {
-    lines <- c("\\NiceMatrixOptions{custom-line = {letter = /, color = darkgraySPSS}}\n",
+    lines <- c("\\NiceMatrixOptions{custom-line = {letter = /, color = graySPSS}}\n",
                lines, "\\CodeBefore\n",
                sprintf("  \\rectanglecolor{graySPSS}{%d-1}{%d-%d}\n",
                        nrow[1]+1, nrow[1]+nrow[2], ncol[1]),
