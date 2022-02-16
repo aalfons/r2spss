@@ -7,8 +7,8 @@
 #' @importFrom ggplot2 ggplot geom_histogram geom_rect geom_density layer_data
 #' @export
 
-histogramSPSS <- function(data, variable, normal = FALSE,
-                          bins = NULL, digits = 3, expand = 0.05, ...) {
+histogram <- function(data, variable, normal = FALSE, bins = NULL,
+                      digits = 3, expand = 0.05, ...) {
   # initializations
   data <- as.data.frame(data)
   variable <- as.character(variable)
