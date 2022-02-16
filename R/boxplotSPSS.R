@@ -7,8 +7,9 @@
 #' @export
 
 bwplotSPSS <- function(data, variables, group = NULL,
-                       version = r2spssOptions("version"), cut.names = NULL,
-                       width = 0.25, coef = 1.5, outlier.shape = c(1, 42),
+                       version = r2spssOptions$get("version"),
+                       cut.names = NULL, width = 0.25, coef = 1.5,
+                       outlier.shape = c(1, 42),
                        outlier.size = 2,  # ggplot2 default is 1.5
                        expand = 0.05, ...) {
   # initializations
