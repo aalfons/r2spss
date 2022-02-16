@@ -4,11 +4,11 @@
 # --------------------------------------
 
 #' @importFrom stats dnorm sd
-#' @importFrom ggplot2 ggplot geom_histogram geom_rect geom_density layer_data
+#' @import ggplot2
 #' @export
 
-histogram <- function(data, variable, normal = FALSE, bins = NULL,
-                      digits = 3, expand = 0.05, ...) {
+histogramSPSS <- function(data, variable, normal = FALSE, bins = NULL,
+                          digits = 3, expand = 0.05, ...) {
   # initializations
   data <- as.data.frame(data)
   variable <- as.character(variable)
@@ -82,10 +82,12 @@ histogram <- function(data, variable, normal = FALSE, bins = NULL,
           axis.ticks.length = unit(0, "points"),
           panel.border = element_blank(),
           panel.grid.major.x = element_blank(),
-          panel.grid.major.y = element_line(color = gray(0.66)),
+          panel.grid.major.y = element_line(color = "#B7B7B7"),
           panel.grid.minor = element_blank()) +
-    scale_x_continuous(limits = xlim, expand = expansion(mult = 0)) +
-    scale_y_continuous(limits = ylim, expand = expansion(mult = 0),
+    scale_x_continuous(limits = xlim,
+                       expand = expansion(mult = 0)) +
+    scale_y_continuous(limits = ylim,
+                       expand = expansion(mult = 0),
                        sec.axis = dup_axis(breaks = ylim[2],
                                            name = NULL,
                                            labels = statistics)) +
