@@ -84,12 +84,12 @@ histogramSPSS <- function(data, variable, normal = FALSE, bins = NULL,
           panel.grid.major.x = element_blank(),
           panel.grid.major.y = element_line(color = "#B7B7B7"),
           panel.grid.minor = element_blank()) +
-    scale_x_continuous(limits = xlim,
+    scale_x_continuous(labels = numberSPSS, limits = xlim,
                        expand = expansion(mult = 0)) +
-    scale_y_continuous(limits = ylim,
+    scale_y_continuous(labels = numberSPSS, limits = ylim,
                        expand = expansion(mult = 0),
-                       sec.axis = dup_axis(breaks = ylim[2],
-                                           name = NULL,
+                       sec.axis = dup_axis(name = NULL,
+                                           breaks = ylim[2],
                                            labels = statistics)) +
     labs(x = variable, y = "Frequency")
   # return plot

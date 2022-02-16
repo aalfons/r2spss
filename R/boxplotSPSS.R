@@ -115,9 +115,8 @@ bwplotSPSS <- function(data, variables, group = NULL,
           panel.grid.minor = element_blank()) +
     scale_x_continuous(breaks = stats$x, labels = labels,
                        limits = xlim, expand = expansion(mult = 0)) +
-    scale_y_continuous(limits = ylim,
-                       expand = expansion(mult = 0),
-                       labels = numberSPSS) +
+    scale_y_continuous(labels = numberSPSS, limits = ylim,
+                       expand = expansion(mult = 0)) +
     labs(x = xlab, y = ylab)
 }
 
