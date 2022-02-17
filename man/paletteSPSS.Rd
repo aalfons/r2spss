@@ -4,7 +4,7 @@
 \alias{paletteSPSS}
 \title{SPSS Color Palette}
 \usage{
-paletteSPSS()
+paletteSPSS(n = NULL, version = r2spssOptions$get("version"))
 }
 \value{
 A character vector specifying 30 colors as used by SPSS.

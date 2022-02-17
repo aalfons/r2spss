@@ -78,10 +78,10 @@ r2spss.sty <- function(path = NULL) {
 
   # write LaTeX statements to define colors
   cat("% define colors for modern theme\n", file = file)
-  cat("\\definecolor{graySPSS}{RGB}{228,228,228}\n", file = file)
-  cat("\\definecolor{lightgraySPSS}{RGB}{250,250,252}\n", file = file,
+  cat("\\definecolor{graySPSS}{RGB}{244,244,244}\n", file = file)
+  cat("\\definecolor{lightgraySPSS}{RGB}{249,249,251}\n", file = file,
       append = TRUE)
-  cat("\\definecolor{darkgraySPSS}{RGB}{183,183,183}\n", file = file)
-  cat("\\definecolor{blueSPSS}{RGB}{39,73,96}\n", file = file)
+  cat("\\definecolor{darkgraySPSS}{RGB}{174,174,174}\n", file = file)
+  cat("\\definecolor{blueSPSS}{RGB}{38,74,96}\n", file = file)
 
 }

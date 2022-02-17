@@ -147,7 +147,7 @@ toSPSS.kruskalTestSPSS <- function(object, statistics = c("test", "ranks"),
 
     # initializations
     if (is.null(digits)) digits <- 3
-    version <- match.arg(version, choices = getVersionOptions())
+    version <- match.arg(version, choices = getVersionValues())
     legacy <- version == "legacy"
     # extract results
     # put test results into SPSS format
@@ -192,7 +192,7 @@ print.kruskalTestSPSS <- function(x, statistics = c("ranks", "test"),
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  version <- match.arg(version, choices = getVersionOptions())
+  version <- match.arg(version, choices = getVersionValues())
   digits <- rep_len(digits, 2)
 
   ## print LaTeX table for ranks

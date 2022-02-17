@@ -333,7 +333,7 @@ toSPSS.ANOVASPSS <- function(object,
   } else {
 
     ## initializations
-    version <- match.arg(version, choices = getVersionOptions())
+    version <- match.arg(version, choices = getVersionValues())
     legacy <- version == "legacy"
 
     if (statistics == "variance") {
@@ -495,7 +495,7 @@ print.ANOVASPSS <- function(x,
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  version <- match.arg(version, choices = getVersionOptions())
+  version <- match.arg(version, choices = getVersionValues())
 
   ## print LaTeX table for descriptives
   if ("descriptives" %in% statistics) {

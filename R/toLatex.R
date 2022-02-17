@@ -200,7 +200,7 @@ toLatex.SPSSTable <- function(object, version = r2spssOptions$get("version"),
   # the appearance is defined by argument 'version'.
   which <- grep("version", names(args), fixed = TRUE)
   if (length(which) == 0) {
-    args$version <- match.arg(version, choices = getVersionOptions())
+    args$version <- match.arg(version, choices = getVersionValues())
   }
   # call workhorse method
   do.call(toLatex, args)
@@ -276,7 +276,7 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
     # TODO: perform checks
   }
   # check theme
-  version <- match.arg(version, choices = getVersionOptions())
+  version <- match.arg(version, choices = getVersionValues())
   legacy <- version == "legacy"
   # check border indicators
   if (is.null(border)) {

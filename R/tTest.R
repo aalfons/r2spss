@@ -234,7 +234,7 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
                    rowNames = TRUE, info = 0)
     } else if (object$type == "paired") {
       # initializations
-      version <- match.arg(version, choices = getVersionOptions())
+      version <- match.arg(version, choices = getVersionValues())
       legacy <- version == "legacy"
       # define header and label
       if (legacy) {
@@ -260,7 +260,7 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
   } else if (statistics == "test") {
 
     # initializations
-    version <- match.arg(version, choices = getVersionOptions())
+    version <- match.arg(version, choices = getVersionValues())
     legacy <- version == "legacy"
     # define main title
     prefix <- switch(object$type, "one-sample" = "One-Sample",
@@ -520,7 +520,7 @@ print.tTestSPSS <- function(x, statistics = c("statistics", "test"),
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  version <- match.arg(version, choices = getVersionOptions())
+  version <- match.arg(version, choices = getVersionValues())
 
   ## print LaTeX table for ranks
   if ("statistics" %in% statistics) {

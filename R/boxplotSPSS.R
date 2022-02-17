@@ -30,12 +30,11 @@ bwplotSPSS <- function(data, variables, group = NULL,
     } else {
       # restructure data into long format with additional grouping variable
       list <- lapply(variables, function(variable) {
-        data.frame(.value = data[, variable], .group = variable,
-                   stringsAsFactors = TRUE)
+        data.frame(x = variable, y = data[, variable], stringsAsFactors = TRUE)
       })
       data <- do.call(rbind, list)
       # define aesthetic mapping
-      mapping <- aes_string(x = ".group", y = ".value")
+      mapping <- aes_string(x = "x", y = "y")
     }
 
   } else {
@@ -98,7 +97,7 @@ bwplotSPSS <- function(data, variables, group = NULL,
                  data = errorbars) +
     geom_boxplot(aes(x = x, ymin = ymin, lower = lower, middle = middle,
                      upper = upper, ymax = ymax, group = x), data = stats,
-                 stat = "identity", fill = "#009CEE",
+                 stat = "identity", fill = "#1192E8",
                  outlier.shape = NA, width = width) +
     geom_point(aes(x = x, y = y), data = intermediate,
                shape = outlier.shape[1], size = outlier.size) +
@@ -112,7 +111,7 @@ bwplotSPSS <- function(data, variables, group = NULL,
           axis.ticks.length = unit(0, "points"),
           panel.border = element_blank(),
           panel.grid.major.x = element_blank(),
-          panel.grid.major.y = element_line(color = "#B7B7B7"),
+          panel.grid.major.y = element_line(color = "#AEAEAE"),
           panel.grid.minor = element_blank()) +
     scale_x_continuous(breaks = stats$x, labels = labels,
                        limits = xlim, expand = expansion(mult = 0)) +
@@ -123,6 +122,8 @@ bwplotSPSS <- function(data, variables, group = NULL,
 
 
 #' @importFrom scales number
+#' @export
+
 numberSPSS <- function(x, big.mark = "", ...) {
   scales::number(x, big.mark = big.mark, ...)
 }

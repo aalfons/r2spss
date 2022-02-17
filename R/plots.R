@@ -348,7 +348,7 @@ plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL,
   data <- as.data.frame(data)
   variables <- as.character(variables)
   if (length(variables) < 2) stop("at least two variables must be specified")
-  version <- match.arg(version, choices = getVersionOptions())
+  version <- match.arg(version, choices = getVersionValues())
   # create plot
   if (length(variables) == 2) {
     if (is.null(xlab)) xlab <- variables[1]
@@ -409,7 +409,7 @@ plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL,
     if (is.null(font.lab)) font.lab <- 2  # variable names in bold
   } else {
     if (is.null(pch)) pch <- 21           # plot symbol
-    if (is.null(bg)) bg <- "#009CEE"      # here: fill color of points
+    if (is.null(bg)) bg <- "#1192E8"      # here: fill color of points
     if (is.null(font.lab)) font.lab <- 1  # variable names in normal font
   }
   # set plot margins
@@ -591,11 +591,67 @@ getBins <- function(x) {
 #' @importFrom grDevices rgb
 #' @export
 
-paletteSPSS <- function() {
+paletteSPSS <- function(n = NULL, version = r2spssOptions$get("version")) {
+  # initializations
+  version <- match.arg(version, choices = getVersionValues())
   # define red, green and blue vectors
-  red <-   c( 62,  46, 211, 121, 251, 239,  72, 204, 122, 10, 248, 221,  26, 204, 187, 153, 0, 182, 255, 121, 112, 51, 172, 162,  93, 228,  39, 184, 102,  13)
-  green <- c( 88, 184, 206,  40, 248,  51, 194, 204, 170, 86, 152, 186,  95, 255,  63, 153, 0, 231, 255, 122, 220, 51, 208,  22,  97, 228, 139, 155, 102, 141)
-  blue <-  c(172,  72, 151, 125, 115,  56, 197, 204, 213, 44,  29, 241, 118, 204, 127, 153, 0, 232, 255, 167, 132, 51, 238,  25, 255, 228, 172, 201, 102,  70)
+  if (version == "legacy") {
+    red <-   c( 62,  46, 211, 121, 251, 239,  72, 204, 122,  10, 248, 221,  26, 204, 187, 153,   0, 182, 255, 121, 112,  51, 172, 162,  93, 228,  39, 184, 102,  13)
+    green <- c( 88, 184, 206,  40, 248,  51, 194, 204, 170,  86, 152, 186,  95, 255,  63, 153,   0, 231, 255, 122, 220,  51, 208,  22,  97, 228, 139, 155, 102, 141)
+    blue <-  c(172,  72, 151, 125, 115,  56, 197, 204, 213,  44,  29, 241, 118, 204, 127, 153,   0, 232, 255, 167, 132,  51, 238,  25, 255, 228, 172, 201, 102,  70)
+  } else {
+    red <-   c( 17,   0, 159, 250,  87,  25,   0, 238, 178,   0,   1, 138, 165, 236,  69,  92, 208, 204, 225, 237,  28,  92, 225,   9,  90, 155, 207, 150,  63, 105)
+    green <- c(146,  93,  24,  77,   4, 128,  45,  83, 134, 157,  39,  56, 110, 230,  70, 202,  83, 127, 188,  75, 205, 113, 139,  38, 100,   0, 172, 145, 235,  41)
+    blue <-  c(232,  93,  83,  86,   8,  56, 156, 139,   0, 154,  73,   0, 255, 208,  71, 136,  52, 228,  29,  75, 205,  72,  14, 114,  94,   0, 227, 145, 124, 196)
+  }
+  # check number of colors to return
+  max <- length(red)
+  if (is.numeric(n) && length(n) > 0) {
+    n <- n[1]
+    if (n < 1) {
+      n <- 1
+      warning("must request at least one color; returning the first color",
+              call. = FALSE)
+    }
+    if (n <= max) {
+      keep <- seq_len(n)
+      red <- red[keep]
+      green <- green[keep]
+      blue <- blue[keep]
+    } else {
+      warning("only ", max, " colors available; returning those colors",
+              call. = FALSE)
+    }
+  }
   # return colors
-  rgb(red, green, blue, maxColorValue=255)
+  rgb(red, green, blue, maxColorValue = 255)
+}
+
+
+## function for discrete color scales in ggplot2
+#' @export
+SPSS_pal <- function(version = r2spssOptions$get("version"), direction = 1) {
+  # initializations
+  version <- match.arg(version, choices = getVersionValues())
+  # return function to be used for discrete color scales in ggolot2
+  function(n) {
+    pal <- suppressWarnings(paletteSPSS(n, version))
+    if (direction == -1) pal <- rev(pal)
+    pal
+  }
+}
+
+
+## color scales for customizing plots
+
+#' @export
+scale_color_SPSS <- function(..., version = r2spssOptions$get("version"),
+                             direction = 1, aesthetics = "color") {
+  discrete_scale(aesthetics, "SPSS", SPSS_pal(version, direction), ...)
+}
+
+#' @export
+scale_fill_SPSS <- function(..., version = r2spssOptions$get("version"),
+                             direction = 1, aesthetics = "fill") {
+  discrete_scale(aesthetics, "SPSS", SPSS_pal(version, direction), ...)
 }

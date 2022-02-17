@@ -13,7 +13,7 @@ scatterSPSS <- function(data, variables,
   data <- as.data.frame(data)
   variables <- as.character(variables)
   if (length(variables) < 2) stop("at least two variables must be specified")
-  version <- match.arg(version, choices = getVersionOptions())
+  version <- match.arg(version, choices = getVersionValues())
   # create plot
   if (length(variables) == 2) {
     # define default axis labels
@@ -28,7 +28,7 @@ scatterSPSS <- function(data, variables,
     # construct plot
     ggplot() +
       geom_point(aes_string(x = variables[1], y = variables[2]), data = data,
-                 shape = 21, fill = "#009ECC", size = 2) +
+                 shape = 21, fill = "#1192E8", size = 2) +
       geom_hline(yintercept = ylim[1]) +
       geom_vline(xintercept = xlim[1]) +
       theme_bw() +
@@ -36,7 +36,7 @@ scatterSPSS <- function(data, variables,
             axis.ticks.length = unit(0, "points"),
             panel.border = element_blank(),
             panel.grid.major.x = element_blank(),
-            panel.grid.major.y = element_line(color = "#B7B7B7"),
+            panel.grid.major.y = element_line(color = "#AEAEAE"),
             panel.grid.minor = element_blank()) +
       scale_x_continuous(labels = numberSPSS, limits = xlim,
                          expand = expansion(mult = 0)) +

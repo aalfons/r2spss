@@ -205,7 +205,7 @@ toSPSS.regressionSPSS <- function(object,
 
   ## initializations
   statistics <- match.arg(statistics)
-  version <- match.arg(version, choices = getVersionOptions())
+  version <- match.arg(version, choices = getVersionValues())
   legacy <- version == "legacy"
   models <- object$models
   k <- length(models)
@@ -444,7 +444,7 @@ print.regressionSPSS <- function(x,
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  version <- match.arg(version, choices = getVersionOptions())
+  version <- match.arg(version, choices = getVersionValues())
 
   ## print LaTeX table for descriptives
   if ("summary" %in% statistics) {
