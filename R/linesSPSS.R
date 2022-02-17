@@ -6,7 +6,7 @@
 #' @import ggplot2
 #' @export
 
-## Note:
+## Note: (actually this doesn't really apply anymore)
 ## Plot functions in \pkg{r2spss} modify the axes such that they mimic the
 ## appearance of SPSS.  It is therefore not expected that the user adds
 ## \code{scale_x_XXX()} or \code{scale_y_XXX()} to modify the axes, and doing
@@ -60,36 +60,18 @@ lineplotSPSS <- function(data, variables, index = NULL,
     ylab <- "Value"
   }
   # extract scales of axes
-  # scales <- extract_scales(p, expand = expand)
   scales <- sapply(layer_scales(p), function(scale) {
     if (scale$is_discrete()) "discrete" else "continuous"
   })
   # finalize plot
   p <- p +
-    # theme_SPSS(version = version,
-    #            scale.x = if (scales$x$discrete) "discrete" else "continuous",
-    #            scale.y = if (scales$y$discrete) "discrete" else "continuous")
     theme_SPSS(version = version, scale.x = scales["x"], scale.y = scales["y"])
-  # if (scales$x$discrete) {
-  #   p <- p +
-  #     expand_limits(x = scales$x$limits) +
-  #     scale_x_discrete(expand = expansion(add = 0))
-  # } else {
-  #   p <- p +
-  #     scale_x_continuous(labels = numberSPSS, limits = scales$x$limits,
-  #                        expand = expansion(mult = 0))
-  # }
-  # if (scales$y$discrete) {
-  #   p <- p +
-  #     expand_limits(y = scales$y$limits) +
-  #     scale_y_discrete(expand = expansion(add = 0))
-  # } else {
-  #   p <- p +
-  #     scale_y_continuous(labels = numberSPSS, limits = scales$y$limits,
-  #                        expand = expansion(mult = 0))
-  # }
-  if (scales["x"] == "continuous") p <- p + scale_x_continuous(labels = numberSPSS)
-  if (scales["y"] == "continuous") p <- p + scale_y_continuous(labels = numberSPSS)
+  if (scales["x"] == "continuous") {
+    p <- p + scale_x_continuous(labels = numberSPSS)
+  }
+  if (scales["y"] == "continuous") {
+    p <- p + scale_y_continuous(labels = numberSPSS)
+  }
   p <- p + labs(x = xlab, y = ylab)
   # return plot
   p
