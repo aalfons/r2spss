@@ -5,15 +5,15 @@
 
 
 ## function to obtain possible values for argument 'version'
-
 getVersionValues <- function() c("modern", "legacy")
 
+## function to obtain possible values for argument 'scale'
+getScaleValues <- function() c("continuous", "discrete")
 
 ## function to add line breaks in character strings to make sure that a given
 ## character limit is not exceeded per line
 # text .... a character vector for which each element will be wrapped
 # limit ... integer vector giving the character limit for each element of 'text'
-
 wrapText <- function(text, limit = 66) {
   # initializations
   n <- length(text)
