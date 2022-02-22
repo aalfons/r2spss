@@ -34,7 +34,7 @@ lineplotSPSS <- function(data, variables, index = NULL,
     mapping <- aes_string(x = "x", y = "y", group = 1)
     p <- ggplot() +
       geom_line_SPSS(mapping, data = data, ..., version = version,
-                     fatten = fatten)
+                     fatten = fatten, grouped = FALSE)
     # define default y-axis label
     ylab <- variables
   } else {
@@ -48,7 +48,7 @@ lineplotSPSS <- function(data, variables, index = NULL,
     mapping <- aes_string(x = "x", y = "y", color = "group", group = "group")
     p <- ggplot() +
       geom_line_SPSS(mapping, data = data, ..., version = version,
-                     fatten = fatten) +
+                     fatten = fatten, grouped = TRUE) +
       scale_color_SPSS(name = NULL, version = version)
     # define default y-axis label
     ylab <- "Value"
@@ -74,9 +74,8 @@ lineplotSPSS <- function(data, variables, index = NULL,
 
 # custom geom for lines with defaults to mimic appearance of SPSS
 geom_line_SPSS <- function(..., version = r2spssOptions$get("version"),
-                           fatten = NULL) {
+                           fatten = NULL, grouped = FALSE) {
   # initializations
-  version <- match.arg(version, choices = getVersionValues())
   if (is.null(fatten)) fatten <- if (version == "legacy") 1 else 2
   # extract argument names
   arguments <- list(...)
@@ -88,13 +87,16 @@ geom_line_SPSS <- function(..., version = r2spssOptions$get("version"),
   size <- arguments$size
   if (is.null(size)) size <- 0.5
   # if we have a single line, set default values according to SPSS version
-  group <- arguments$mapping$group
-  if (is.null(group) || group == 1) {
-    # # default line color
-    # if (is.null(arguments$colour)) arguments$colour <- "black"
+  if (grouped) arguments$size <- size
+  else {
+    # default line color
+    if (is.null(arguments$colour)) arguments$colour <- "black"
     # make line thicker
     arguments$size <- fatten * size
-  } else arguments$size <- size
+  }
+  # check line type and transparency
+  if (is.null(arguments$linetype)) arguments$linetype <- "solid"
+  if (is.null(arguments$alpha)) arguments$alpha <- 1
   # call geom_line()
   do.call(geom_line, arguments)
 }
