@@ -313,25 +313,30 @@ substrSPSS <- function(x) substr(x, start = 1, stop = 8)
 
 # internal function similar to standardise_aes_names() but directly returning
 # list of arguments with standardized names
-standardize_arguments <- function(...) {
-  # put arguments into list and obtain argument names
-  arguments = list(...)
-  argument_names <- names(arguments)
+standardize_args <- function(args, replace = NULL) {
+  # obtain argument names
+  argument_names <- names(args)
   # default mapping of names (frequently used graphical parameters)
-  replace <- get_aes_mapping()
+  if (is.null(replace)) replace <- get_aes_mapping()
   # replace names if necessary
   replace <- replace[names(replace) %in% argument_names]
   if (length(replace) > 0) {
     argument_names[match(names(replace), argument_names)] <- replace
-    names(arguments) <- argument_names
+    names(args) <- argument_names
   }
   # return list of arguments with standardized names
-  arguments
+  args
 }
 
-# internal function to obtain mapping of graphical parameters
+# internal function to obtain mapping of graphical parameters to aesthetics
 get_aes_mapping <- function() {
   c(col = "color", colour = "color", bg = "fill", fg = "color",
     pch = "shape", cex = "size", lty = "linetype", lwd = "size",
     srt = "angle", adj = "hjust", min = "ymin", max = "ymax")
+}
+
+# internal function to obtain mapping of aesthetics to graphical parameters
+get_par_mapping <- function(which = "point") {
+  c(color = "col", colour = "col", fill = "bg",
+    shape = "pch", size = "cex", title = "main")
 }

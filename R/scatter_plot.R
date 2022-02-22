@@ -44,16 +44,9 @@ scatter_plot <- function(data, variables,
     p
   } else {
     ## scatterplot matrix using base R graphics
-    # allow ggplot2-style aesthetics
-    arguments <- list(...)
-    argument_names <- names(arguments)
-    # mapping of graphical parameters
-    replace <- c(color = "col", colour = "col", fill = "bg",
-                 shape = "pch", size = "cex", title = "main")
-    # replace elements according to above mapping
-    replace <- replace[names(replace) %in% argument_names]
-    argument_names[match(names(replace), argument_names)] <- replace
-    names(arguments) <- argument_names
+    # obtain list of arguments with standardized names to allow for
+    # ggplot2-style aesthetics
+    arguments <- standardize_args(list(...), replace = get_par_mapping("point"))
     # call workhorse function
     arguments <- c(list(data[, variables], version = version), arguments)
     do.call(.pairs, arguments)
@@ -70,7 +63,7 @@ scatter_plot <- function(data, variables,
 # scale_xxx_SPSS() to make any plot look like SPSS.
 geom_point_SPSS <- function(..., version = r2spssOptions$get("version")) {
   # obtain list of arguments with standardized names
-  arguments <- standardize_arguments(...)
+  arguments <- standardize_args(list(...))
   # check plot symbol
   if (is.null(arguments$shape)) {
     arguments$shape <- if (version == "legacy") 1 else 21

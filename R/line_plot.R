@@ -78,7 +78,7 @@ geom_line_SPSS <- function(..., version = r2spssOptions$get("version"),
   # initializations
   if (is.null(fatten)) fatten <- if (version == "legacy") 1 else 2
   # obtain list of arguments with standardized names
-  arguments <- standardize_arguments(...)
+  arguments <- standardize_args(list(...))
   # check size of lines
   size <- arguments$size
   if (is.null(size)) size <- 0.5

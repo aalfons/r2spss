@@ -117,7 +117,7 @@ geom_boxplot_SPSS <- function(..., version = r2spssOptions$get("version"),
                               outlier.shape, outlier.size, outlier.stroke,
                               outlier.alpha, notch, notchwidth, orientation) {
   # obtain list of arguments with standardized names
-  arguments <- standardize_arguments(...)
+  arguments <- standardize_args(list(...))
   # check colors
   if (is.null(arguments$color)) arguments$color <- "black"
   if (is.null(arguments$fill)) {
@@ -146,7 +146,7 @@ geom_error_SPSS <- function(..., stat, geom, position, outlier.colour,
                             notch, notchwidth, width, varwidth, coef,
                             orientation, shape, stroke, fill, pch, cex, bg) {
   # obtain list of arguments with standardized names
-  arguments <- standardize_arguments(...)
+  arguments <- standardize_args(list(...))
   # check color
   if (is.null(arguments$color)) arguments$color <- "black"
   # check line types and size
@@ -167,7 +167,7 @@ geom_outliers_SPSS <- function(..., outlier.colour = "black",
                                stat, geom, position, notch, notchwidth, width,
                                varwidth, coef, orientation, linetype, lty, lwd) {
   # obtain list of arguments with standardized names
-  arguments <- standardize_arguments(...)
+  arguments <- standardize_args(list(...))
   # check border color
   if (missing(outlier.color)) {
     if (!missing(outlier.colour)) outlier.color <- outlier.colour
