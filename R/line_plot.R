@@ -7,9 +7,9 @@
 #' @import ggplot2
 #' @export
 
-lineplotSPSS <- function(data, variables, index = NULL,
-                         version = r2spssOptions$get("version"),
-                         fatten = NULL, ...) {
+line_plot <- function(data, variables, index = NULL,
+                      version = r2spssOptions$get("version"),
+                      fatten = NULL, ...) {
   # initializations
   data <- as.data.frame(data)
   n <- nrow(data)
@@ -77,12 +77,8 @@ geom_line_SPSS <- function(..., version = r2spssOptions$get("version"),
                            fatten = NULL, grouped = FALSE) {
   # initializations
   if (is.null(fatten)) fatten <- if (version == "legacy") 1 else 2
-  # extract argument names
-  arguments <- list(...)
-  argument_names <- names(arguments)
-  # replace argument names with standardized ones
-  standardized_names <- standardise_aes_names(argument_names)
-  names(arguments) <- standardized_names
+  # obtain list of arguments with standardized names
+  arguments <- standardize_arguments(...)
   # check size of lines
   size <- arguments$size
   if (is.null(size)) size <- 0.5

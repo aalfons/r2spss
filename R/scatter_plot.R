@@ -7,9 +7,9 @@
 #' @import ggplot2
 #' @export
 
-scatterSPSS <- function(data, variables,
-                        version = r2spssOptions$get("version"),
-                        ...) {
+scatter_plot <- function(data, variables,
+                         version = r2spssOptions$get("version"),
+                         ...) {
   # initializations
   data <- as.data.frame(data)
   variables <- as.character(variables)
@@ -69,12 +69,8 @@ scatterSPSS <- function(data, variables,
 # This would provide a nice set of functions together with theme_SPSS() and
 # scale_xxx_SPSS() to make any plot look like SPSS.
 geom_point_SPSS <- function(..., version = r2spssOptions$get("version")) {
-  # extract argument names
-  arguments <- list(...)
-  argument_names <- names(arguments)
-  # replace argument names with standardized ones
-  standardized_names <- standardise_aes_names(argument_names)
-  names(arguments) <- standardized_names
+  # obtain list of arguments with standardized names
+  arguments <- standardize_arguments(...)
   # check plot symbol
   if (is.null(arguments$shape)) {
     arguments$shape <- if (version == "legacy") 1 else 21
@@ -86,7 +82,7 @@ geom_point_SPSS <- function(..., version = r2spssOptions$get("version")) {
   }
   if (is.null(arguments$alpha)) arguments$alpha <- 1
   # check size of plot symbol
-  if (is.null(arguments$size)) arguments$size <- 2
+  if (is.null(arguments$size)) arguments$size <- 2  # ggplot2 default is 1.5
   if (is.null(arguments$stroke)) arguments$stroke <- 0.5
   # call geom_point()
   do.call(geom_point, arguments)

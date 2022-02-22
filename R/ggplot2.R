@@ -264,6 +264,21 @@ scale_fill_SPSS <- function(..., version = r2spssOptions$get("version"),
 }
 
 
+## function to format continuous axis labels similarly as SPSS
+#' @importFrom scales number
+#' @export
+
+numberSPSS <- function(x, big.mark = "", ...) {
+  scales::number(x, big.mark = big.mark, ...)
+}
+
+
+## function to cut labels of a discrete axis similarly as SPSS
+#' @export
+
+substrSPSS <- function(x) substr(x, start = 1, stop = 8)
+
+
 # # internal function to extract information on scales from "ggplot" object
 # extract_scales <- function(plot, i = 1L,
 #                            expand = expansion(mult = 0.05, add = 0.6)) {
@@ -294,3 +309,29 @@ scale_fill_SPSS <- function(..., version = r2spssOptions$get("version"),
 #     list(breaks = breaks, labels = labels, limits = limits, discrete = discrete)
 #   })
 # }
+
+
+# internal function similar to standardise_aes_names() but directly returning
+# list of arguments with standardized names
+standardize_arguments <- function(...) {
+  # put arguments into list and obtain argument names
+  arguments = list(...)
+  argument_names <- names(arguments)
+  # default mapping of names (frequently used graphical parameters)
+  replace <- get_aes_mapping()
+  # replace names if necessary
+  replace <- replace[names(replace) %in% argument_names]
+  if (length(replace) > 0) {
+    argument_names[match(names(replace), argument_names)] <- replace
+    names(arguments) <- argument_names
+  }
+  # return list of arguments with standardized names
+  arguments
+}
+
+# internal function to obtain mapping of graphical parameters
+get_aes_mapping <- function() {
+  c(col = "color", colour = "color", bg = "fill", fg = "color",
+    pch = "shape", cex = "size", lty = "linetype", lwd = "size",
+    srt = "angle", adj = "hjust", min = "ymin", max = "ymax")
+}
