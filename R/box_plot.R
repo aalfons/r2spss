@@ -28,18 +28,15 @@ box_plot <- function(data, variables, group = NULL,
     # suppress axis labels
     xlab <- NULL
     ylab <- NULL
-    if (length(variables) == 1) {
-      # define aesthetic mapping
-      mapping <- aes_string(y = variables)
-    } else {
-      # restructure data into long format with additional grouping variable
-      list <- lapply(variables, function(variable) {
-        data.frame(x = variable, y = data[, variable], stringsAsFactors = TRUE)
-      })
-      data <- do.call(rbind, list)
-      # define aesthetic mapping
-      mapping <- aes_string(x = "x", y = "y")
-    }
+    # restructure data into long format with additional grouping variable
+    # (even if we have only one variable, this replicates SPSS behavior
+    # since the variable names are used as labels on the x-axis)
+    list <- lapply(variables, function(variable) {
+      data.frame(x = variable, y = data[, variable], stringsAsFactors = TRUE)
+    })
+    data <- do.call(rbind, list)
+    # define aesthetic mapping
+    mapping <- aes_string(x = "x", y = "y")
   } else {
     # further initializations
     variables <- variables[1]
@@ -61,19 +58,23 @@ box_plot <- function(data, variables, group = NULL,
   # extract length of whiskers
   coef <- list(...)$coef
   if (is.null(coef)) coef <- 1.5
-  # determine which outliers are extreme outliers
-  outliers <- mapply(function(x, lower, middle, upper, outliers) {
-    if (length(outliers) > 0) {
-      extreme <- abs(outliers - middle) > 2 * coef * (upper - lower)
-      data.frame(x = x, y = outliers, extreme = extreme)
-    }
-  }, x = stats$x, lower = stats$lower, middle = stats$middle,
-  upper = stats$upper, outliers = outlierList, SIMPLIFY = FALSE,
-  USE.NAMES = FALSE)
-  outliers <- do.call(rbind, outliers)
-  # split outliers into intermediate and extreme outliers
-  intermediate <- outliers[!outliers$extreme, c("x", "y")]
-  extreme <- outliers[outliers$extreme, c("x", "y")]
+  # determine if we have outliers
+  have_outliers <- length(unlist(outlierList, use.names = FALSE)) > 0
+  # if applicable, determine which outliers are extreme outliers
+  if (have_outliers) {
+    outliers <- mapply(function(x, lower, middle, upper, outliers) {
+      if (length(outliers) > 0) {
+        extreme <- abs(outliers - middle) > 2 * coef * (upper - lower)
+        data.frame(x = x, y = outliers, extreme = extreme)
+      }
+    }, x = stats$x, lower = stats$lower, middle = stats$middle,
+    upper = stats$upper, outliers = outlierList, SIMPLIFY = FALSE,
+    USE.NAMES = FALSE)
+    outliers <- do.call(rbind, outliers)
+    # split outliers into intermediate and extreme outliers
+    intermediate <- outliers[!outliers$extreme, c("x", "y"), drop = FALSE]
+    extreme <- outliers[outliers$extreme, c("x", "y"), drop = FALSE]
+  }
   # extract scales of axes
   scale_info <- layer_scales(p)
   scales <- lapply(scale_info, function(scale) {
@@ -93,12 +94,14 @@ box_plot <- function(data, variables, group = NULL,
       geom_error_SPSS(aes(x = xmin, xend = xmax, y = ymax, yend = ymax),
                       data = errorbars, ...)
   }
-  # add intermediate and extreme outliers
-  p <- p +
-    geom_outliers_SPSS(aes(x = x, y = y), data = intermediate, ...,
-                       outlier.shape = outlier.shape[1], fatten = fatten[1]) +
-    geom_outliers_SPSS(aes(x = x, y = y), data = extreme, ...,
-                       outlier.shape = outlier.shape[2], fatten = fatten[2])
+  # if applicable, add intermediate and extreme outliers
+  if (have_outliers) {
+    p <- p +
+      geom_outliers_SPSS(aes(x = x, y = y), data = intermediate, ...,
+                         outlier.shape = outlier.shape[1], fatten = fatten[1]) +
+      geom_outliers_SPSS(aes(x = x, y = y), data = extreme, ...,
+                         outlier.shape = outlier.shape[2], fatten = fatten[2])
+  }
   # finalize plot
   p <- p + theme_SPSS(version = version, scale.x = scales$x, scale.y = scales$y)
   if (scales$x == "continuous") p <- p + scale_x_continuous(labels = numberSPSS)
