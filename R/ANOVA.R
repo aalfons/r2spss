@@ -548,31 +548,107 @@ print.ANOVASPSS <- function(x,
 #'
 #' @export
 
-plot.ANOVASPSS <- function(x, y, which = 1, type = "o", main = NULL,
-                           xlab = NULL, ylab = NULL, ...) {
+plot.ANOVASPSS <- function(x, y, which = 1,
+                           version = r2spssOptions$get("version"),
+                           ...) {
+  # initializations
+  version <- match.arg(version, choices = getVersionValues())
+  # define local version of geom for lines that ignores arguments for points
+  local_geom_line <- function(..., fatten, fill, shape, stroke, bg, pch) {
+    geom_line_SPSS(...)
+  }
+  # define local version of geom for points that allows to fatten them up
+  # and ignores arguments for lines
+  local_geom_point <- function(..., fatten = 4, linetype, lty) {
+    # obtain list of arguments with standardized names
+    arguments <- standardize_args(list(...))
+    # fatten points up because size aesthetic for lines is much smaller
+    size <- arguments$size
+    if (is.null(size)) size <- 0.5
+    arguments$size <- size * fatten
+    # suppress legend for points
+    arguments$show.legend <- FALSE
+    # call geom_point_SPSS()
+    do.call(geom_point_SPSS, arguments)
+  }
+  # check type of ANOVA
   if (x$type == "one-way") {
-    if (is.null(xlab)) xlab <- x$group
-    if (is.null(ylab)) ylab <- paste("Mean of", x$variable)
+    ## one-way ANOVA
+    # empty title and default axis labels
+    title <- NULL
+    xlab <- x$group
+    ylab <- paste("Mean of", x$variable)
+    # extract relevant data
     desc <- x$descriptives
     n <- nrow(x$descriptives)
     labs <- row.names(x$descriptives)[-n]
     means <- x$descriptives$Mean[-n]
-    .lines(labs, means, type=type, main=main, xlab=xlab, ylab=ylab, ...)
+    # construct data frame
+    data <- data.frame(x = factor(labs, levels = labs), y = means)
+    # define aesthetic mapping and initialize plot
+    mapping <- aes_string(x = "x", y = "y", group = 1)
+    p <- ggplot() +
+      local_geom_line(mapping, data = data, ..., version = version,
+                      grouped = FALSE) +
+      local_geom_point(mapping, data = data, ..., version = version,
+                       grouped = FALSE)
   } else if (x$type == "two-way") {
+    ## two-way ANOVA
+    # check which variable to put on x-axis and which to use for separate lines
     if (length(which) != 1 || !which %in% 1:2) which <- formals()$which
     axis <- x$group[which]
     lines <- x$group[-which]
-    if (is.null(main)) main <- paste("Estimated Marginal Means of", x$variable)
-    if (is.null(xlab)) xlab <- axis
-    if (is.null(ylab)) ylab <- "Estimated Marginal Means"
+    # default title and axis labels
+    title <- paste("Estimated Marginal Means of", x$variable)
+    xlab <- axis
+    ylab <- "Estimated Marginal Means"
+    # extract relevant data
     desc <- x$descriptives
     keep <- desc[, x$group[1]] != "Total" & desc[, x$group[2]] != "Total"
-    labs <- setdiff(levels(desc[, axis]), "Total")
-    means <- do.call(cbind, split(desc[keep, "Mean"], desc[keep, lines]))
-    .matlines(labs, means, type=type, main=main, xlab=xlab, ylab=ylab,
-              title=lines, ...)
+    desc <- droplevels(desc[keep, ])
+    # define aesthetic mapping and initialize plot
+    mapping <- aes_string(x = axis, y = "Mean", color = lines, group = lines)
+    p <- ggplot() +
+      local_geom_line(mapping, data = desc, ..., version = version,
+                      grouped = TRUE) +
+      local_geom_point(mapping, data = desc, ..., version = version,
+                       grouped = TRUE) +
+      scale_color_SPSS(version = version)
   } else stop("type of ANOVA not supported")
+  # finalize plot
+  p <- p +
+    theme_SPSS(version = version, scale.x = "discrete") +
+    scale_y_continuous(labels = numberSPSS) +
+    labs(title = title, x = xlab, y = ylab)
+  # return plot
+  p
 }
+
+# plot.ANOVASPSS <- function(x, y, which = 1, type = "o", main = NULL,
+#                            xlab = NULL, ylab = NULL, ...) {
+#   if (x$type == "one-way") {
+#     if (is.null(xlab)) xlab <- x$group
+#     if (is.null(ylab)) ylab <- paste("Mean of", x$variable)
+#     desc <- x$descriptives
+#     n <- nrow(x$descriptives)
+#     labs <- row.names(x$descriptives)[-n]
+#     means <- x$descriptives$Mean[-n]
+#     .lines(labs, means, type=type, main=main, xlab=xlab, ylab=ylab, ...)
+#   } else if (x$type == "two-way") {
+#     if (length(which) != 1 || !which %in% 1:2) which <- formals()$which
+#     axis <- x$group[which]
+#     lines <- x$group[-which]
+#     if (is.null(main)) main <- paste("Estimated Marginal Means of", x$variable)
+#     if (is.null(xlab)) xlab <- axis
+#     if (is.null(ylab)) ylab <- "Estimated Marginal Means"
+#     desc <- x$descriptives
+#     keep <- desc[, x$group[1]] != "Total" & desc[, x$group[2]] != "Total"
+#     labs <- setdiff(levels(desc[, axis]), "Total")
+#     means <- do.call(cbind, split(desc[keep, "Mean"], desc[keep, lines]))
+#     .matlines(labs, means, type=type, main=main, xlab=xlab, ylab=ylab,
+#               title=lines, ...)
+#   } else stop("type of ANOVA not supported")
+# }
 
 
 # apply a function on each group as well as all observations (one factor)

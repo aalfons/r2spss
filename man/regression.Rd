@@ -41,9 +41,7 @@ regression(..., data, labels = NULL)
   x,
   y,
   which = c("histogram", "scatter"),
-  main = NULL,
-  xlab = NULL,
-  ylab = NULL,
+  version = r2spssOptions$get("version"),
   ...
 )
 }

@@ -24,7 +24,8 @@ scatter_plot <- function(data, variables,
     # define aesthetic mapping and initialize plot
     mapping <- aes_string(x = variables[1], y = variables[2])
     p <- ggplot() +
-      geom_point_SPSS(mapping, data = data, ..., version = version)
+      geom_point_SPSS(mapping, data = data, ..., version = version,
+                      grouped = FALSE)
     # extract scales of axes
     scales <- sapply(layer_scales(p), function(scale) {
       if (scale$is_discrete()) "discrete" else "continuous"
@@ -61,22 +62,30 @@ scatter_plot <- function(data, variables,
 # in addition provide a function that sets defaults for the entire session.
 # This would provide a nice set of functions together with theme_SPSS() and
 # scale_xxx_SPSS() to make any plot look like SPSS.
-geom_point_SPSS <- function(..., version = r2spssOptions$get("version")) {
+geom_point_SPSS <- function(..., version = r2spssOptions$get("version"),
+                            grouped = FALSE) {
   # obtain list of arguments with standardized names
   arguments <- standardize_args(list(...))
-  # check plot symbol
-  if (is.null(arguments$shape)) {
-    arguments$shape <- if (version == "legacy") 1 else 21
+  # default values according to SPSS version also depend on whether we have
+  # multiple groups (for instance, in a profile plot from two-way ANOVA)
+  if (grouped) {
+    # default plot symbol
+    if (is.null(arguments$shape)) arguments$shape <- 1
+  } else {
+    # default colors
+    if (is.null(arguments$color)) arguments$color <- "black"
+    if (version != "legacy" && is.null(arguments$fill)) {
+      arguments$fill <- "#1192E8"
+    }
+    # default plot symbol
+    if (is.null(arguments$shape)) {
+      arguments$shape <- if (version == "legacy") 1 else 21
+    }
   }
-  # check colors
-  if (is.null(arguments$color)) arguments$color <- "black"
-  if (version != "legacy" && is.null(arguments$fill)) {
-    arguments$fill <- "#1192E8"
-  }
-  if (is.null(arguments$alpha)) arguments$alpha <- 1
-  # check size of plot symbol
+  # check size of plot symbol and transparency
   if (is.null(arguments$size)) arguments$size <- 2  # ggplot2 default is 1.5
   if (is.null(arguments$stroke)) arguments$stroke <- 0.5
+  if (is.null(arguments$alpha)) arguments$alpha <- 1
   # call geom_point()
   do.call(geom_point, arguments)
 }

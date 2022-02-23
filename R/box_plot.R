@@ -7,8 +7,9 @@
 #' @import ggplot2
 #' @export
 
-box_plot <- function(data, variables, group = NULL, cut.names = NULL,
-                     error.bar = c("T", "whiskers"), outlier.shape = c(1, 42),
+box_plot <- function(data, variables, group = NULL,
+                     cut.names = NULL, error.bar = c("T", "whiskers"),
+                     coef = c(1.5, 3), outlier.shape = c(1, 42),
                      version = r2spssOptions$get("version"), ...) {
   # initializations
   data <- as.data.frame(data)
@@ -17,6 +18,7 @@ box_plot <- function(data, variables, group = NULL, cut.names = NULL,
   if (length(variables) == 0) stop("a variable to display must be specified")
   # check which SPSS functionality to mimic
   error.bar <- match.arg(error.bar)
+  coef <- rep(as.numeric(coef), length.out = 2)
   version <- match.arg(version, choices = getVersionValues())
   # check plot symbols for outliers
   outlier.shape <- rep(as.numeric(outlier.shape), length.out = 2)
@@ -42,6 +44,8 @@ box_plot <- function(data, variables, group = NULL, cut.names = NULL,
     variables <- variables[1]
     group <- group[1]
     if (is.null(cut.names)) cut.names <- TRUE
+    # make sure that grouping variable is a factor
+    data[, group] <- as.factor(data[, group, drop = TRUE])
     # define default axis labels
     xlab <- group
     ylab <- variables
@@ -50,26 +54,24 @@ box_plot <- function(data, variables, group = NULL, cut.names = NULL,
   }
   # initialize plot
   p <- ggplot() +
-    geom_boxplot_SPSS(mapping, data = data, ..., version = version)
+    geom_boxplot_SPSS(mapping, data = data, ..., coef = coef[1],
+                      version = version)
   # extract boxplot statistics
   stats <- layer_data(p)
   outlierList <- stats$outliers
   stats$outliers <- NULL
-  # extract length of whiskers
-  coef <- list(...)$coef
-  if (is.null(coef)) coef <- 1.5
   # determine if we have outliers
   have_outliers <- length(unlist(outlierList, use.names = FALSE)) > 0
   # if applicable, determine which outliers are extreme outliers
   if (have_outliers) {
-    outliers <- mapply(function(x, lower, middle, upper, outliers) {
+    outliers <- mapply(function(x, lower, upper, outliers) {
       if (length(outliers) > 0) {
-        extreme <- abs(outliers - middle) > 2 * coef * (upper - lower)
+        tmp <- coef[2] * (upper - lower)
+        extreme <- (outliers < lower - tmp) | (outliers > upper + tmp)
         data.frame(x = x, y = outliers, extreme = extreme)
       }
-    }, x = stats$x, lower = stats$lower, middle = stats$middle,
-    upper = stats$upper, outliers = outlierList, SIMPLIFY = FALSE,
-    USE.NAMES = FALSE)
+    }, x = stats$x, lower = stats$lower, upper = stats$upper,
+    outliers = outlierList, SIMPLIFY = FALSE, USE.NAMES = FALSE)
     outliers <- do.call(rbind, outliers)
     # split outliers into intermediate and extreme outliers
     intermediate <- outliers[!outliers$extreme, c("x", "y"), drop = FALSE]
@@ -89,17 +91,19 @@ box_plot <- function(data, variables, group = NULL, cut.names = NULL,
                             stats[, c("ymin", "ymax")])
     # add line segments to boxplot to complete error bars
     p <- p +
-      geom_error_SPSS(aes(x = xmin, xend = xmax, y = ymin, yend = ymin),
+      geom_error_SPSS(aes_string(x = "xmin", xend = "xmax",
+                                 y = "ymin", yend = "ymin"),
                       data = errorbars, ...) +
-      geom_error_SPSS(aes(x = xmin, xend = xmax, y = ymax, yend = ymax),
+      geom_error_SPSS(aes_string(x = "xmin", xend = "xmax",
+                                 y = "ymax", yend = "ymax"),
                       data = errorbars, ...)
   }
   # if applicable, add intermediate and extreme outliers
   if (have_outliers) {
     p <- p +
-      geom_outliers_SPSS(aes(x = x, y = y), data = intermediate, ...,
+      geom_outliers_SPSS(aes_string(x = "x", y = "y"), data = intermediate, ...,
                          outlier.shape = outlier.shape[1], fatten = fatten[1]) +
-      geom_outliers_SPSS(aes(x = x, y = y), data = extreme, ...,
+      geom_outliers_SPSS(aes_string(x = "x", y = "y"), data = extreme, ...,
                          outlier.shape = outlier.shape[2], fatten = fatten[2])
   }
   # finalize plot

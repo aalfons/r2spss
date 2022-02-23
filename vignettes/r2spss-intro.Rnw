@@ -43,8 +43,8 @@ integrated directly into dynamic \proglang{LaTeX} documents with tools such
 as the \proglang{R} package \pkg{knitr}.  Package \pkg{r2spss} provides
 functionality for statistical techniques that are typically covered in
 introductory statistics courses: descriptive statistics, common hypothesis
-tests, ANOVA, and linear regression, as well as boxplots, histograms,
-scatterplots, and line plots (including profile plots).
+tests, ANOVA, and linear regression, as well as box plots, histograms,
+scatter plots, and line plots (including profile plots).
 }
 
 %% - \Keywords{} with LaTeX markup, at least one required
@@ -299,24 +299,24 @@ descriptives(Eredivisie, c("Age", "Minutes", "logMarketValue"))
 @
 \end{center}
 
-Functions \code{histSPSS()} and \code{boxplotSPSS()} can be used to create a
-histogram or boxplot, respectively, of a specified variable.
+Functions \code{histogram()} and \code{box_plot()} can be used to create a
+histogram or box plot, respectively, of a specified variable.
 <<>>=
-histSPSS(Eredivisie, "logMarketValue")
+histogram(Eredivisie, "logMarketValue")
 @
 %
 <<>>=
-boxplotSPSS(Eredivisie, "logMarketValue")
+box_plot(Eredivisie, "logMarketValue")
 @
 
-A scatterplot or scatterplot matrix can be produced with function
-\code{plotSPSS()} by specifying the corresponding variables.
+A scatter plot or scatter plot matrix can be produced with function
+\code{scatter_plot()} by specifying the corresponding variables.
 <<>>=
-plotSPSS(Eredivisie, c("Age", "logMarketValue"))
+scatter_plot(Eredivisie, c("Age", "logMarketValue"))
 @
 %
 <<>>=
-plotSPSS(Eredivisie, c("Age", "Minutes", "logMarketValue"))
+scatter_plot(Eredivisie, c("Age", "Minutes", "logMarketValue"))
 @
 
 \subsection{Analyzing one sample}
@@ -351,15 +351,13 @@ with function \code{wilcoxonTest()} or a sign test with function
 %
 \begin{center}
 <<results="asis">>=
-signedRank <- wilcoxonTest(Exams, c("Regular", "Resit"))
-print(signedRank, version = "legacy")
+wilcoxonTest(Exams, c("Regular", "Resit"))
 @
 \end{center}
 %
 \begin{center}
 <<results="asis">>=
-sign <- signTest(Exams, c("Regular", "Resit"))
-print(sign, version = "legacy")
+signTest(Exams, c("Regular", "Resit"))
 @
 \end{center}
 
@@ -369,11 +367,11 @@ differences in the form \code{Resit - Regular}.  This behavior is carried over
 from \proglang{SPSS}.
 
 To check which of these tests are suitable for the given data, we can for
-example use a boxplot.  Function \code{boxplotSPSS()} allows to specify
+example use a box plot.  Function \code{box_plot()} allows to specify
 multiple variables to be plotted.
 %
 <<>>=
-boxplotSPSS(Exams, c("Regular", "Resit"))
+box_plot(Exams, c("Regular", "Resit"))
 @
 
 
@@ -405,12 +403,12 @@ wilcoxonTest(Eredivisie, "MarketValue", group = "Foreign")
 @
 \end{center}
 
-We can again use a boxplot to check whether the $t$ test is  suitable for the
-given data, as function \code{boxplotSPSS()} allows to specify a grouping
+We can again use a box plot to check whether the $t$ test is  suitable for the
+given data, as function \code{box_plot()} allows to specify a grouping
 variable as well.
 %
 <<>>=
-boxplotSPSS(Eredivisie, "logMarketValue", group = "Foreign")
+box_plot(Eredivisie, "logMarketValue", group = "Foreign")
 @
 
 
@@ -464,7 +462,7 @@ plot(twoway)
 @
 
 The \code{plot()} method illustrated in this section calls function
-\code{linesSPSS()} to produce the plots.  The latter is more generally
+\code{line_plot()} to produce the plots.  The latter is more generally
 applicable and can also be used, e.g., for plotting time series.
 
 
@@ -535,7 +533,7 @@ package \pkg{r2spss} allow to select which tables to print.  See the respective
 help files for details.
 
 The \code{plot()} method of the regression results can be used to create a
-histogram of the residuals or a scatterplot of the standardized residuals
+histogram of the residuals or a scatter plot of the standardized residuals
 against the standardized fitted values.  Argument \code{which} can be used
 to select between those two plots.  Mimicking \proglang{SPSS} functionality,
 the plot is created for the \emph{last} specified model in the call to

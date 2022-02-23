@@ -51,7 +51,8 @@ histogram <- function(data, variable, bins = NULL, normal = FALSE,
   ylim <- c(0, max(histogram$count))
   # initialize plot as rectangles for histogram
   p <- ggplot() +
-    geom_rect_SPSS(aes(xmin = xmin, xmax = xmax, ymin = 0, ymax = count),
+    geom_rect_SPSS(aes_string(xmin = "xmin", xmax = "xmax",
+                              ymin = 0, ymax = "count"),
                    data = histogram, ..., version = version)
   # if requested, compute normal density and it add to plot
   if (normal) {
@@ -68,7 +69,8 @@ histogram <- function(data, variable, bins = NULL, normal = FALSE,
     density <- data.frame(x = grid, y = y)
     # add density to plot
     p <- p +
-      geom_normal_SPSS(aes(x = x, y = y), data = density,
+      geom_normal_SPSS(aes_string(x = "x", y = "y"),
+                       data = density,
                        normal.colour = normal.colour,
                        normal.color = normal.color,
                        normal.linetype = normal.linetype,

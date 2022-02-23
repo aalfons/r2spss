@@ -24,7 +24,7 @@ ANOVA(data, variable, group, conf.level = 0.95)
   ...
 )
 
-\method{plot}{ANOVASPSS}(x, y, which = 1, type = "o", main = NULL, xlab = NULL, ylab = NULL, ...)
+\method{plot}{ANOVASPSS}(x, y, which = 1, version = r2spssOptions$get("version"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}

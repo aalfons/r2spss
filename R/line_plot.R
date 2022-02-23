@@ -77,15 +77,12 @@ geom_line_SPSS <- function(..., version = r2spssOptions$get("version"),
                            grouped = FALSE) {
   # obtain list of arguments with standardized names
   arguments <- standardize_args(list(...))
-  # check size of lines
-  size <- arguments$size
-  if (is.null(size)) size <- 0.5
-  # if we have a single line, set default values according to SPSS version
+  # default values according to SPSS version also depend on whether we have
+  # multiple lines
   if (grouped) {
     # default line size
     if (is.null(arguments$size)) arguments$size <- 0.5
-  }
-  else {
+  } else {
     # default line color
     if (is.null(arguments$color)) arguments$color <- "black"
     # default line size is a bit thicker for modern SPSS look

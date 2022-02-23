@@ -540,21 +540,54 @@ residuals.regressionSPSS <- function(object, standardized = FALSE, ...) {
 #' @export
 
 plot.regressionSPSS <- function(x, y, which = c("histogram", "scatter"),
-                                main = NULL, xlab = NULL, ylab = NULL, ...) {
+                                version = r2spssOptions$get("version"), ...) {
   # initializations
   which <- match.arg(which)
-  if (is.null(main)) main <- paste0("Dependent Variable: ", x$response)
-  residuals <- residuals(x, standardized=TRUE)
-  # histogram
+  version <- match.arg(version, choices = getVersionValues())
+  # default title
+  title <- paste0("Dependent Variable: ", x$response)
+  # construct data frame containing relevant information
+  data <- data.frame(fitted = fitted(x, standardized = TRUE),
+                     residual = residuals(x, standardized = TRUE))
+  # create requested plot
   if (which == "histogram") {
-    if (is.null(xlab)) xlab <- "Regression Standardized Residual"
-    .hist(residuals, main=main, xlab=xlab, ylab=ylab, ...)
-  }
-  # histogram
-  if (which == "scatter") {
-    if (is.null(xlab)) xlab <- "Regression Standardized Predicted Value"
-    if (is.null(ylab)) ylab <- "Regression Standardized Residual"
-    fitted <- fitted(x, standardized=TRUE)
-    .plot(fitted, residuals, main=main, xlab=xlab, ylab=ylab, ...)
+    ## histogram
+    # default x-axis label
+    xlab <- "Regression Standardized Residual"
+    # define local function that overrides default for normal density
+    localHistogram <- function(..., normal = TRUE) {
+      histogram(..., normal = normal)
+    }
+    # create histogram of standardized residuals
+    localHistogram(data, "residual", version = version, ...) +
+      labs(title = title, x = xlab)
+  } else if (which == "scatter") {
+    ## scatter plot
+    # default axis lables
+    xlab <- "Regression Standardized Predicted Value"
+    ylab <- "Regression Standardized Residual"
+    # scatter plot of standardized residuals vs standardized fitted values
+    scatter_plot(data, c("fitted", "residual"), version = version, ...) +
+      labs(title = title, x = xlab, y = ylab)
   }
 }
+
+# plot.regressionSPSS <- function(x, y, which = c("histogram", "scatter"),
+#                                 main = NULL, xlab = NULL, ylab = NULL, ...) {
+#   # initializations
+#   which <- match.arg(which)
+#   if (is.null(main)) main <- paste0("Dependent Variable: ", x$response)
+#   residuals <- residuals(x, standardized=TRUE)
+#   # histogram
+#   if (which == "histogram") {
+#     if (is.null(xlab)) xlab <- "Regression Standardized Residual"
+#     .hist(residuals, main=main, xlab=xlab, ylab=ylab, ...)
+#   }
+#   # histogram
+#   if (which == "scatter") {
+#     if (is.null(xlab)) xlab <- "Regression Standardized Predicted Value"
+#     if (is.null(ylab)) ylab <- "Regression Standardized Residual"
+#     fitted <- fitted(x, standardized=TRUE)
+#     .plot(fitted, residuals, main=main, xlab=xlab, ylab=ylab, ...)
+#   }
+# }
