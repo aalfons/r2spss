@@ -504,7 +504,7 @@ df.residual.regressionSPSS <- function(object, ...) {
 
 
 #' @rdname regression
-#' @importFrom stats sd
+#' @importFrom stats fitted sd
 #' @export
 
 fitted.regressionSPSS <- function(object, standardized = FALSE, ...) {
@@ -519,7 +519,7 @@ fitted.regressionSPSS <- function(object, standardized = FALSE, ...) {
 
 
 #' @rdname regression
-#' @importFrom stats df.residual
+#' @importFrom stats df.residual residuals
 #' @export
 
 residuals.regressionSPSS <- function(object, standardized = FALSE, ...) {
@@ -537,6 +537,7 @@ residuals.regressionSPSS <- function(object, standardized = FALSE, ...) {
 
 
 #' @rdname regression
+#' @importFrom stats fitted residuals
 #' @export
 
 plot.regressionSPSS <- function(x, y, which = c("histogram", "scatter"),
