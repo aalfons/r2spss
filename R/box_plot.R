@@ -3,21 +3,21 @@
 #         Erasmus Universiteit Rotterdam
 # --------------------------------------
 
+
 #' @import ggplot2
 #' @export
 
-box_plot <- function(data, variables, group = NULL,
-                     version = r2spssOptions$get("version"),
-                     error.bar = c("T", "whiskers"), cut.names = NULL,
-                     outlier.shape = c(1, 42), ...) {
+box_plot <- function(data, variables, group = NULL, cut.names = NULL,
+                     error.bar = c("T", "whiskers"), outlier.shape = c(1, 42),
+                     version = r2spssOptions$get("version"), ...) {
   # initializations
   data <- as.data.frame(data)
   variables <- as.character(variables)
   group <- as.character(group)
   if (length(variables) == 0) stop("a variable to display must be specified")
   # check which SPSS functionality to mimic
-  version <- match.arg(version, choices = getVersionValues())
   error.bar <- match.arg(error.bar)
+  version <- match.arg(version, choices = getVersionValues())
   # check plot symbols for outliers
   outlier.shape <- rep(as.numeric(outlier.shape), length.out = 2)
   fatten <- ifelse(outlier.shape > 25, 2.75, 1)
@@ -142,6 +142,7 @@ geom_boxplot_SPSS <- function(..., version = r2spssOptions$get("version"),
   do.call(geom_boxplot, arguments)
 }
 
+
 # custom geom for boxplot with defaults to mimic appearance of SPSS
 geom_error_SPSS <- function(..., stat, geom, position, outlier.colour,
                             outlier.color, outlier.fill, outlier.shape,
@@ -159,38 +160,50 @@ geom_error_SPSS <- function(..., stat, geom, position, outlier.colour,
   do.call(geom_segment, arguments)
 }
 
+
 # custom geom for plotting outliers to mimic appearance of SPSS
-geom_outliers_SPSS <- function(..., outlier.colour = "black",
-                               outlier.color = "black",
-                               outlier.fill = NULL,
-                               outlier.shape = 1, outlier.size = 2,
-                               outlier.stroke = 0.5, outlier.alpha = 1,
-                               fatten = 1,
+geom_outliers_SPSS <- function(..., fatten = 1,
                                # arguments to be ignored,
                                stat, geom, position, notch, notchwidth, width,
                                varwidth, coef, orientation, linetype, lty, lwd) {
   # obtain list of arguments with standardized names
   arguments <- standardize_args(list(...))
-  # check border color
-  if (missing(outlier.color)) {
-    if (!missing(outlier.colour)) outlier.color <- outlier.colour
-    else if (!is.null(arguments$color)) outlier.color <- arguments$color
-  }
-  # check fill color
-  if (missing(outlier.fill) && !is.null(arguments$fill)) {
-    outlier.fill <- arguments$fill
-  }
+  # check color
+  color <- arguments$outlier.color
+  if (is.null(color)) color <- arguments$outlier.colour
+  if (is.null(color)) color <- arguments$color
+  if (is.null(color)) color <- "black"
+  # check fill color (should be NULL for transparency)
+  fill <- arguments$outlier.fill
+  if (is.null(fill)) fill <- arguments$fill
+  # check plot symbol
+  shape <- arguments$outlier.shape
+  if (is.null(shape)) shape <- 1
+  # check size of plot symbol
+  size <- arguments$outlier.size
+  if (is.null(size)) size <- 2  # ggplot2 default is 1.5
+  # check stroke of plot symbol
+  stroke <- arguments$outlier.stroke
+  if (is.null(stroke)) stroke <- 0.5
   # check transparency
-  if (missing(outlier.alpha) && !is.null(arguments$alpha)) {
-    outlier.alpha <- arguments$alpha
-  }
+  alpha <- arguments$outlier.alpha
+  if (is.null(alpha)) alpha <- arguments$alpha
+  if (is.null(alpha)) alpha <- 1
   # overwrite arguments for geom_point()
-  arguments$color <- outlier.color
-  arguments$fill <- outlier.fill
-  arguments$shape <- outlier.shape
-  arguments$size <- outlier.size * fatten
-  arguments$stroke <- outlier.stroke
-  arguments$alpha <- outlier.alpha
+  arguments$color <- color
+  arguments$fill <- fill
+  arguments$shape <- shape
+  arguments$size <- size * fatten
+  arguments$stroke <- stroke
+  arguments$alpha <- alpha
+  # remove outlier.xxx arguments
+  arguments$outlier.colour <- NULL
+  arguments$outlier.color <- NULL
+  arguments$outlier.fill <- NULL
+  arguments$outlier.shape <- NULL
+  arguments$outlier.size <- NULL
+  arguments$outlier.stroke <- NULL
+  arguments$outlier.alpha <- NULL
   # call geom_point()
   do.call(geom_point, arguments)
 }

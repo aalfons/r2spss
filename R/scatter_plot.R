@@ -69,7 +69,7 @@ geom_point_SPSS <- function(..., version = r2spssOptions$get("version")) {
     arguments$shape <- if (version == "legacy") 1 else 21
   }
   # check colors
-  if (is.null(arguments$colour)) arguments$colour <- "black"
+  if (is.null(arguments$color)) arguments$color <- "black"
   if (version != "legacy" && is.null(arguments$fill)) {
     arguments$fill <- "#1192E8"
   }

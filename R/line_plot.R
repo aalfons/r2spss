@@ -9,7 +9,7 @@
 
 line_plot <- function(data, variables, index = NULL,
                       version = r2spssOptions$get("version"),
-                      fatten = NULL, ...) {
+                      ...) {
   # initializations
   data <- as.data.frame(data)
   n <- nrow(data)
@@ -34,7 +34,7 @@ line_plot <- function(data, variables, index = NULL,
     mapping <- aes_string(x = "x", y = "y", group = 1)
     p <- ggplot() +
       geom_line_SPSS(mapping, data = data, ..., version = version,
-                     fatten = fatten, grouped = FALSE)
+                     grouped = FALSE)
     # define default y-axis label
     ylab <- variables
   } else {
@@ -48,7 +48,7 @@ line_plot <- function(data, variables, index = NULL,
     mapping <- aes_string(x = "x", y = "y", color = "group", group = "group")
     p <- ggplot() +
       geom_line_SPSS(mapping, data = data, ..., version = version,
-                     fatten = fatten, grouped = TRUE) +
+                     grouped = TRUE) +
       scale_color_SPSS(name = NULL, version = version)
     # define default y-axis label
     ylab <- "Value"
@@ -74,21 +74,24 @@ line_plot <- function(data, variables, index = NULL,
 
 # custom geom for lines with defaults to mimic appearance of SPSS
 geom_line_SPSS <- function(..., version = r2spssOptions$get("version"),
-                           fatten = NULL, grouped = FALSE) {
-  # initializations
-  if (is.null(fatten)) fatten <- if (version == "legacy") 1 else 2
+                           grouped = FALSE) {
   # obtain list of arguments with standardized names
   arguments <- standardize_args(list(...))
   # check size of lines
   size <- arguments$size
   if (is.null(size)) size <- 0.5
   # if we have a single line, set default values according to SPSS version
-  if (grouped) arguments$size <- size
+  if (grouped) {
+    # default line size
+    if (is.null(arguments$size)) arguments$size <- 0.5
+  }
   else {
     # default line color
-    if (is.null(arguments$colour)) arguments$colour <- "black"
-    # make line thicker
-    arguments$size <- fatten * size
+    if (is.null(arguments$color)) arguments$color <- "black"
+    # default line size is a bit thicker for modern SPSS look
+    if (is.null(arguments$size)) {
+      arguments$size <- if (version == "legacy") 0.5 else 1
+    }
   }
   # check line type and transparency
   if (is.null(arguments$linetype)) arguments$linetype <- "solid"
