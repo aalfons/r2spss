@@ -142,6 +142,7 @@ geom_point_SPSS <- function(..., version = r2spssOptions$get("version"),
 
 # internal function for scatterplot matrix with different defaults
 # Note: This is uses base graphics, not ggplot2!
+#' @importFrom graphics box mtext par plot points rect
 pairs_SPSS <- function(x, version = "modern", ..., frame.plot = TRUE,
                        oma = NULL, pch = NULL, col = "black", bg = NULL,
                        main = NULL, font.main = 2, cex.main = 1.2,
