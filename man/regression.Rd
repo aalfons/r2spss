@@ -73,10 +73,11 @@ allows several options (the default is to print all tables).}
 \eqn{R^2}{R-squared} change should be included in the table with model
 summaries (if \code{statistics = "summary"}).  The default is \code{FALSE}.}
 
-\item{version}{a character string specifying whether the table should
-mimic the content and look of recent SPSS versions (\code{"modern"}) or
-older versions (<24; \code{"legacy"}).  The main difference in terms of
-content is that small p-values are displayed differently.}
+\item{version}{a character string specifying whether the table or plot
+should mimic the content and look of recent SPSS versions (\code{"modern"})
+or older versions (<24; \code{"legacy"}).  For the table, the main
+difference in terms of content is that small p-values are displayed
+differently.}
 
 \item{standardized}{a logical indicating whether to return standardized
 residuals and fitted values (\code{TRUE}), or residuals and fitted values on
@@ -89,8 +90,6 @@ function \code{\link[graphics]{plot}}).}
 values are \code{"histogram"} for a histogram of the residuals, or
 \code{"scatter"} for a scatterplot of the standardized residuals against the
 standardized fitted values.}
-
-\item{main, xlab, ylab}{the plot title and axis labels.}
 }
 \value{
 An object of class \code{"regressionSPSS"} with the following
@@ -124,8 +123,9 @@ methods return the coefficients, residual degrees of freedom, fitted
 values and residuals, respectively, of the \emph{last} model (to mimic
 SPSS functionality).
 
-Similarly, the \code{plot} method creates the specified plot for the
-\emph{last} model.
+Similarly, the \code{plot} method returns the specified plot for the
+\emph{last} model as an object of class \code{"\link[ggplot2]{ggplot}"},
+which produces the plot when printed.
 }
 \description{
 Perform linear regression on variables of a data set.  The output is printed

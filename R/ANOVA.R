@@ -6,8 +6,8 @@
 #' One-way and Two-way ANOVA
 #'
 #' Perform one-way or two-way ANOVA on variables of a data set.  The output is
-#' printed as a LaTeX table that mimics the look of SPSS output, and a plot of
-#' the results mimics the look of SPSS graphs.
+#' printed as a LaTeX table that mimics the look of SPSS output, and a profile
+#' plot of the results mimics the look of SPSS graphs.
 #'
 #' The \code{print} method first calls the \code{toSPSS} method followed by
 #' \code{\link[=toLatex.SPSSTable]{toLatex}}.  Further customization can be
@@ -29,11 +29,12 @@
 #' method, only one option is allowed (the default is the table of ANOVA
 #' results), but the \code{print} method allows several options (the default
 #' is to print all tables).
-#' @param version  a character string specifying whether the table should
-#' mimic the content and look of recent SPSS versions (\code{"modern"}) or
-#' older versions (<24; \code{"legacy"}).  The main differences in terms of
-#' content are that recent versions include different variations of Levene's
-#' test, and that small p-values are displayed differently.
+#' @param version  a character string specifying whether the table or plot
+#' should mimic the content and look of recent SPSS versions (\code{"modern"})
+#' or older versions (<24; \code{"legacy"}).  For the table, the main
+#' differences in terms of content are that recent versions include different
+#' variations of Levene's test, and that small p-values are displayed
+#' differently.
 #' @param digits  an integer giving the number of digits after the comma to be
 #' printed in the SPSS tables.
 #' @param \dots  for  the \code{toSPSS} and \code{print} methods, additional
@@ -74,8 +75,9 @@
 #' The \code{print} method produces a LaTeX table that mimics the look of SPSS
 #' output.
 #'
-#' The \code{plot} method does not return anything, but produces a profile plot
-#' of the ANOVA results.
+#' The \code{plot} method returns an object of class
+#' \code{"\link[ggplot2]{ggplot}"}, which produces a profile plot of the ANOVA
+#' results when printed.
 #'
 #' @note
 #' The test statistic and p-value for Levene's test based on the trimmed mean
@@ -114,13 +116,8 @@
 #' @importFrom car Anova leveneTest
 #' @export
 
-## FIXME: test statistic and p-value for Levene's test based on the trimmed
-##        mean differ slightly from SPSS, even though SPSS documentation
-##        states that 5% of values from each end of the distribution, see
-##        https://www.ibm.com/docs/en/spss-statistics/version-missing?topic=variance-testing-homogeneity-variances
-##
-## Maybe the way 5% of observations is rounded differs in R and SPSS?  Write
-## a function for the trimmed mean and check with different ways of rounding.
+# SPSS documentation states that 5% of values from each end of the distribution,
+# see https://www.ibm.com/docs/en/spss-statistics/version-missing?topic=variance-testing-homogeneity-variances
 
 ANOVA <- function(data, variable, group, conf.level = 0.95) {
   ## initializations
@@ -541,10 +538,6 @@ print.ANOVASPSS <- function(x,
 #' \code{2} indicating whether the first or the second factor should be used on
 #' the \eqn{x}-axis.  The other factor will then be used for drawing separate
 #' lines.  For one-way ANOVA, this is not meaningful and ignored.
-#' @param type  a character string specifying the type of lines.  Possible
-#' values are \code{"o"} (the default) for overplotted points and lines, and
-#' \code{"l"} for lines only.
-#' @param main,xlab,ylab  the plot title and axis labels.
 #'
 #' @export
 

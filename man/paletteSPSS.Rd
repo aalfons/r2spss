@@ -2,20 +2,85 @@
 % Please edit documentation in R/ggplot2.R
 \name{paletteSPSS}
 \alias{paletteSPSS}
-\title{SPSS Color Palette}
+\alias{SPSS_pal}
+\alias{scale_color_SPSS}
+\alias{scale_colour_SPSS}
+\alias{scale_fill_SPSS}
+\title{SPSS Color Palette and Color Scales}
 \usage{
 paletteSPSS(n = NULL, version = r2spssOptions$get("version"))
+
+SPSS_pal(version = r2spssOptions$get("version"), direction = 1)
+
+scale_color_SPSS(
+  ...,
+  version = r2spssOptions$get("version"),
+  direction = 1,
+  aesthetics = "color"
+)
+
+scale_colour_SPSS(
+  ...,
+  version = r2spssOptions$get("version"),
+  direction = 1,
+  aesthetics = "colour"
+)
+
+scale_fill_SPSS(
+  ...,
+  version = r2spssOptions$get("version"),
+  direction = 1,
+  aesthetics = "fill"
+)
+}
+\arguments{
+\item{n}{an integer giving the number of colors to select from the palette.
+If \code{NULL} (the default), all colors of the palette are returned.}
+
+\item{version}{a character string specifying whether to use the color
+palette of recent SPSS versions (\code{"modern"}) or older versions (<24;
+\code{"legacy"}).}
+
+\item{direction}{an integer giving the direction to travel through the
+palette.  Possible values are 1 for forward (the default) and -1 for
+backward.}
+
+\item{\dots}{additional arguments to be passed to
+\code{\link[ggplot2]{discrete_scale}}.}
+
+\item{aesthetics}{a character string or vector listing the names of the
+aesthetics with which the scale works.  For example, color settings can be
+applied to the \code{color} and \code{fill} aesthetics by supplying
+\code{c("color", "fill")}.}
 }
 \value{
-A character vector specifying 30 colors as used by SPSS.
+\code{paletteSPSS} returns a character vector specifying up to 30
+colors as used by SPSS.
+
+\code{SPSS_pal} returns a function that generates colors from the
+specified SPSS color palette, in the specified direction.  It is mainly
+used internally by the discrete color scales.
+
+\code{scale_color_SPSS}, \code{scale_colour_SPSS}, and
+\code{scale_fill_SPSS} return a discrete color scale to be added to plots.
 }
 \description{
-Color palette used by SPSS (e.g., for multiple lines in a plot).
+Color palette used by SPSS, and discrete color scales to be used in plots
+(e.g., for multiple lines in a plot).
 }
 \examples{
+# data to be plotted
 df <- data.frame(x = 1:30, y = 0)
-colors <- paletteSPSS()
-plotSPSS(df, c("x", "y"), col = colors, pch = 16)
+
+# initialize plot
+p <- ggplot(aes(x = x, y = y, fill = factor(x)), data = df) +
+  geom_point(shape = 21, size = 3, show.legend = FALSE)
+
+# colors of modern SPSS versions
+p + scale_fill_SPSS()
+
+# colors of legacy SPSS versions
+p + scale_fill_SPSS(version = "legacy")
 
 }
 \author{
