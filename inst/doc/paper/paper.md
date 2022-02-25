@@ -22,7 +22,7 @@ affiliations:
 
 # Summary
 
-With a focus on creating teaching materials, the add-on package `r2spss` [@r2spss] for the statistical computing environment `R` [@R] allows to create graphics and `LaTeX` [e.g., @LaTeX] tables that to look like output of the statistical software platform `SPSS` [@SPSS].  The package provides functionality for techniques that are typically covered in introductory statistics classes: descriptive statistics, common hypothesis tests, ANOVA, and linear regression, as well as boxplots, histograms, scatterplots, and line plots (including profile plots).
+With a focus on creating teaching materials, the add-on package `r2spss` [@r2spss] for the statistical computing environment `R` [@R] allows to create graphics and `LaTeX` [e.g., @LaTeX] tables that to look like output of the statistical software platform `SPSS` [@SPSS].  The package provides functionality for techniques that are typically covered in introductory statistics classes: descriptive statistics, common hypothesis tests, ANOVA, and linear regression, as well as box plots, histograms, scatter plots, and line plots (including profile plots).
 
 <!--
 The package allows to create tables and graphics that mimic recent versions of SPSS, as well as a simpler look of older versions (`SPSS` changed the look of the output in version 24) (TODO: check that it was indeed in version 24).
