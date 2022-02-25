@@ -1,3 +1,23 @@
+Changes in r2spss version 0.3.0
+
+    + Complete redesign of the inner workings of creating the LaTeX tables,
+      which allows for extending the package with addtional tables that mimic
+      SPSS.
+
+    + Graphics are now based on ggplot2 instead of base R graphics (except the
+      scatter plot matrix).  Functions to set the theme and color scales are
+      provided for easily extending the package with additional plots that
+      mimic SPSS.
+
+    + All plots and tables allow to easily switch between look of modern SPSS
+      versions or older ones.
+
+    + Modern SPSS tables have more LaTeX requirements, hece function
+      r2spss.sty() puts a LaTeX style file of the same name in a specified
+      folder.
+
+
+
 Changes in r2spss version 0.2.0
 
     + More detailed documentation of returned objects.

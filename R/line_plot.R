@@ -4,6 +4,49 @@
 # --------------------------------------
 
 
+#' Line Plots
+#'
+#' Draw connected lines for variables in a data frame.  The plot thereby mimics
+#' the look of SPSS graphs.
+#'
+#' @param data  a data frame containing the variables to be plotted.
+#' @param variables  a character vector specifying at least one variable to be
+#' plotted on the \eqn{y}-axis.  In case of multiple variables, separate lines
+#' are drawn for each variable and a legend is shown.
+#' @param index  a character string specifying a variable to be plotted on the
+#' \eqn{x}-axis, or \code{NULL} to plot the observations against their index.
+#' @param version  a character string specifying whether the plot should mimic
+#' the look of recent SPSS versions (\code{"modern"}) or older versions (<24;
+#' \code{"legacy"}).
+#' @param \dots  additional arguments to be passed down to
+#' \code{\link[ggplot2]{geom_line}}.
+#'
+#' @return  An object of class \code{"\link[ggplot2]{ggplot}"}, which produces
+#' a line plot when printed.
+#'
+#' @author Andreas Alfons
+#'
+#' @examples
+#' # load data
+#' data("Eredivisie")
+#' # log-transform market values
+#' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+#'
+#' # aggregate log market values by position
+#' means <- aggregate(Eredivisie[, "logMarketValue", drop = FALSE],
+#'                    Eredivisie[, "Position", drop = FALSE],
+#'                    FUN = mean)
+#'
+#' # create profile plot
+#' line_plot(means, "logMarketValue", "Position")
+#'
+#' # easier and fancier as the plot method of ANOVA results
+#' oneway <- ANOVA(Eredivisie, "logMarketValue",
+#'                 group = "Position")
+#' plot(oneway)
+#'
+#' @keywords hplot
+#'
 #' @import ggplot2
 #' @export
 

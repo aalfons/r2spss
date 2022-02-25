@@ -354,7 +354,7 @@ plotSPSS <- function(data, variables, xlab = NULL, ylab = NULL,
     if (is.null(xlab)) xlab <- variables[1]
     if (is.null(ylab)) ylab <- variables[2]
     .plot(data[, variables[1]], data[, variables[2]], xlab=xlab, ylab=ylab, ...)
-  } else .pairs(data[, variables], version = version, ...)
+  } else pairs_SPSS(data[, variables], version = version, ...)
 }
 
 # internal function for scatter plot with different defaults

@@ -46,3 +46,4 @@ typically supplied as the  \code{labels} argument of
 \code{\link[ggplot2]{scale_x_discrete}} or
 \code{\link[ggplot2]{scale_y_discrete}}.
 }
+\keyword{utilities}

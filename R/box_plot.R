@@ -4,11 +4,67 @@
 # --------------------------------------
 
 
+#' Box Plots
+#'
+#' Draw box plots of variables in a data frame, including box plots for groups
+#' of observations and box plots for separate variables.  The plots thereby
+#' mimic the look of SPSS graphs.
+#'
+#' @param data  a data frame containing the variables to be plotted.
+#' @param variables  a character vector specifying separate variables to be
+#' plotted.  If \code{group} is not \code{NULL}, only the first variable is
+#' used and box plots of groups of observations are drawn instead.
+#' @param group  an character string specifying a grouping variable, or
+#' \code{NULL} for no grouping.
+#' @param cut.names  a logical indicating whether to cut long variable names or
+#' group labels to 8 characters.  The default is \code{TRUE} for box plots of
+#' separate variables, but \code{FALSE} for box plots of groups of observations
+#' (which mimics SPSS behavior).
+#' @param style  a character string specifying the box plot style.  Possible
+#' values are \code{"T"} for T-bars (the default) or \code{"whiskers"} for
+#' simple whiskers.
+#' @param coef  a numeric vector of length 2 giving the multipliers of the
+#' interquartile range for determining intermediate and extreme outliers,
+#' respectively.
+#' @param outlier.shape  an integer vector of length 2 giving the plot symbol
+#' for intermediate and extreme outliers, respectively.
+#' @param version  a character string specifying whether the plot should mimic
+#' the look of recent SPSS versions (\code{"modern"}) or older versions (<24;
+#' \code{"legacy"}).
+#' @param \dots  additional arguments to be passed down, in particular
+#' aesthetics (see \code{\link[ggplot2]{geom_boxplot}}).
+#'
+#' @return  An object of class \code{"\link[ggplot2]{ggplot}"}, which produces
+#' a box plot when printed.
+#'
+#' @author Andreas Alfons
+#'
+#' @examples
+#' ## paired sample
+#' # load data
+#' data("Exams")
+#'
+#' # plot grades on regular and resit exams
+#' box_plot(Exams, c("Regular", "Resit"))
+#'
+#'
+#' ## independent samples
+#'
+#' # load data
+#' data("Eredivisie")
+#' # log-transform market values
+#' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+#'
+#' # plot log market values of Dutch and Foreign players
+#' box_plot(Eredivisie, "logMarketValue", group = "Foreign")
+#'
+#' @keywords hplot
+#'
 #' @import ggplot2
 #' @export
 
 box_plot <- function(data, variables, group = NULL,
-                     cut.names = NULL, error.bar = c("T", "whiskers"),
+                     cut.names = NULL, style = c("T", "whiskers"),
                      coef = c(1.5, 3), outlier.shape = c(1, 42),
                      version = r2spssOptions$get("version"), ...) {
   # initializations
@@ -17,7 +73,7 @@ box_plot <- function(data, variables, group = NULL,
   group <- as.character(group)
   if (length(variables) == 0) stop("a variable to display must be specified")
   # check which SPSS functionality to mimic
-  error.bar <- match.arg(error.bar)
+  style <- match.arg(style)
   coef <- rep(as.numeric(coef), length.out = 2)
   version <- match.arg(version, choices = getVersionValues())
   # check plot symbols for outliers
@@ -83,7 +139,7 @@ box_plot <- function(data, variables, group = NULL,
     if (scale$is_discrete()) "discrete" else "continuous"
   })
   # if requested add T-shaped error bars rather than whiskers
-  if (error.bar == "T") {
+  if (style == "T") {
     # construct data frame to complete error bars
     width <- 0.5 * (stats$xmax - stats$xmin)
     errorbars <- data.frame(xmin = stats$x - width / 2,

@@ -4,6 +4,55 @@
 # --------------------------------------
 
 
+#' Scatter Plot and Scatter Plot Matrix
+#'
+#' Draw a scatter plot or a scatter plot matrix of variables in a data frame.
+#' The plots thereby mimic the look of SPSS graphs.
+#'
+#' @param data  a data frame containing the variables to be plotted.
+#' @param variables  a character vector specifying at least two variables to be
+#' plotted.  In case of two variables, a simple scatter plot is produced with
+#' the first variable on the \eqn{x}-axis and the second variable on the
+#' \eqn{y}-axis.  In case of more than two variables, a scatter plot matrix is
+#' produced.
+#' @param version  a character string specifying whether the plot should mimic
+#' the look of recent SPSS versions (\code{"modern"}) or older versions (<24;
+#' \code{"legacy"}).
+#' @param \dots  for a simple scatter plot, additional arguments are passed
+#' down to \code{\link[ggplot2]{geom_point}}.  For a scatter plot matrix,
+#' additional arguments to be passed down, in particular base graphics
+#' parameters (see \code{\link[graphics]{par}}).
+#'
+#' @return
+#' In case of a simple scatter plot, an object of class
+#' \code{"\link[ggplot2]{ggplot}"}, which produces the plot when printed.
+#'
+#' In case of a scatter plot matrix, nothing is returned but a plot is produced.
+#'
+#' @note  Wile all other plots in \pkg{r2spss} are based on
+#' \pkg{\link[ggplot2:ggplot2-package]{ggplot2}} (including the simple scatter
+#' plot), the scatter plot matrix is built around base \R graphics.  This is
+#' because \pkg{ggplot2} does not provide an implementation of a scatter plot
+#' matrix, and an implementation based on separate scatter plots on a matrix
+#' layout would be slow.
+#'
+#' @author Andreas Alfons
+#'
+#' @examples
+#' # load data
+#' data("Eredivisie")
+#' # log-transform market values
+#' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+#'
+#' # plot log market values against age
+#' scatter_plot(Eredivisie, c("Age", "logMarketValue"))
+#'
+#' # scatterplot matrix of age, number of minutes played, and
+#' # log market values
+#' scatter_plot(Eredivisie, c("Age", "Minutes", "logMarketValue"))
+#'
+#' @keywords hplot
+#'
 #' @import ggplot2
 #' @export
 
@@ -50,7 +99,7 @@ scatter_plot <- function(data, variables,
     arguments <- standardize_args(list(...), replace = get_par_mapping("point"))
     # call workhorse function
     arguments <- c(list(data[, variables], version = version), arguments)
-    do.call(.pairs, arguments)
+    do.call(pairs_SPSS, arguments)
   }
 }
 
@@ -93,12 +142,13 @@ geom_point_SPSS <- function(..., version = r2spssOptions$get("version"),
 
 # internal function for scatterplot matrix with different defaults
 # Note: This is uses base graphics, not ggplot2!
-.pairs <- function(x, version = "modern", ..., frame.plot = TRUE, oma = NULL,
-                   pch = NULL, col = "black", bg = NULL, main = NULL,
-                   font.main = 2, cex.main = 1.2, font.lab = NULL, cex.lab = 1,
-                   # the following arguments are currently ignored
-                   type = "p", log = "", sub = NULL, xlab = NULL,
-                   ylab = NULL, ann = TRUE, axes = FALSE) {
+pairs_SPSS <- function(x, version = "modern", ..., frame.plot = TRUE,
+                       oma = NULL, pch = NULL, col = "black", bg = NULL,
+                       main = NULL, font.main = 2, cex.main = 1.2,
+                       font.lab = NULL, cex.lab = 1,
+                       # the following arguments are currently ignored
+                       type = "p", log = "", sub = NULL, xlab = NULL,
+                       ylab = NULL, ann = TRUE, axes = FALSE) {
   # initializations
   p <- ncol(x)
   labels <- names(x)

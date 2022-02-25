@@ -4,6 +4,62 @@
 # --------------------------------------
 
 
+#' Histogram
+#'
+#' Draw a histogram of a variable in a data frame.  The plot thereby mimics the
+#' look of SPSS graphs.
+#'
+#' @param data  a data frame containing the variable to be plotted.
+#' @param variable  a character string specifying the variable to be
+#' plotted.
+#' @param bins  an integer giving the number of bins for the histogram.
+#' @param normal  a logical indicating whether to add a normal density with the
+#' estimated mean and standard deviation (the default is \code{FALSE}).
+#' @param normal.colour,normal.color,normal.linetype,normal.size,normal.alpha
+#' aesthetics for the normal density.  In the unlikely event that both US and
+#' UK spellings of color are supplied, the US spelling will take precedence.
+#' @param digits  an integer giving the number of digits after the comma to be
+#' printed in the summary statistics in the right plot margin.
+#' @param limits  a list of arguments to be passed to
+#' \code{\link[ggplot2]{expand_limits}}.  Typically, the list would contain
+#' components \code{x} or \code{y} to specify values that should be included
+#' in the range of the corresponding axis.
+#' @param expand  a numeric value specifying the percentage of the range to be
+#' used for padding the axes.  The default is 0.05 to expand the \eqn{x}-axis
+#' by 5\% on both sides and the \eqn{y}-axis by 5\% on the upper end.  Note
+#' that there is no padding on lower end of the \eqn{y}-axis to mimic SPSS
+#' behavior.
+#' @param version  a character string specifying whether the plot should mimic
+#' the look of recent SPSS versions (\code{"modern"}) or older versions (<24;
+#' \code{"legacy"}).
+#' @param \dots  additional arguments to be passed down, in particular
+#' aesthetics (see \code{\link[ggplot2]{geom_histogram}} and
+#' \code{\link[ggplot2]{geom_line}}).
+#'
+#' @return  An object of class \code{"\link[ggplot2]{ggplot}"}, which produces
+#' a histogram when printed.
+#'
+#' @note  Due to the inner workings of this function to mimic the look
+#' of histograms in SPSS, it is not expected that the user adds
+#' \code{\link[ggplot2]{scale_x_continuous}} or
+#' \code{\link[ggplot2]{scale_y_continuous}} to the plot.  Instead, axis
+#' limits and padding should be modified via the \code{limits} and
+#' \code{expand} arguments.
+#'
+#' @author Andreas Alfons
+#'
+#' @examples
+#' # load data
+#' data("Eredivisie")
+#' # log-transform market values
+#' Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
+#'
+#' # plot histogram of log market values
+#' histogram(Eredivisie, "logMarketValue", normal = TRUE,
+#'           limits = list(x = c(9.5, 17.5)))
+#'
+#' @keywords hplot
+#'
 #' @importFrom stats dnorm sd
 #' @import ggplot2
 #' @export
@@ -11,8 +67,9 @@
 histogram <- function(data, variable, bins = NULL, normal = FALSE,
                       normal.colour = NULL, normal.color = NULL,
                       normal.linetype = NULL, normal.size = NULL,
-                      normal.alpha = NULL, digits = 3, expand = 0.05,
-                      version = r2spssOptions$get("version"), ...) {
+                      normal.alpha = NULL, digits = 3, limits = NULL,
+                      expand = 0.05, version = r2spssOptions$get("version"),
+                      ...) {
   # initializations
   data <- as.data.frame(data)
   variable <- as.character(variable)
@@ -42,13 +99,16 @@ histogram <- function(data, variable, bins = NULL, normal = FALSE,
   # create an initial histogram
   initial <- ggplot() +
     stat_bin_SPSS(aes_string(x = variable), data = data, ..., bins = bins)
+  if (!is.null(limits)) initial <- initial + do.call(expand_limits, limits)
   # extract necessary information on histogram
   histogram <- layer_data(initial)
   # determine range of x-axis and expand it according to expansion factor
   xlim <- c(min(histogram$xmin), max(histogram$xmax))
   xlim <- xlim + c(-1, 1) * expand * diff(xlim)
   # determine range of y-axis (but let ggplot handle expansion)
-  ylim <- c(0, max(histogram$count))
+  # ylim <- c(0, max(histogram$count))
+  ylim <- layer_scales(initial)$y$get_limits()
+  if (ylim[1] > 0) ylim[1] <- 0
   # initialize plot as rectangles for histogram
   p <- ggplot() +
     geom_rect_SPSS(aes_string(xmin = "xmin", xmax = "xmax",

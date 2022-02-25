@@ -390,6 +390,7 @@ scale_fill_SPSS <- function(..., version = r2spssOptions$get("version"),
 #'
 #' @return  A character vector of the same length as \code{x}
 #'
+#' @keywords utilities
 
 NULL
 
