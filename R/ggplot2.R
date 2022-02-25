@@ -4,9 +4,50 @@
 # --------------------------------------
 
 
-## theme for ggplot2 to mimic SPSS
+#' Plot theme to mimic the look of SPSS graphs
+#'
+#' Complete theme that controls all non-data display of a plot to mimic the
+#' look of SPSS graphs.  Use \code{\link[ggplot2]{theme}} after
+#' \code{theme_SPSS} to further tweak the display.
+#'
+#' @param base_size  an integer giving the base font size in pts.
+#' @param base_family  a character string giving the base font family.
+#' @param base_line_size  base size for line elements.
+#' @param base_rect_size  base size for borders of rectangle elements.
+#' @param version  a character string specifying whether to mimic the look
+#' of recent SPSS versions (\code{"modern"}) or older versions (<24;
+#' \code{"legacy"}).
+#' @param scales,scale.x,scale.y  a character string specifying whether both
+#' or each of the axes are expected to be continuous (\code{"continuous"}) or
+#' discrete (\code{"discrete"}).  Note that this only controls the appearance
+#' of the tick labels on the axis, as the theme has no control over the
+#' information that is displayed in the plot.  SPSS displays larger tick
+#' labels a for discrete axis than for a continuous axis, hence specifying
+#' this information in the theme adjusts the tick label size accordingly.
+#' The default (\code{NULL}) means that the tick labels are of the same size
+#' as for a continuous axis.
+#'
+#' @examples
+#' # data to be plotted
+#' df <- data.frame(x = 1:30, y = 0)
+#'
+#' # initialize plot
+#' p <- ggplot(aes(x = x, y = y, fill = factor(x)), data = df) +
+#'   geom_point(shape = 21, size = 3, show.legend = FALSE) +
+#'   theme_SPSS()
+#'
+#' # colors of modern SPSS versions
+#' p + theme_SPSS() + scale_fill_SPSS()
+#'
+#' # colors of legacy SPSS versions
+#' p + theme_SPSS(version = "legacy") +
+#'   scale_fill_SPSS(version = "legacy")
+#'
+#' @keywords aplot
+#'
 #' @import ggplot2
 #' @export
+
 theme_SPSS <- function(base_size = 12, base_family = "",
                        base_line_size = 0.5,
                        base_rect_size = 0.5,
@@ -183,7 +224,7 @@ theme_SPSS <- function(base_size = 12, base_family = "",
 #' SPSS Color Palette and Color Scales
 #'
 #' Color palette used by SPSS, and discrete color scales to be used in plots
-#' (e.g., for multiple lines in a plot).
+#' (e.g., for multiple lines in a plot) to mimic the look of SPSS graphs.
 #'
 #' @param n  an integer giving the number of colors to select from the palette.
 #' If \code{NULL} (the default), all colors of the palette are returned.
@@ -202,13 +243,15 @@ theme_SPSS <- function(base_size = 12, base_family = "",
 #'
 #' # initialize plot
 #' p <- ggplot(aes(x = x, y = y, fill = factor(x)), data = df) +
-#'   geom_point(shape = 21, size = 3, show.legend = FALSE)
+#'   geom_point(shape = 21, size = 3, show.legend = FALSE) +
+#'   theme_SPSS()
 #'
 #' # colors of modern SPSS versions
-#' p + scale_fill_SPSS()
+#' p + theme_SPSS() + scale_fill_SPSS()
 #'
 #' # colors of legacy SPSS versions
-#' p + scale_fill_SPSS(version = "legacy")
+#' p + theme_SPSS(version = "legacy") +
+#'   scale_fill_SPSS(version = "legacy")
 #'
 #' @keywords color
 #'
@@ -314,7 +357,44 @@ scale_fill_SPSS <- function(..., version = r2spssOptions$get("version"),
 }
 
 
-## function to format continuous axis labels similarly as SPSS
+#' Format axis tick labels similar to SPSS
+#'
+#' Format axis tick labels in a similar manner to SPSS to mimic the look of
+#' SPSS graphs.
+#'
+#' \code{numberSPSS} is a wrapper for \code{\link[scales]{number}} that by
+#' default does not put a separator every 3 digits so separate thousands.  It
+#' mainly exists to prevent scientific notation in axis tick labels, hence it
+#' is typically supplied as the \code{labels} argument of
+#' \code{\link[ggplot2]{scale_x_continuous}} or
+#' \code{\link[ggplot2]{scale_y_continuous}}.
+#'
+#' \code{substrSPSS} is a wrapper for \code{\link{substr}} to cut character
+#' strings by default to the first 8 characters, which is SPSS behavior for
+#' the tick labels of a discrete axis in some (but not all) plots.  It is
+#' typically supplied as the  \code{labels} argument of
+#' \code{\link[ggplot2]{scale_x_discrete}} or
+#' \code{\link[ggplot2]{scale_y_discrete}}.
+#'
+#' @name labels_SPSS
+#'
+#' @param x  for \code{numberSPSS}, a numeric vector to format.  For
+#' \code{substrSPSS}, a vector of character strings to be cut.
+#' @param big.mark  a character string to be inserted every 3 digits to
+#' separate thousands.  The default is an empty string for no separation.
+#' @param \dots  additional arguments to be passed to
+#' \code{\link[scales]{number}}.
+#' @param start,stop  integers giving the first and last character to remain in
+#' the cut string, respectively.  The default is to cut strings to the first 8
+#' characters.
+#'
+#' @return  A character vector of the same length as \code{x}
+#'
+
+NULL
+
+
+#' @rdname labels_SPSS
 #' @importFrom scales number
 #' @export
 
@@ -323,42 +403,12 @@ numberSPSS <- function(x, big.mark = "", ...) {
 }
 
 
-## function to cut labels of a discrete axis similarly as SPSS
+#' @rdname labels_SPSS
 #' @export
 
-substrSPSS <- function(x) substr(x, start = 1, stop = 8)
-
-
-# # internal function to extract information on scales from "ggplot" object
-# extract_scales <- function(plot, i = 1L,
-#                            expand = expansion(mult = 0.05, add = 0.6)) {
-#   # extract complete information on scales
-#   scales <- layer_scales(plot)
-#   # loop over axes to extract breaks, labels, and limits
-#   lapply(scales, function(scale) {
-#     # check if axis is discrete
-#     discrete <- scale$is_discrete()
-#     if (discrete) {
-#       # # extract breaks and labels
-#       # breaks <- scale$get_breaks()
-#       # labels <- scale$get_labels()
-#       # let ggplot handle breaks and labels
-#       breaks <- waiver()
-#       labels <- waiver()
-#       # determine range of x-axis and expand it according to expansion factor
-#       limits <- scale$range_c$range + c(-1, 1) * expand[c(2, 4)]
-#     } else {
-#       # let ggplot handle breaks but use specific function for formatting labels
-#       breaks <- waiver()
-#       labels <- numberSPSS
-#       # extract range of x-axis and expand it according to expansion factor
-#       limits <- scale$get_limits()
-#       limits <- limits + c(-1, 1) * expand[c(1, 3)] * diff(limits)
-#     }
-#     # return information as list
-#     list(breaks = breaks, labels = labels, limits = limits, discrete = discrete)
-#   })
-# }
+substrSPSS <- function(x, start = 1, stop = 8) {
+  substr(x, start = start, stop = stop)
+}
 
 
 # internal function similar to standardise_aes_names() but directly returning

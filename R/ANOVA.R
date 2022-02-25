@@ -617,32 +617,6 @@ plot.ANOVASPSS <- function(x, y, which = 1,
   p
 }
 
-# plot.ANOVASPSS <- function(x, y, which = 1, type = "o", main = NULL,
-#                            xlab = NULL, ylab = NULL, ...) {
-#   if (x$type == "one-way") {
-#     if (is.null(xlab)) xlab <- x$group
-#     if (is.null(ylab)) ylab <- paste("Mean of", x$variable)
-#     desc <- x$descriptives
-#     n <- nrow(x$descriptives)
-#     labs <- row.names(x$descriptives)[-n]
-#     means <- x$descriptives$Mean[-n]
-#     .lines(labs, means, type=type, main=main, xlab=xlab, ylab=ylab, ...)
-#   } else if (x$type == "two-way") {
-#     if (length(which) != 1 || !which %in% 1:2) which <- formals()$which
-#     axis <- x$group[which]
-#     lines <- x$group[-which]
-#     if (is.null(main)) main <- paste("Estimated Marginal Means of", x$variable)
-#     if (is.null(xlab)) xlab <- axis
-#     if (is.null(ylab)) ylab <- "Estimated Marginal Means"
-#     desc <- x$descriptives
-#     keep <- desc[, x$group[1]] != "Total" & desc[, x$group[2]] != "Total"
-#     labs <- setdiff(levels(desc[, axis]), "Total")
-#     means <- do.call(cbind, split(desc[keep, "Mean"], desc[keep, lines]))
-#     .matlines(labs, means, type=type, main=main, xlab=xlab, ylab=ylab,
-#               title=lines, ...)
-#   } else stop("type of ANOVA not supported")
-# }
-
 
 # apply a function on each group as well as all observations (one factor)
 .tapply <- function(X, INDEX, FUN) c(tapply(X, INDEX, FUN), Total=FUN(X))

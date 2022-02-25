@@ -573,23 +573,3 @@ plot.regressionSPSS <- function(x, y, which = c("histogram", "scatter"),
       labs(title = title, x = xlab, y = ylab)
   }
 }
-
-# plot.regressionSPSS <- function(x, y, which = c("histogram", "scatter"),
-#                                 main = NULL, xlab = NULL, ylab = NULL, ...) {
-#   # initializations
-#   which <- match.arg(which)
-#   if (is.null(main)) main <- paste0("Dependent Variable: ", x$response)
-#   residuals <- residuals(x, standardized=TRUE)
-#   # histogram
-#   if (which == "histogram") {
-#     if (is.null(xlab)) xlab <- "Regression Standardized Residual"
-#     .hist(residuals, main=main, xlab=xlab, ylab=ylab, ...)
-#   }
-#   # histogram
-#   if (which == "scatter") {
-#     if (is.null(xlab)) xlab <- "Regression Standardized Predicted Value"
-#     if (is.null(ylab)) ylab <- "Regression Standardized Residual"
-#     fitted <- fitted(x, standardized=TRUE)
-#     .plot(fitted, residuals, main=main, xlab=xlab, ylab=ylab, ...)
-#   }
-# }

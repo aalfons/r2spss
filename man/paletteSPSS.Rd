@@ -66,7 +66,7 @@ used internally by the discrete color scales.
 }
 \description{
 Color palette used by SPSS, and discrete color scales to be used in plots
-(e.g., for multiple lines in a plot).
+(e.g., for multiple lines in a plot) to mimic the look of SPSS graphs.
 }
 \examples{
 # data to be plotted
@@ -74,13 +74,15 @@ df <- data.frame(x = 1:30, y = 0)
 
 # initialize plot
 p <- ggplot(aes(x = x, y = y, fill = factor(x)), data = df) +
-  geom_point(shape = 21, size = 3, show.legend = FALSE)
+  geom_point(shape = 21, size = 3, show.legend = FALSE) +
+  theme_SPSS()
 
 # colors of modern SPSS versions
-p + scale_fill_SPSS()
+p + theme_SPSS() + scale_fill_SPSS()
 
 # colors of legacy SPSS versions
-p + scale_fill_SPSS(version = "legacy")
+p + theme_SPSS(version = "legacy") +
+  scale_fill_SPSS(version = "legacy")
 
 }
 \author{
