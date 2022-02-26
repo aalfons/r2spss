@@ -20,7 +20,7 @@
 #' @param group  a character vector specifying one or two grouping variables.
 #' @param conf.level  a number between 0 and 1 giving the confidence level of
 #' the confidence interval.
-#' @param object,x  an object of class \code{"ANOVASPSS"} as returned by
+#' @param object,x  an object of class \code{"ANOVA_SPSS"} as returned by
 #' function \code{ANOVA}.
 #' @param statistics  a character string or vector specifying which SPSS tables
 #' to produce.  Available options are \code{"descriptives"} for descriptive
@@ -38,12 +38,12 @@
 #' @param digits  an integer giving the number of digits after the comma to be
 #' printed in the SPSS tables.
 #' @param \dots  for  the \code{toSPSS} and \code{print} methods, additional
-#' arguments to be passed down to \code{\link{formatSPSS}}.  For the
+#' arguments to be passed down to \code{\link{format_SPSS}}.  For the
 #' \code{plot} method, additional arguments to be passed down to
 #' \code{\link{linesSPSS}}, in particular graphical parameters.
 #'
 #' @return
-#' \code{ANOVA} returns an object of class \code{"ANOVASPSS"} with the
+#' \code{ANOVA} returns an object of class \code{"ANOVA_SPSS"} with the
 #' following components:
 #' \describe{
 #'   \item{\code{descriptives}}{a data frame containing per-group descriptive
@@ -82,7 +82,7 @@
 #' @note
 #' The test statistic and p-value for Levene's test based on the trimmed mean
 #' (only returned for \code{version = "modern"}) differ slightly from those
-#' returned by SPSS.  Function \code{\link{trimmedMean}} rounds the number of
+#' returned by SPSS.  Function \code{\link{trimmed_mean}} rounds the number of
 #' observations to be trimmed in a different manner than the base \R function
 #' \code{\link{mean}}, which brings the results closer to those of SPSS, but
 #' they are still not identical.
@@ -145,16 +145,17 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
     sd <- .tapply(x, by, sd)
     se <- sd / sqrt(n)
     alpha <- 1 - conf.level
-    q <- sapply(n-1, function(df) qt(1 - alpha/2, df=df))
+    q <- sapply(n-1, function(df) qt(1 - alpha/2, df = df))
     lower <- mean - q * se
     upper <- mean + q * se
     min <- .tapply(x, by, min)
     max <- .tapply(x, by, max)
-    desc <- data.frame(N=n, Mean=mean, "Std. Deviation"=sd, "Std. Error"=se,
-                       "Lower Bound"=lower, "Upper Bound"=upper, Minumum=min,
-                       Maximum=max, check.names=FALSE)
+    desc <- data.frame(N = n, Mean = mean, "Std. Deviation" = sd,
+                       "Std. Error" = se, "Lower Bound" = lower,
+                       "Upper Bound" = upper, Minumum = min,
+                       Maximum = max, check.names = FALSE)
     # test variances with various versions of Levene's test
-    leveneMedian <- leveneTest(x, by, center="median")
+    levene_median <- leveneTest(x, by, center = "median")
     # compute adjusted degrees of freedom with Satterthwaite approximation
     medians <- tapply(x, by, median)  # group medians
     z <- abs(x - medians[by])         # absolute residuals
@@ -162,27 +163,28 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
     nu <- n[seq_len(i)] - 1           # per-group degrees of freedom
     df <- sum(u)^2 / sum(u^2 / nu)    # adjusted degrees of freedom
     # compute Levene's test with adjusted degrees of freedom
-    leveneAdj <- leveneMedian
-    leveneAdj[2, "Df"] <- df
-    leveneAdj[1, "Pr(>F)"] <- pf(leveneAdj[1, "F value"],
-                                 df1 = leveneAdj[1, "Df"],
-                                 df2 = df, lower.tail = FALSE)
-    levene <- list(mean = leveneTest(x, by, center="mean"),
-                   median = leveneMedian, adjusted = leveneAdj,
-                   # trimmed = leveneTest(x, by, center="mean", trim=0.05),
-                   trimmed = leveneTest(x, by, center="trimmedMean", trim=0.05))
+    levene_adjusted <- levene_median
+    levene_adjusted[2, "Df"] <- df
+    levene_adjusted[1, "Pr(>F)"] <- pf(levene_adjusted[1, "F value"],
+                                       df1 = levene_adjusted[1, "Df"],
+                                       df2 = df, lower.tail = FALSE)
+    levene <- list(mean = leveneTest(x, by, center = "mean"),
+                   median = levene_median, adjusted = levene_adjusted,
+                   trimmed = leveneTest(x, by, center = "trimmed_mean",
+                                        trim = 0.05))
     # perform ANOVA
     formula <- as.formula(paste(variable[1], "~", group[1]))
     data <- data.frame(x, by)
     names(data) <- c(variable[1], group[1])
-    fit <- aov(formula, data=data)
+    fit <- aov(formula, data = data)
     test <- summary(fit)[[1]][, c(2, 1, 3:5)]
     row.names(test) <- c("Between Groups", "Within Groups")
     test$Df <- as.integer(test$Df)
     # construct object
-    out <- list(descriptives=desc, levene=levene, test=as.data.frame(test),
-                variable=variable[1], group=group[1], i=i,
-                conf.level=conf.level, type="one-way")
+    out <- list(descriptives = desc, levene = levene,
+                test = as.data.frame(test), variable = variable[1],
+                group = group[1], i = i, conf.level = conf.level,
+                type = "one-way")
   } else {
     ## two-way ANVOA
     first <- as.factor(data[, group[1]])
@@ -204,16 +206,14 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
     sd <- .by(x, f, sd)
     lFirst <- c(levels(first), "Total")
     lSecond <- c(levels(second), "Total")
-    info <- data.frame(factor(rep(lFirst, each=j+1), levels=lFirst),
-                       factor(rep.int(lSecond, i+1), levels=lSecond))
+    info <- data.frame(factor(rep(lFirst, each = j+1), levels = lFirst),
+                       factor(rep.int(lSecond, i+1), levels = lSecond))
     names(info) <- group[1:2]
-    desc <- data.frame(info, Mean=mean, "Std. Deviation"=sd, N=n,
-                       check.names=FALSE, row.names=NULL)
-    # # test variances
-    # levene <- leveneTest(x, interaction(first, second), center="mean")
+    desc <- data.frame(info, Mean = mean, "Std. Deviation" = sd, N = n,
+                       check.names = FALSE, row.names = NULL)
     # test variances with various versions of Levene's test
     by <- interaction(first, second)
-    leveneMedian <- leveneTest(x, by, center="median")
+    levene_median <- leveneTest(x, by, center = "median")
     # compute adjusted degrees of freedom with Satterthwaite approximation
     medians <- tapply(x, by, median)  # group medians
     z <- abs(x - medians[by])         # absolute residuals
@@ -221,45 +221,46 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
     nu <- tapply(x, by, length) - 1   # per-group degrees of freedom
     df <- sum(u)^2 / sum(u^2 / nu)    # adjusted degrees of freedom
     # compute Levene's test with adjusted degrees of freedom
-    leveneAdj <- leveneMedian
-    leveneAdj[2, "Df"] <- df
-    leveneAdj[1, "Pr(>F)"] <- pf(leveneAdj[1, "F value"],
-                                 df1 = leveneAdj[1, "Df"],
-                                 df2 = df, lower.tail = FALSE)
-    levene <- list(mean = leveneTest(x, by, center="mean"),
-                   median = leveneMedian, adjusted = leveneAdj,
-                   # trimmed = leveneTest(x, by, center="mean", trim=0.05),
-                   trimmed = leveneTest(x, by, center="trimmedMean", trim=0.05))
+    levene_adjusted <- levene_median
+    levene_adjusted[2, "Df"] <- df
+    levene_adjusted[1, "Pr(>F)"] <- pf(levene_adjusted[1, "F value"],
+                                       df1 = levene_adjusted[1, "Df"],
+                                       df2 = df, lower.tail = FALSE)
+    levene <- list(mean = leveneTest(x, by, center = "mean"),
+                   median = levene_median, adjusted = levene_adjusted,
+                   trimmed = leveneTest(x, by, center = "trimmed_mean",
+                                        trim = 0.05))
     # perform ANOVA
-    opts <- options(contrasts=c("contr.sum", "contr.poly"))
+    opts <- options(contrasts = c("contr.sum", "contr.poly"))
     on.exit(options(opts))
     formula <- as.formula(paste(variable[1], "~", group[1], "*", group[2]))
     data <- data.frame(x, first, second)
     names(data) <- c(variable[1], group[1:2])
-    fit <- aov(formula, data=data)
-    test <- Anova(fit, type="III")
+    fit <- aov(formula, data = data)
+    test <- Anova(fit, type = "III")
     row.names(test) <- c("Intercept", group[1:2],
-                         paste0(group[1:2], collapse=" * "),
+                         paste0(group[1:2], collapse = " * "),
                          "Error")
     formula1 <- as.formula(paste(variable[1], "~ 1"))
-    fit1 <- lm(formula1, data=data)
+    fit1 <- lm(formula1, data = data)
     model <- anova(fit1, fit)[2, c(4, 3, 5:6)]
     dimnames(model) <- list("Corrected Model", names(test))
     test <- rbind(model, test)
-    test <- cbind(test[, c("Sum Sq", "Df")], "Mean Sq"=test[, "Sum Sq"]/test$Df,
+    test <- cbind(test[, c("Sum Sq", "Df")],
+                  "Mean Sq" = test[, "Sum Sq"] / test$Df,
                   test[, c("F value", "Pr(>F)")])
-    corrected <- colSums(test[c("Corrected Model", "Error"),])
+    corrected <- colSums(test[c("Corrected Model", "Error"), ])
     corrected["Mean Sq"] <- NA
-    total <- colSums(rbind(test["Intercept",], corrected))
-    test <- rbind(test, "Total"=total, "Corrected Total"=corrected)
+    total <- colSums(rbind(test["Intercept", ], corrected))
+    test <- rbind(test, "Total" = total, "Corrected Total" = corrected)
     test$Df <- as.integer(test$Df)
     # construct object
-    out <- list(descriptives=desc, levene=levene, test=test,
-                variable=variable[1], group=group[1:2], i=i,
-                j=j, conf.level=conf.level, type="two-way")
+    out <- list(descriptives = desc, levene = levene, test = test,
+                variable = variable[1], group = group[1:2], i = i,
+                j = j, conf.level = conf.level, type = "two-way")
   }
   ## return results
-  class(out) <- "ANOVASPSS"
+  class(out) <- "ANOVA_SPSS"
   out
 }
 
@@ -267,10 +268,10 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
 #' @rdname ANOVA
 #' @export
 
-toSPSS.ANOVASPSS <- function(object,
-                             statistics = c("test", "variance", "descriptives"),
-                             version = r2spssOptions$get("version"),
-                             digits = 3, ...) {
+toSPSS.ANOVA_SPSS <- function(object,
+                              statistics = c("test", "variance", "descriptives"),
+                              version = r2spss_options$get("version"),
+                              digits = 3, ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
@@ -282,7 +283,7 @@ toSPSS.ANOVASPSS <- function(object,
 
     if (object$type == "one-way") {
       ## format table nicely
-      formatted <- formatSPSS(object$descriptives, digits = digits, ...)
+      formatted <- format_SPSS(object$descriptives, digits = digits, ...)
       ## construct header layout
       cn <- c("", names(object$descriptives))
       nc <- length(cn)
@@ -315,7 +316,7 @@ toSPSS.ANOVASPSS <- function(object,
       descriptives[, first] <- ifelse(duplicated(descriptives[, first]),
                                       "", as.character(descriptives[, first]))
       # format table nicely
-      formatted <- formatSPSS(descriptives, digits = digits, ...)
+      formatted <- format_SPSS(descriptives, digits = digits, ...)
       # define header with line breaks
       header <- wrapText(names(descriptives), limit = 12)
       # define positions for major grid lines
@@ -330,7 +331,7 @@ toSPSS.ANOVASPSS <- function(object,
   } else {
 
     ## initializations
-    version <- match.arg(version, choices = getVersionValues())
+    version <- match.arg(version, choices = get_version_values())
     legacy <- version == "legacy"
 
     if (statistics == "variance") {
@@ -345,7 +346,7 @@ toSPSS.ANOVASPSS <- function(object,
                              "Sig." = levene[1, "Pr(>F)"],
                              row.names = NULL, check.names = FALSE)
         # format table nicely
-        formatted <- formatSPSS(levene, digits = digits, ...)
+        formatted <- format_SPSS(levene, digits = digits, ...)
       } else {
         # put Levene test results into SPSS format
         levene <- lapply(object$levene, function(levene) {
@@ -358,9 +359,9 @@ toSPSS.ANOVASPSS <- function(object,
         levene <- do.call(rbind, levene)
         # format table nicely
         args <- list(levene, digits = digits, ...)
-        if (is.null(args$pValue)) args$pValue <- names(levene) == "Sig."
-        if (is.null(args$checkInt)) args$checkInt <- names(levene) == "df2"
-        formatted <- do.call(formatSPSS, args)
+        if (is.null(args$p_value)) args$p_value <- names(levene) == "Sig."
+        if (is.null(args$check_int)) args$check_int <- names(levene) == "df2"
+        formatted <- do.call(format_SPSS, args)
         # define header with line breaks
         header <- c("", "", wrapText(names(levene), limit = 8))
         # define nice labels for the rows
@@ -392,8 +393,8 @@ toSPSS.ANOVASPSS <- function(object,
                              "across groups."),
                        if (!legacy) paste("Dependent variable:", object$variable),
                        paste("Design: Intercept +", object$group[1], "+",
-                              object$group[2], "+", object$group[1], "*",
-                              object$group[2]))
+                             object$group[2], "+", object$group[1], "*",
+                             object$group[2]))
         # construct list containing information
         if (legacy) {
           # define main title
@@ -441,11 +442,11 @@ toSPSS.ANOVASPSS <- function(object,
                          "Mean Square", "F", "Sig.")
       } else stop("type of ANOVA not supported")
       ## format table nicely
-      if (legacy) formatted <- formatSPSS(test, digits = digits, ...)
+      if (legacy) formatted <- format_SPSS(test, digits = digits, ...)
       else {
         args <- list(test, digits = digits, ...)
-        if (is.null(args$pValue)) args$pValue <- names(test) == "Sig."
-        formatted <- do.call(formatSPSS, args)
+        if (is.null(args$p_value)) args$p_value <- names(test) == "Sig."
+        formatted <- do.call(format_SPSS, args)
       }
       ## construct list containing all necessary information
       if (object$type == "one-way") {
@@ -459,9 +460,9 @@ toSPSS.ANOVASPSS <- function(object,
         RSq <- 1 - object$test["Error", "Sum Sq"] / object$test["Corrected Total", "Sum Sq"]
         AdjRSq <- 1 - object$test["Error", "Mean Sq"] /
           (object$test["Corrected Total", "Sum Sq"] / object$test["Corrected Total", "Df"])
-        footnote <- paste0("R Squared = ", formatSPSS(RSq, digits=digits),
+        footnote <- paste0("R Squared = ", format_SPSS(RSq, digits=digits),
                            " (Adjusted R Squared = ",
-                           formatSPSS(AdjRSq, digits=digits), ")")
+                           format_SPSS(AdjRSq, digits=digits), ")")
         footnotes <- data.frame(marker = "a", row = 1, column = 1,
                                 text = footnote)
         # construct list
@@ -485,14 +486,14 @@ toSPSS.ANOVASPSS <- function(object,
 #' @rdname ANOVA
 #' @export
 
-print.ANOVASPSS <- function(x,
-                            statistics = c("descriptives", "variance", "test"),
-                            version = r2spssOptions$get("version"), ...) {
+print.ANOVA_SPSS <- function(x,
+                             statistics = c("descriptives", "variance", "test"),
+                             version = r2spss_options$get("version"), ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
 
   ## print LaTeX table for descriptives
   if ("descriptives" %in% statistics) {
@@ -541,11 +542,11 @@ print.ANOVASPSS <- function(x,
 #'
 #' @export
 
-plot.ANOVASPSS <- function(x, y, which = 1,
-                           version = r2spssOptions$get("version"),
-                           ...) {
+plot.ANOVA_SPSS <- function(x, y, which = 1,
+                            version = r2spss_options$get("version"),
+                            ...) {
   # initializations
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
   # define local version of geom for lines that ignores arguments for points
   local_geom_line <- function(..., fatten, fill, shape, stroke, bg, pch) {
     geom_line_SPSS(...)

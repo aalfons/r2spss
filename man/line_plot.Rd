@@ -8,7 +8,7 @@ line_plot(
   data,
   variables,
   index = NULL,
-  version = r2spssOptions$get("version"),
+  version = r2spss_options$get("version"),
   ...
 )
 }

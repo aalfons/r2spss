@@ -17,8 +17,8 @@
 #' @param variable  a character string specifying the numeric variable of
 #' interest.
 #' @param group  a character string specifying a grouping variable.
-#' @param object,x  an object of class \code{"kruskalTestSPSS"} as returned by
-#' function \code{kruskalTest}.
+#' @param object,x  an object of class \code{"kruskal_test_SPSS"} as returned
+#' by function \code{kruskal_test}.
 #' @param statistics  a character string or vector specifying which SPSS tables
 #' to produce.  Available options are \code{"ranks"} for a summary of the ranks
 #' and \code{"test"} for test results.  For the \code{toSPSS} method, only one
@@ -37,10 +37,10 @@
 #' summary of the ranks, and the second element corresponding to the number of
 #' digits in the table for the test.
 #' @param \dots additional arguments to be passed down to
-#' \code{\link{formatSPSS}}.
+#' \code{\link{format_SPSS}}.
 #'
 #' @return
-#' An object of class \code{"kruskalTestSPSS"} with the following components:
+#' An object of class \code{"kruskal_test_SPSS"} with the following components:
 #' \describe{
 #'   \item{\code{statistics}}{a data frame containing information on the
 #'   per-group mean ranks.}
@@ -72,14 +72,14 @@
 #' data("Eredivisie")
 #'
 #' # test whether market values differ by playing position
-#' kruskalTest(Eredivisie, "MarketValue", group = "Position")
+#' kruskal_test(Eredivisie, "MarketValue", group = "Position")
 #'
 #' @keywords htest
 #'
 #' @importFrom stats pchisq
 #' @export
 
-kruskalTest <- function(data, variable, group) {
+kruskal_test <- function(data, variable, group) {
   ## initializations
   data <- as.data.frame(data)
   variable <- as.character(variable)
@@ -99,29 +99,29 @@ kruskalTest <- function(data, variable, group) {
   n <- tapply(r, by, length)
   if (any(is.na(n))) stop("unused factor levels")
   sum <- tapply(r, by, sum)
-  stat <- data.frame(N=n, "Mean Rank"=sum/n, check.names=FALSE,
-                     row.names=levels(by))
+  stat <- data.frame(N = n, "Mean Rank" = sum/n, check.names = FALSE,
+                     row.names = levels(by))
   # chi-square approximation
   N <- sum(n)
   nTies <- table(r)
   h <- (12*sum(sum^2/n)/(N*(N+1)) - 3*(N+1)) / (1-sum(nTies^3-nTies)/(N^3-N))
   df <- nlevels(by) - 1
-  p <- pchisq(h, df, lower.tail=FALSE)
-  test <- list(statistic=h, parameter=df, p.value=p)
+  p <- pchisq(h, df, lower.tail = FALSE)
+  test <- list(statistic = h, parameter = df, p.value = p)
   ## return results
-  out <- list(statistics=stat, test=test, variable=variable[1],
-              group=group[1])
-  class(out) <- "kruskalTestSPSS"
+  out <- list(statistics = stat, test = test, variable = variable[1],
+              group = group[1])
+  class(out) <- "kruskal_test_SPSS"
   out
 }
 
 
-#' @rdname kruskalTest
+#' @rdname kruskal_test
 #' @export
 
-toSPSS.kruskalTestSPSS <- function(object, statistics = c("test", "ranks"),
-                                   version = r2spssOptions$get("version"),
-                                   digits = NULL, ...) {
+toSPSS.kruskal_test_SPSS <- function(object, statistics = c("test", "ranks"),
+                                     version = r2spss_options$get("version"),
+                                     digits = NULL, ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
@@ -136,7 +136,7 @@ toSPSS.kruskalTestSPSS <- function(object, statistics = c("test", "ranks"),
     N <- sum(object$statistics$N)
     ranks <- rbind(object$statistics, Total = c(N, rep.int(NA, p)))
     # format table nicely
-    formatted <- formatSPSS(ranks, digits = digits, ...)
+    formatted <- format_SPSS(ranks, digits = digits, ...)
     # define header
     header <- c("", object$group, names(ranks))
     # construct list containing all necessary information
@@ -147,7 +147,7 @@ toSPSS.kruskalTestSPSS <- function(object, statistics = c("test", "ranks"),
 
     # initializations
     if (is.null(digits)) digits <- 3
-    version <- match.arg(version, choices = getVersionValues())
+    version <- match.arg(version, choices = get_version_values())
     legacy <- version == "legacy"
     # extract results
     # put test results into SPSS format
@@ -156,9 +156,9 @@ toSPSS.kruskalTestSPSS <- function(object, statistics = c("test", "ranks"),
     values <- unlist(object$test)
     # format results nicely
     args <- list(values, digits = digits, ...)
-    if (is.null(args$pValue)) args$pValue <- c(FALSE, FALSE, !legacy)
-    if (is.null(args$checkInt)) args$checkInt <- c(FALSE, TRUE, FALSE)
-    formatted <- do.call(formatSPSS, args)
+    if (is.null(args$p_value)) args$p_value <- c(FALSE, FALSE, !legacy)
+    if (is.null(args$check_int)) args$check_int <- c(FALSE, TRUE, FALSE)
+    formatted <- do.call(format_SPSS, args)
     # put test results into SPSS format
     test <- data.frame(formatted, row.names = rn)
     names(test) <- object$variable
@@ -182,17 +182,17 @@ toSPSS.kruskalTestSPSS <- function(object, statistics = c("test", "ranks"),
 }
 
 
-#' @rdname kruskalTest
+#' @rdname kruskal_test
 #' @export
 
-print.kruskalTestSPSS <- function(x, statistics = c("ranks", "test"),
-                                  version = r2spssOptions$get("version"),
-                                  digits = 2:3, ...) {
+print.kruskal_test_SPSS <- function(x, statistics = c("ranks", "test"),
+                                    version = r2spss_options$get("version"),
+                                    digits = 2:3, ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
   digits <- rep_len(digits, 2)
 
   ## print LaTeX table for ranks
@@ -219,4 +219,13 @@ print.kruskalTestSPSS <- function(x, statistics = c("ranks", "test"),
     cat("\n")
   }
 
+}
+
+
+#' @rdname kruskal_test
+#' @export
+
+kruskalTest <- function(data, variable, group) {
+  .Deprecated("kruskal_test")
+  kruskal_test(data, variable = variable, group = group)
 }

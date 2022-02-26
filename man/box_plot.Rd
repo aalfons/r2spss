@@ -12,7 +12,7 @@ box_plot(
   style = c("T", "whiskers"),
   coef = c(1.5, 3),
   outlier.shape = c(1, 42),
-  version = r2spssOptions$get("version"),
+  version = r2spss_options$get("version"),
   ...
 )
 }

@@ -8,27 +8,27 @@
 \alias{scale_fill_SPSS}
 \title{SPSS Color Palette and Color Scales}
 \usage{
-paletteSPSS(n = NULL, version = r2spssOptions$get("version"))
+paletteSPSS(n = NULL, version = r2spss_options$get("version"))
 
-SPSS_pal(version = r2spssOptions$get("version"), direction = 1)
+SPSS_pal(version = r2spss_options$get("version"), direction = 1)
 
 scale_color_SPSS(
   ...,
-  version = r2spssOptions$get("version"),
+  version = r2spss_options$get("version"),
   direction = 1,
   aesthetics = "color"
 )
 
 scale_colour_SPSS(
   ...,
-  version = r2spssOptions$get("version"),
+  version = r2spss_options$get("version"),
   direction = 1,
   aesthetics = "colour"
 )
 
 scale_fill_SPSS(
   ...,
-  version = r2spssOptions$get("version"),
+  version = r2spss_options$get("version"),
   direction = 1,
   aesthetics = "fill"
 )

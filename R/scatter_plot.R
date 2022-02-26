@@ -57,14 +57,14 @@
 #' @export
 
 scatter_plot <- function(data, variables,
-                         version = r2spssOptions$get("version"),
+                         version = r2spss_options$get("version"),
                          ...) {
   # initializations
   data <- as.data.frame(data)
   variables <- as.character(variables)
   if (length(variables) < 2) stop("at least two variables must be specified")
   # check which SPSS version to mimic
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
   # create plot
   if (length(variables) == 2) {
     # define default axis labels
@@ -111,7 +111,7 @@ scatter_plot <- function(data, variables,
 # in addition provide a function that sets defaults for the entire session.
 # This would provide a nice set of functions together with theme_SPSS() and
 # scale_xxx_SPSS() to make any plot look like SPSS.
-geom_point_SPSS <- function(..., version = r2spssOptions$get("version"),
+geom_point_SPSS <- function(..., version = r2spss_options$get("version"),
                             grouped = FALSE) {
   # obtain list of arguments with standardized names
   arguments <- standardize_args(list(...))

@@ -4,7 +4,7 @@
 # --------------------------------------
 
 # internal function to initialize and set default values for options
-initializeOptions = function(...) {
+initialize_options = function(...) {
 
   # assign default values to options (they live in this environment)
   values <- list(...)
@@ -75,19 +75,19 @@ initializeOptions = function(...) {
 #'
 #' @examples
 #' # retrieve list of options:
-#' r2spssOptions$get()
+#' r2spss_options$get()
 #'
 #' # retrieve a single option:
-#' r2spssOptions$get("version")
+#' r2spss_options$get("version")
 #'
 #' \dontrun{
 #'
 #' # set an option:
-#' r2spssOptions$set(version = "legacy")
+#' r2spss_options$set(version = "legacy")
 #' }
 #'
 #' @keywords utilities
 #'
 #' @export
 
-r2spssOptions <- initializeOptions(version = "modern")
+r2spss_options <- initialize_options(version = "modern")

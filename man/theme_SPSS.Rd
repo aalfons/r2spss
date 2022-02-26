@@ -9,7 +9,7 @@ theme_SPSS(
   base_family = "",
   base_line_size = 0.5,
   base_rect_size = 0.5,
-  version = r2spssOptions$get("version"),
+  version = r2spss_options$get("version"),
   scales = NULL,
   scale.x = scales,
   scale.y = scales

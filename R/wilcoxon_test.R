@@ -27,8 +27,8 @@
 #' should also return the p-value of the exact test.  The default is
 #' \code{FALSE}.  Note that the p-value of the asymptotic test is always
 #' returned.
-#' @param object,x  an object of class \code{"wilcoxonTestSPSS"} as returned by
-#' function \code{wilcoxonTest}.
+#' @param object,x  an object of class \code{"wilcoxon_test_SPSS"} as returned
+#' by function \code{wilcoxon_test}.
 #' @param statistics  a character string or vector specifying which SPSS tables
 #' to produce.  Available options are \code{"ranks"} for a summary of the ranks
 #' and \code{"test"} for test results.  For the \code{toSPSS} method, only one
@@ -46,9 +46,9 @@
 #' summary of the ranks, and the second element corresponding to the number of
 #' digits in the table for the test.
 #' @param \dots additional arguments to be passed down to
-#' \code{\link{formatSPSS}}.
+#' \code{\link{format_SPSS}}.
 #'
-#' @return  An object of class \code{"wilcoxonTestSPSS"} with the following
+#' @return  An object of class \code{"wilcoxon_test_SPSS"} with the following
 #' components:
 #' \describe{
 #'   \item{\code{statistics}}{a data frame containing the relevant information
@@ -99,7 +99,7 @@
 #'
 #' # test whether grades differ between the
 #' # regular exam and the resit
-#' wilcoxonTest(Exams, c("Regular", "Resit"))
+#' wilcoxon_test(Exams, c("Regular", "Resit"))
 #'
 #'
 #' ## independent samples
@@ -109,14 +109,14 @@
 #'
 #' # test whether market values differ between Dutch and foreign
 #' # players
-#' wilcoxonTest(Eredivisie, "MarketValue", group = "Foreign")
+#' wilcoxon_test(Eredivisie, "MarketValue", group = "Foreign")
 #'
 #' @keywords htest
 #'
 #' @importFrom stats pnorm pwilcox
 #' @export
 
-wilcoxonTest <- function(data, variables, group = NULL, exact = FALSE) {
+wilcoxon_test <- function(data, variables, group = NULL, exact = FALSE) {
   ## initializations
   data <- as.data.frame(data)
   variables <- as.character(variables)
@@ -139,8 +139,8 @@ wilcoxonTest <- function(data, variables, group = NULL, exact = FALSE) {
     if (any(count == 0)) stop("all differences negative or positive")
     sum <- c(sum(r[negative]), sum(r[positive]))
     rn <- c("Negative Ranks", "Positive Ranks")
-    stat <- data.frame(N=count, "Mean Rank"=sum/count, "Sum of Ranks"=sum,
-                       check.names=FALSE, row.names=rn)
+    stat <- data.frame(N = count, "Mean Rank" = sum/count, "Sum of Ranks" = sum,
+                       check.names = FALSE, row.names = rn)
     # normal approximation
     n <- length(dnp)
     mu <- n*(n+1) / 4
@@ -148,10 +148,10 @@ wilcoxonTest <- function(data, variables, group = NULL, exact = FALSE) {
     sigma <- sqrt((n*(n+1)*(2*n+1))/24 - sum(nTies^3-nTies)/48)
     z <- (min(sum) - mu) / sigma
     p <- 2 * min(pnorm(z), pnorm(z, lower.tail=FALSE))
-    test <- list(statistic=z, p.value=p)
+    test <- list(statistic = z, p.value = p)
     # construct object
-    out <- list(statistics=stat, test=test, variables=variables[1:2],
-                n=length(d), type="paired")
+    out <- list(statistics = stat, test = test, variables = variables[1:2],
+                n = length(d), type = "paired")
   } else {
     ## rank sum test
     if (length(variables) == 0) stop("a variable to test must be specified")
@@ -171,8 +171,8 @@ wilcoxonTest <- function(data, variables, group = NULL, exact = FALSE) {
     n <- c(sum(first), sum(second))
     if (any(n == 0)) stop("all differences negative or positive")
     sum <- c(sum(r[first]), sum(r[second]))
-    stat <- data.frame(N=n, "Mean Rank"=sum/n, "Sum of Ranks"=sum,
-                       check.names=FALSE, row.names=levels(by))
+    stat <- data.frame(N = n, "Mean Rank" = sum/n, "Sum of Ranks" = sum,
+                       check.names = FALSE, row.names = levels(by))
     # normal approximation
     max <- which.max(sum)
     N <- sum(n)
@@ -180,35 +180,36 @@ wilcoxonTest <- function(data, variables, group = NULL, exact = FALSE) {
     nTies <- table(r)
     sigma <- sqrt(prod(n)/12 * ((N+1) - sum(nTies^3 - nTies)/(N*(N-1))))
     z <- (sum[max] - mu) / sigma
-    p <- 2 * min(pnorm(z), pnorm(z, lower.tail=FALSE))
-    asymptotic <- list(statistic=z, p.value=p)
+    p <- 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE))
+    asymptotic <- list(statistic = z, p.value = p)
     # Mann-Whitney U statistic
     u <- sum[max] - n[max]*(n[max]+1)/2
     # sigma <- sqrt((prod(n)*(N+1)) / 12)
     # if requested, compute exact test without correction for ties
     # (can take a long time)
     if (isTRUE(exact)) {
-      if (u > prod(n)/2) p <- pwilcox(u-1, n[max], n[-max], lower.tail=FALSE)
+      if (u > prod(n)/2) p <- pwilcox(u-1, n[max], n[-max], lower.tail = FALSE)
       else p <- pwilcox(u, n[max], n[-max])
       exact <- min(2*p, 1)
     } else exact <- NULL
     # construct object
-    out <- list(statistics=stat, u=u, w=sum[max], asymptotic=asymptotic,
-                exact=exact, variables=variables[1], group=group[1],
-                type="independent")
+    out <- list(statistics = stat, u = u, w = sum[max],
+                asymptotic = asymptotic, exact = exact,
+                variables = variables[1], group = group[1],
+                type = "independent")
   }
   ## return results
-  class(out) <- "wilcoxonTestSPSS"
+  class(out) <- "wilcoxon_test_SPSS"
   out
 }
 
 
-#' @rdname wilcoxonTest
+#' @rdname wilcoxon_test
 #' @export
 
-toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
-                                    version = r2spssOptions$get("version"),
-                                    digits = NULL, ...) {
+toSPSS.wilcoxon_test_SPSS <- function(object, statistics = c("test", "ranks"),
+                                      version = r2spss_options$get("version"),
+                                      digits = NULL, ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
@@ -227,10 +228,10 @@ toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
       N <- object$n
       ties <- N - sum(object$statistics$N)
       ranks <- rbind(object$statistics,
-            Ties = c(ties, rep.int(NA_integer_, p-1)),
-            Total = c(N, rep.int(NA_integer_, p-1)))
+                     Ties = c(ties, rep.int(NA_integer_, p-1)),
+                     Total = c(N, rep.int(NA_integer_, p-1)))
       # format table nicely
-      formatted <- formatSPSS(ranks, digits = digits, ...)
+      formatted <- format_SPSS(ranks, digits = digits, ...)
       # define footnotes
       footnotes <- c(paste(object$variables, collapse = " < "),
                      paste(object$variables, collapse = " > "),
@@ -247,7 +248,7 @@ toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
       ranks <- rbind(object$statistics,
                      Total = c(N, rep.int(NA_integer_, p-1)))
       # format table nicely
-      formatted <- formatSPSS(ranks, digits = digits, ...)
+      formatted <- format_SPSS(ranks, digits = digits, ...)
       # construct list containing all necessary information
       spss <- list(table = formatted, main = "Ranks", header = TRUE,
                    label = label, rowNames = TRUE, info = 0)
@@ -257,7 +258,7 @@ toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
 
     # initializations
     if (is.null(digits)) digits <- 3
-    version <- match.arg(version, choices = getVersionValues())
+    version <- match.arg(version, choices = get_version_values())
     legacy <- version == "legacy"
     # prepare necessary information
     if (object$type == "paired") {
@@ -266,8 +267,8 @@ toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
       values <- unlist(object$test)
       # format results nicely
       args <- list(values, digits = digits, ...)
-      if (is.null(args$pValue)) args$pValue <- c(FALSE, !legacy)
-      formatted <- do.call(formatSPSS, args)
+      if (is.null(args$p_value)) args$p_value <- c(FALSE, !legacy)
+      formatted <- do.call(format_SPSS, args)
       # put test results into SPSS format
       test <- data.frame(formatted, row.names = rn)
       names(test) <- label
@@ -286,16 +287,16 @@ toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
       # extract results
       rn <- c("Mann-Whitney U", "Wilcoxon W", "Z", "Asymp. Sig. (2-tailed)")
       values <- c(object$u, object$w, unlist(object$asymptotic))
-      pValue <- c(FALSE, FALSE, FALSE, !legacy)
+      p_value <- c(FALSE, FALSE, FALSE, !legacy)
       if (haveExact) {
         rn <- c(rn, "Exact Sig. [2*(1-tailed Sig.)]")
         values <- c(values, object$exact)
-        pValue <- c(pValue, !legacy)
+        p_value <- c(p_value, !legacy)
       }
       # format results nicely
       args <- list(values, digits = digits, ...)
-      if (is.null(args$pValue)) args$pValue <- pValue
-      formatted <- do.call(formatSPSS, args)
+      if (is.null(args$p_value)) args$p_value <- p_value
+      formatted <- do.call(format_SPSS, args)
       # put test results into SPSS format
       test <- data.frame(formatted, row.names = rn)
       names(test) <- label
@@ -327,17 +328,17 @@ toSPSS.wilcoxonTestSPSS <- function(object, statistics = c("test", "ranks"),
 }
 
 
-#' @rdname wilcoxonTest
+#' @rdname wilcoxon_test
 #' @export
 
-print.wilcoxonTestSPSS <- function(x, statistics = c("ranks", "test"),
-                                   version = r2spssOptions$get("version"),
-                                   digits = 2:3, ...) {
+print.wilcoxon_test_SPSS <- function(x, statistics = c("ranks", "test"),
+                                     version = r2spss_options$get("version"),
+                                     digits = 2:3, ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
   digits <- rep_len(digits, 2)
 
   ## print LaTeX table for ranks
@@ -364,4 +365,13 @@ print.wilcoxonTestSPSS <- function(x, statistics = c("ranks", "test"),
     cat("\n")
   }
 
+}
+
+
+#' @rdname wilcoxon_test
+#' @export
+
+wilcoxonTest <- function(data, variables, group = NULL, exact = FALSE) {
+  .Deprecated("wilcoxon_test")
+  wilcoxon_test(data, variables = variables, group = group, exact = exact)
 }

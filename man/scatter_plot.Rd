@@ -4,7 +4,7 @@
 \alias{scatter_plot}
 \title{Scatter Plot and Scatter Plot Matrix}
 \usage{
-scatter_plot(data, variables, version = r2spssOptions$get("version"), ...)
+scatter_plot(data, variables, version = r2spss_options$get("version"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables to be plotted.}

@@ -51,7 +51,7 @@
 #' @export
 
 line_plot <- function(data, variables, index = NULL,
-                      version = r2spssOptions$get("version"),
+                      version = r2spss_options$get("version"),
                       ...) {
   # initializations
   data <- as.data.frame(data)
@@ -68,7 +68,7 @@ line_plot <- function(data, variables, index = NULL,
     xlab <- index[1]
   }
   # check which SPSS version to mimic
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
   # create plot
   if (length(variables) == 1) {
     # create new data frame since index may not be a variable but case numbers
@@ -116,7 +116,7 @@ line_plot <- function(data, variables, index = NULL,
 
 
 # custom geom for lines with defaults to mimic appearance of SPSS
-geom_line_SPSS <- function(..., version = r2spssOptions$get("version"),
+geom_line_SPSS <- function(..., version = r2spss_options$get("version"),
                            grouped = FALSE) {
   # obtain list of arguments with standardized names
   arguments <- standardize_args(list(...))

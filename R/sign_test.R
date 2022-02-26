@@ -19,8 +19,8 @@
 #' @param exact  a logical indicating whether or not to include the exact
 #' p-value using the binomial distribution.  Note that the p-value using the
 #' normal approximation is always reported.
-#' @param object,x  an object of class \code{"signTestSPSS"} as returned by
-#' function \code{signTest}.
+#' @param object,x  an object of class \code{"sign_test_SPSS"} as returned by
+#' function \code{sign_test}.
 #' @param statistics  a character string or vector specifying which SPSS tables
 #' to produce.   Available options are \code{"frequencies"} for a summary of
 #' the frequencies and \code{"test"} for test results.  For the \code{toSPSS}
@@ -32,9 +32,9 @@
 #' older versions (<24; \code{"legacy"}).  The main difference in terms of
 #' content is that small p-values are displayed differently.
 #' @param \dots additional arguments to be passed down to
-#' \code{\link{formatSPSS}}.
+#' \code{\link{format_SPSS}}.
 #'
-#' @return  An object of class \code{"signTestSPSS"} with the following
+#' @return  An object of class \code{"sign_test_SPSS"} with the following
 #' components:
 #' \describe{
 #'   \item{\code{statistics}}{a data frame containing information on the
@@ -70,14 +70,14 @@
 #'
 #' # test whether grades differ between the
 #' # regular exam and the resit
-#' signTest(Exams, c("Regular", "Resit"))
+#' sign_test(Exams, c("Regular", "Resit"))
 #'
 #' @keywords htest
 #'
 #' @importFrom stats dbinom pbinom pnorm
 #' @export
 
-signTest <- function(data, variables, exact = FALSE) {
+sign_test <- function(data, variables, exact = FALSE) {
   ## initializations
   data <- as.data.frame(data)
   variables <- as.character(variables)
@@ -95,33 +95,35 @@ signTest <- function(data, variables, exact = FALSE) {
   count <- c(sum(negative), sum(positive))
   if (any(count == 0)) stop("all differences negative or positive")
   rn <- c("Negative Differences", "Positive Differences")
-  stat <- data.frame(N=count, check.names=FALSE, row.names=rn)
+  stat <- data.frame(N = count, check.names = FALSE, row.names = rn)
   # normal approximation
   n <- length(dnp)
   mu <- n * 0.5
   sigma <- sqrt(n) * 0.5
   min <- which.min(count)
   z <- (count[min] - mu + 0.5) / sigma  # continuity correction
-  p <- 2 * min(pnorm(z), pnorm(z, lower.tail=FALSE))
-  asymptotic <- list(statistic=z, p.value=p)
+  p <- 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE))
+  asymptotic <- list(statistic = z, p.value = p)
   # exact test
   if (isTRUE(exact)) {
     p <- pbinom(count[min], n, 0.5)
     exact <- c(min(2*p, 1), p, dbinom(count[min], n, 0.5))
   } else exact <- NULL
   ## return results
-  out <- list(statistics=stat, asymptotic=asymptotic, exact=exact,
-              variables=variables[1:2], n=length(d))
-  class(out) <- "signTestSPSS"
+  out <- list(statistics = stat, asymptotic = asymptotic, exact = exact,
+              variables = variables[1:2], n = length(d))
+  class(out) <- "sign_test_SPSS"
   out
 }
 
 
-#' @rdname signTest
+#' @rdname sign_test
 #' @export
 
-toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
-                                version = r2spssOptions$get("version"), ...) {
+toSPSS.sign_test_SPSS <- function(object,
+                                  statistics = c("test", "frequencies"),
+                                  version = r2spss_options$get("version"),
+                                  ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
@@ -133,10 +135,10 @@ toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
     N <- object$n
     ties <- N - sum(object$statistics$N)
     frequencies <- data.frame(Group = c(rownames(object$statistics),
-                                       "Ties", "Total"),
+                                        "Ties", "Total"),
                               N = c(object$statistics$N, ties, N))
     # format table nicely
-    formatted <- formatSPSS(frequencies, ...)
+    formatted <- format_SPSS(frequencies, ...)
     # define header
     header <- c("", "", "N")
     # define footnotes
@@ -153,21 +155,21 @@ toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
   } else if (statistics == "test") {
 
     # initializations
-    version <- match.arg(version, choices = getVersionValues())
+    version <- match.arg(version, choices = get_version_values())
     legacy <- version == "legacy"
     # extract results
     rn <- c("Z", "Asymp. Sig. (2-tailed)")
     values <- unlist(object$asymptotic)
-    pValue <- c(FALSE, !legacy)
+    p_value <- c(FALSE, !legacy)
     if (!is.null(object$exact)) {
       rn <- c(rn, sprintf("Exact Sig. (%d-tailed)", 2:1), "Point probability")
       values <- c(values, object$exact)
-      pValue <- c(pValue, !legacy, !legacy, FALSE)
+      p_value <- c(p_value, !legacy, !legacy, FALSE)
     }
     # format results nicely
     args <- list(values, ...)
-    if (is.null(args$pValue)) args$pValue <- pValue
-    formatted <- do.call(formatSPSS, args)
+    if (is.null(args$p_value)) args$p_value <- p_value
+    formatted <- do.call(format_SPSS, args)
     # put test results into SPSS format
     test <- data.frame(formatted, row.names = rn)
     names(test) <- label
@@ -188,16 +190,16 @@ toSPSS.signTestSPSS <- function(object, statistics = c("test", "frequencies"),
 
 }
 
-#' @rdname signTest
+#' @rdname sign_test
 #' @export
 
-print.signTestSPSS <- function(x, statistics = c("frequencies", "test"),
-                               version = r2spssOptions$get("version"), ...) {
+print.sign_test_SPSS <- function(x, statistics = c("frequencies", "test"),
+                                 version = r2spss_options$get("version"), ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
 
   ## print LaTeX table for ranks
   if ("frequencies" %in% statistics) {
@@ -221,4 +223,13 @@ print.signTestSPSS <- function(x, statistics = c("frequencies", "test"),
     cat("\n")
   }
 
+}
+
+
+#' @rdname sign_test
+#' @export
+
+signTest <- function(data, variables, exact = FALSE) {
+  .Deprecated("sign_test")
+  sign_test(data, variables = variables, exact = exact)
 }

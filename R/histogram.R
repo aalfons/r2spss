@@ -68,7 +68,7 @@ histogram <- function(data, variable, bins = NULL, normal = FALSE,
                       normal.colour = NULL, normal.color = NULL,
                       normal.linetype = NULL, normal.size = NULL,
                       normal.alpha = NULL, digits = 3, limits = NULL,
-                      expand = 0.05, version = r2spssOptions$get("version"),
+                      expand = 0.05, version = r2spss_options$get("version"),
                       ...) {
   # initializations
   data <- as.data.frame(data)
@@ -77,11 +77,11 @@ histogram <- function(data, variable, bins = NULL, normal = FALSE,
   variable <- variable[1]
   normal <- isTRUE(normal)
   # check which SPSS functionality to mimic
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
   # extract variable of interest
   x <- data[, variable]
   # if necessary, determine the number of bins
-  if (is.null(bins)) bins <- getBins(x)
+  if (is.null(bins)) bins <- get_bins(x)
   else {
     if (!is.numeric(bins) || length(bins) == 0) {
       stop("the number of bins must be a single numeric value")
@@ -162,7 +162,7 @@ histogram <- function(data, variable, bins = NULL, normal = FALSE,
 stat_bin_SPSS <- function(..., position, orientation) stat_bin(...)
 
 # custom geom for histogram with defaults to mimic appearance of SPSS
-geom_rect_SPSS <- function(..., version = r2spssOptions$get("version"),
+geom_rect_SPSS <- function(..., version = r2spss_options$get("version"),
                            # arguments to be ignored
                            stat, position, binwidth, bins, center,
                            boundary, breaks, closed, pad, orientation) {
@@ -185,7 +185,7 @@ geom_rect_SPSS <- function(..., version = r2spssOptions$get("version"),
 
 
 # custom geom for plotting normal density to mimic appearance of SPSS
-geom_normal_SPSS <- function(..., version = r2spssOptions$get("version"),
+geom_normal_SPSS <- function(..., version = r2spss_options$get("version"),
                              # arguments to be ignored,
                              stat, position, binwidth, bins, center, boundary,
                              breaks, closed, pad, orientation, fill, bg) {
@@ -225,7 +225,7 @@ geom_normal_SPSS <- function(..., version = r2spssOptions$get("version"),
 
 
 # internal function to compute number of bins
-getBins <- function(x) {
+get_bins <- function(x) {
   # maximum number of bins
   m <- 35
   # small range of integers: use a bin for each value and return break points

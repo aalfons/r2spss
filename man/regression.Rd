@@ -2,46 +2,46 @@
 % Please edit documentation in R/regression.R
 \name{regression}
 \alias{regression}
-\alias{toSPSS.regressionSPSS}
-\alias{print.regressionSPSS}
-\alias{coef.regressionSPSS}
-\alias{df.residual.regressionSPSS}
-\alias{fitted.regressionSPSS}
-\alias{residuals.regressionSPSS}
-\alias{plot.regressionSPSS}
+\alias{toSPSS.regression_SPSS}
+\alias{print.regression_SPSS}
+\alias{coef.regression_SPSS}
+\alias{df.residual.regression_SPSS}
+\alias{fitted.regression_SPSS}
+\alias{residuals.regression_SPSS}
+\alias{plot.regression_SPSS}
 \title{Linear Regression}
 \usage{
 regression(..., data, labels = NULL)
 
-\method{toSPSS}{regressionSPSS}(
+\method{toSPSS}{regression_SPSS}(
   object,
   statistics = c("estimates", "anova", "summary"),
   change = FALSE,
-  version = r2spssOptions$get("version"),
+  version = r2spss_options$get("version"),
   ...
 )
 
-\method{print}{regressionSPSS}(
+\method{print}{regression_SPSS}(
   x,
   statistics = c("summary", "anova", "estimates"),
   change = FALSE,
-  version = r2spssOptions$get("version"),
+  version = r2spss_options$get("version"),
   ...
 )
 
-\method{coef}{regressionSPSS}(object, ...)
+\method{coef}{regression_SPSS}(object, ...)
 
-\method{df.residual}{regressionSPSS}(object, ...)
+\method{df.residual}{regression_SPSS}(object, ...)
 
-\method{fitted}{regressionSPSS}(object, standardized = FALSE, ...)
+\method{fitted}{regression_SPSS}(object, standardized = FALSE, ...)
 
-\method{residuals}{regressionSPSS}(object, standardized = FALSE, ...)
+\method{residuals}{regression_SPSS}(object, standardized = FALSE, ...)
 
-\method{plot}{regressionSPSS}(
+\method{plot}{regression_SPSS}(
   x,
   y,
   which = c("histogram", "scatter"),
-  version = r2spssOptions$get("version"),
+  version = r2spss_options$get("version"),
   ...
 )
 }
@@ -49,7 +49,7 @@ regression(..., data, labels = NULL)
 \item{\dots}{for \code{regression}, at least one formula specifying a
 regression model.  Different models can be compared by supplying multiple
 formulas.  For  the \code{toSPSS} and \code{print} methods, additional
-arguments to be passed down to \code{\link{formatSPSS}}.  For the
+arguments to be passed down to \code{\link{format_SPSS}}.  For the
 \code{plot} method, additional arguments to be passed down to
 \code{\link{histSPSS}} or \code{\link{plotSPSS}}, in particular graphical
 parameters.  For other methods, this is currently ignored.}
@@ -59,7 +59,7 @@ parameters.  For other methods, this is currently ignored.}
 \item{labels}{a character or numeric vector giving labels for the
 regression models in the output tables.}
 
-\item{object, x}{an object of class \code{"regressionSPSS"} as returned by
+\item{object, x}{an object of class \code{"regression_SPSS"} as returned by
 function \code{regression}.}
 
 \item{statistics}{a character string or vector specifying which SPSS tables
@@ -92,7 +92,7 @@ values are \code{"histogram"} for a histogram of the residuals, or
 standardized fitted values.}
 }
 \value{
-An object of class \code{"regressionSPSS"} with the following
+An object of class \code{"regression_SPSS"} with the following
 components:
 \describe{
   \item{\code{models}}{a list in which each component is an ojbect of class

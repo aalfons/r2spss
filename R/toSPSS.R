@@ -31,7 +31,7 @@
 #'
 #' # compute a Kruskual-Wallis test to investigate whether
 #' # market values differ by playing position
-#' kw <- kruskalTest(Eredivisie, "MarketValue",
+#' kw <- kruskal_test(Eredivisie, "MarketValue",
 #'                   group = "Position")
 #'
 #' # convert to an object of class "SPSSTable" that

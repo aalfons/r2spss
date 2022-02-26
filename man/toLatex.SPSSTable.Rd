@@ -5,7 +5,7 @@
 \alias{toLatex.data.frame}
 \title{Print LaTeX tables that mimic the look of SPSS output}
 \usage{
-\method{toLatex}{SPSSTable}(object, version = r2spssOptions$get("version"), ...)
+\method{toLatex}{SPSSTable}(object, version = r2spss_options$get("version"), ...)
 
 \method{toLatex}{data.frame}(
   object,
@@ -20,7 +20,7 @@
   footnotes = NULL,
   major = NULL,
   minor = NULL,
-  version = r2spssOptions$get("version"),
+  version = r2spss_options$get("version"),
   ...
 )
 }
@@ -39,7 +39,7 @@ tables have the same content irrespective of the SPSS version, and this
 argument controls the look of those tables.}
 
 \item{\dots}{for the \code{"data.frame"} method, additional arguments to be
-passed to \code{\link{formatSPSS}}.  For the \code{"SPSSTable"} method,
+passed to \code{\link{format_SPSS}}.  For the \code{"SPSSTable"} method,
 additional arguments are currently ignored.}
 
 \item{main}{a single character string defining the main title of the SPSS
@@ -175,7 +175,7 @@ data("Eredivisie")
 
 # compute a Kruskual-Wallis test to investigate whether
 # market values differ by playing position
-kw <- kruskalTest(Eredivisie, "MarketValue",
+kw <- kruskal_test(Eredivisie, "MarketValue",
                   group = "Position")
 
 # convert to an object of class "SPSSTable" that
@@ -198,7 +198,7 @@ data("Exams")
 
 # test whether the average grade on the resit
 # differs from 5.5 (minimum passing grade)
-t <- tTest(Exams, "Resit", mu = 5.5)
+t <- t_test(Exams, "Resit", mu = 5.5)
 
 # convert to an object of class "SPSSTable" that
 # contains the table with the test results

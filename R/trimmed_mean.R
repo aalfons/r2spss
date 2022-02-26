@@ -33,9 +33,9 @@
 #' @examples
 #' x <- c(0:10, 50)
 #'
-#' # trimmedMean() rounds number of observations
+#' # trimmed_mean() rounds number of observations
 #' # to be trimmed to the nearest integer
-#' trimmedMean(x, trim = 0.05)
+#' trimmed_mean(x, trim = 0.05)
 #'
 #' # base R function mean() rounds down number of
 #' # observations to be trimmed
@@ -47,7 +47,7 @@
 #' @importFrom stats median
 #' @export
 
-trimmedMean <- function(x, trim = 0.05) {
+trimmed_mean <- function(x, trim = 0.05) {
   # number of observations
   n <- length(x)
   # trim observations from both ends

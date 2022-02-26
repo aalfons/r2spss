@@ -2,15 +2,15 @@
 % Please edit documentation in R/descriptives.R
 \name{descriptives}
 \alias{descriptives}
-\alias{toSPSS.descriptivesSPSS}
-\alias{print.descriptivesSPSS}
+\alias{toSPSS.descriptives_SPSS}
+\alias{print.descriptives_SPSS}
 \title{Descriptive Statistics}
 \usage{
 descriptives(data, variables)
 
-\method{toSPSS}{descriptivesSPSS}(object, digits = 2, ...)
+\method{toSPSS}{descriptives_SPSS}(object, digits = 2, ...)
 
-\method{print}{descriptivesSPSS}(x, version = r2spssOptions$get("version"), ...)
+\method{print}{descriptives_SPSS}(x, version = r2spss_options$get("version"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -18,21 +18,21 @@ descriptives(data, variables)
 \item{variables}{a character vector specifying numeric variables for which
 to compute descriptive statistics.}
 
-\item{object, x}{an object of class \code{"descriptivesSPSS"} as returned by
-function \code{descriptives}.}
+\item{object, x}{an object of class \code{"descriptives_SPSS"} as returned
+by function \code{descriptives}.}
 
 \item{digits}{an integer giving the number of digits after the comma to be
 printed in the SPSS table.}
 
 \item{\dots}{additional arguments to be passed down to
-\code{\link{formatSPSS}}.}
+\code{\link{format_SPSS}}.}
 
 \item{version}{a character string specifying whether the table should
 mimic the look of recent SPSS versions (\code{"modern"}) or older versions
 (<24; \code{"legacy"}).}
 }
 \value{
-An object of class \code{"descriptivesSPSS"} with the following components:
+An object of class \code{"descriptives_SPSS"} with the following components:
 \describe{
   \item{\code{classes}}{a character vector giving the (first) class of the
   variables of interest.}

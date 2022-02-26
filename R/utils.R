@@ -5,10 +5,10 @@
 
 
 ## function to obtain possible values for argument 'version'
-getVersionValues <- function() c("modern", "legacy")
+get_version_values <- function() c("modern", "legacy")
 
 ## function to obtain possible values for argument 'scale'
-getScaleValues <- function() c("continuous", "discrete")
+get_scale_values <- function() c("continuous", "discrete")
 
 ## function to add line breaks in character strings to make sure that a given
 ## character limit is not exceeded per line

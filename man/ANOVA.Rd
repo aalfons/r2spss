@@ -2,29 +2,29 @@
 % Please edit documentation in R/ANOVA.R
 \name{ANOVA}
 \alias{ANOVA}
-\alias{toSPSS.ANOVASPSS}
-\alias{print.ANOVASPSS}
-\alias{plot.ANOVASPSS}
+\alias{toSPSS.ANOVA_SPSS}
+\alias{print.ANOVA_SPSS}
+\alias{plot.ANOVA_SPSS}
 \title{One-way and Two-way ANOVA}
 \usage{
 ANOVA(data, variable, group, conf.level = 0.95)
 
-\method{toSPSS}{ANOVASPSS}(
+\method{toSPSS}{ANOVA_SPSS}(
   object,
   statistics = c("test", "variance", "descriptives"),
-  version = r2spssOptions$get("version"),
+  version = r2spss_options$get("version"),
   digits = 3,
   ...
 )
 
-\method{print}{ANOVASPSS}(
+\method{print}{ANOVA_SPSS}(
   x,
   statistics = c("descriptives", "variance", "test"),
-  version = r2spssOptions$get("version"),
+  version = r2spss_options$get("version"),
   ...
 )
 
-\method{plot}{ANOVASPSS}(x, y, which = 1, version = r2spssOptions$get("version"), ...)
+\method{plot}{ANOVA_SPSS}(x, y, which = 1, version = r2spss_options$get("version"), ...)
 }
 \arguments{
 \item{data}{a data frame containing the variables.}
@@ -37,7 +37,7 @@ interest.}
 \item{conf.level}{a number between 0 and 1 giving the confidence level of
 the confidence interval.}
 
-\item{object, x}{an object of class \code{"ANOVASPSS"} as returned by
+\item{object, x}{an object of class \code{"ANOVA_SPSS"} as returned by
 function \code{ANOVA}.}
 
 \item{statistics}{a character string or vector specifying which SPSS tables
@@ -59,7 +59,7 @@ differently.}
 printed in the SPSS tables.}
 
 \item{\dots}{for  the \code{toSPSS} and \code{print} methods, additional
-arguments to be passed down to \code{\link{formatSPSS}}.  For the
+arguments to be passed down to \code{\link{format_SPSS}}.  For the
 \code{plot} method, additional arguments to be passed down to
 \code{\link{linesSPSS}}, in particular graphical parameters.}
 
@@ -72,7 +72,7 @@ the \eqn{x}-axis.  The other factor will then be used for drawing separate
 lines.  For one-way ANOVA, this is not meaningful and ignored.}
 }
 \value{
-\code{ANOVA} returns an object of class \code{"ANOVASPSS"} with the
+\code{ANOVA} returns an object of class \code{"ANOVA_SPSS"} with the
 following components:
 \describe{
   \item{\code{descriptives}}{a data frame containing per-group descriptive
@@ -122,7 +122,7 @@ returned by \code{toSPSS}.
 \note{
 The test statistic and p-value for Levene's test based on the trimmed mean
 (only returned for \code{version = "modern"}) differ slightly from those
-returned by SPSS.  Function \code{\link{trimmedMean}} rounds the number of
+returned by SPSS.  Function \code{\link{trimmed_mean}} rounds the number of
 observations to be trimmed in a different manner than the base \R function
 \code{\link{mean}}, which brings the results closer to those of SPSS, but
 they are still not identical.

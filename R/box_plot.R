@@ -66,7 +66,7 @@
 box_plot <- function(data, variables, group = NULL,
                      cut.names = NULL, style = c("T", "whiskers"),
                      coef = c(1.5, 3), outlier.shape = c(1, 42),
-                     version = r2spssOptions$get("version"), ...) {
+                     version = r2spss_options$get("version"), ...) {
   # initializations
   data <- as.data.frame(data)
   variables <- as.character(variables)
@@ -75,7 +75,7 @@ box_plot <- function(data, variables, group = NULL,
   # check which SPSS functionality to mimic
   style <- match.arg(style)
   coef <- rep(as.numeric(coef), length.out = 2)
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
   # check plot symbols for outliers
   outlier.shape <- rep(as.numeric(outlier.shape), length.out = 2)
   fatten <- ifelse(outlier.shape > 25, 2.75, 1)
@@ -174,7 +174,7 @@ box_plot <- function(data, variables, group = NULL,
 
 
 # custom geom for boxplot with defaults to mimic appearance of SPSS
-geom_boxplot_SPSS <- function(..., version = r2spssOptions$get("version"),
+geom_boxplot_SPSS <- function(..., version = r2spss_options$get("version"),
                               # arguments to be ignored
                               stat, outlier.colour, outlier.color, outlier.fill,
                               outlier.shape, outlier.size, outlier.stroke,

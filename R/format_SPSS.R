@@ -14,14 +14,14 @@
 #' \code{\link{as.character}}.
 #' @param digits  an integer giving the number of digits after the comma to
 #' display.
-#' @param pValue  a logical indicating whether small positive values should be
+#' @param p_value  a logical indicating whether small positive values should be
 #' indicated as below the threshold defined by \code{digits}, e.g.,
 #' \code{"<.001"} if \code{digits = 3}.  This is used for formatting p-values
 #' in LaTeX tables that mimic the look of SPSS.  For the \code{"numeric"}
 #' method, a logical vector indicates the behavior for each element of
 #' \code{object}.  For the \code{"matrix"} or \code{"data.frame"} methods, a
 #' logical vector indicates the behavior for each column of \code{object}.
-#' @param checkInt  a logical indicating whether to check for integer values
+#' @param check_int  a logical indicating whether to check for integer values
 #' and format them as such, e.g., to format the integer \code{2} as \code{"2"}
 #' instead of \code{"2.000"} if \code{digits = 3}.  For the \code{"numeric"}
 #' method, a logical vector indicates the behavior for each element of
@@ -37,25 +37,25 @@
 #' @examples
 #' # note how numbers in the interval (-1, 1) are printed
 #' # without the zero in front of the comma
-#' formatSPSS(c(-1.5, -2/3, 2/3, 1.5))
+#' format_SPSS(c(-1.5, -2/3, 2/3, 1.5))
 #'
 #' @keywords utilities
 #'
 #' @export
 
-formatSPSS <- function(object, ...) UseMethod("formatSPSS")
+format_SPSS <- function(object, ...) UseMethod("format_SPSS")
 
 
-#' @rdname formatSPSS
+#' @rdname format_SPSS
 #' @export
 
-formatSPSS.default <- function(object, ...) as.character(object)
+format_SPSS.default <- function(object, ...) as.character(object)
 
 
-#' @rdname formatSPSS
+#' @rdname format_SPSS
 #' @export
 
-formatSPSS.integer <- function(object, ...) {
+format_SPSS.integer <- function(object, ...) {
   # define format for integers
   n <- length(object)
   fmt <- rep.int("%d", n)
@@ -66,32 +66,32 @@ formatSPSS.integer <- function(object, ...) {
 }
 
 
-#' @rdname formatSPSS
+#' @rdname format_SPSS
 #' @export
 
-formatSPSS.numeric <- function(object, digits = 3, pValue = FALSE,
-                               checkInt = FALSE, ...) {
+format_SPSS.numeric <- function(object, digits = 3, p_value = FALSE,
+                                check_int = FALSE, ...) {
   # initializations
   n <- length(object)
   digits <- rep_len(digits, n)
-  pValue <- rep_len(sapply(pValue, isTRUE), n)
-  checkInt <- rep_len(sapply(checkInt, isTRUE), n)
+  p_value <- rep_len(sapply(p_value, isTRUE), n)
+  check_int <- rep_len(sapply(check_int, isTRUE), n)
   # define format with specified number of digits
   fmt <- paste0("%.", digits, "f")
   # use empty string for NA
   finite <- is.finite(object)
   fmt <- ifelse(finite, fmt, "")
   # if requested check for integers and change their format accordingly
-  isInt <- finite & checkInt & (object == as.integer(object))
-  fmt <- ifelse(isInt, "%.0f", fmt)
+  is_int <- finite & check_int & (object == as.integer(object))
+  fmt <- ifelse(is_int, "%.0f", fmt)
   # convert numbers to strings
   formatted <- sprintf(fmt, object)
   # if requested format p-value
   # zeros <- rep.int(0, n)
-  # below <- finite & !isInt & pValue & (formatted == sprintf(fmt, zeros))
+  # below <- finite & !is_int & p_value & (formatted == sprintf(fmt, zeros))
   # formatted[below] <- gsub("^<0.", "<.", paste0("<", 10^(-digits[below])))
   threshold <- 10^(-digits)
-  below <- finite & !isInt & pValue & (object >= 0 & object < threshold)
+  below <- finite & !is_int & p_value & (object >= 0 & object < threshold)
   formatted[below] <- gsub("^<0.", "<.", paste0("<", threshold[below]))
   # replace leading zeros
   formatted <- gsub("^0.", ".", formatted)    # positive numbers
@@ -101,19 +101,19 @@ formatSPSS.numeric <- function(object, digits = 3, pValue = FALSE,
 }
 
 
-#' @rdname formatSPSS
+#' @rdname format_SPSS
 #' @export
 
-formatSPSS.matrix <- function(object, digits = 3, pValue = FALSE,
-                              checkInt = FALSE, ...) {
+format_SPSS.matrix <- function(object, digits = 3, p_value = FALSE,
+                               check_int = FALSE, ...) {
   # initializations
   d <- dim(object)
-  pValue <- rep_len(pValue, d[2])
-  checkInt <- rep_len(checkInt, d[2])
+  p_value <- rep_len(p_value, d[2])
+  check_int <- rep_len(check_int, d[2])
   # format each column
   formatted <- vapply(seq_len(d[2]), function(j) {
-    formatSPSS(object[, j], digits = digits, pValue = pValue[j],
-               checkInt = checkInt[j])
+    format_SPSS(object[, j], digits = digits, p_value = p_value[j],
+                check_int = check_int[j])
   }, character(d[1]))
   # add original attributes
   attributes(formatted) <- attributes(object)
@@ -122,21 +122,31 @@ formatSPSS.matrix <- function(object, digits = 3, pValue = FALSE,
 }
 
 
-#' @rdname formatSPSS
+#' @rdname format_SPSS
 #' @export
 
-formatSPSS.data.frame <- function(object, digits = 3, pValue = FALSE,
-                                  checkInt = FALSE, ...) {
+format_SPSS.data.frame <- function(object, digits = 3, p_value = FALSE,
+                                   check_int = FALSE, ...) {
   # initializations
   d <- dim(object)
-  pValue <- rep_len(pValue, d[2])
-  checkInt <- rep_len(checkInt, d[2])
+  p_value <- rep_len(p_value, d[2])
+  check_int <- rep_len(check_int, d[2])
   # format each column
   formatted <- mapply(function(v, p, c) {
-    formatSPSS(v, digits = digits, pValue = p, checkInt = c)
-  }, v = object, p = pValue, c = checkInt, SIMPLIFY = FALSE, USE.NAMES = FALSE)
+    format_SPSS(v, digits = digits, p_value = p, check_int = c)
+  }, v = object, p = p_value, c = check_int,
+  SIMPLIFY = FALSE, USE.NAMES = FALSE)
   # add original attributes
   attributes(formatted) <- attributes(object)
   # return formatted matrix
   formatted
+}
+
+
+#' @rdname format_SPSS
+#' @export
+
+formatSPSS <- function(object, ...) {
+  .Deprecated("format_SPSS")
+  format_SPSS(object, ...)
 }

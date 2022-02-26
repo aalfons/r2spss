@@ -51,13 +51,13 @@
 theme_SPSS <- function(base_size = 12, base_family = "",
                        base_line_size = 0.5,
                        base_rect_size = 0.5,
-                       version = r2spssOptions$get("version"),
+                       version = r2spss_options$get("version"),
                        scales = NULL, scale.x = scales, scale.y = scales) {
   # initializations
-  version <- match.arg(version, choices = getVersionValues())
-  scales <- match.arg(scales, choices = getScaleValues())
-  scale.x <- match.arg(scale.x, choices = getScaleValues())
-  scale.y <- match.arg(scale.y, choices = getScaleValues())
+  version <- match.arg(version, choices = get_version_values())
+  scales <- match.arg(scales, choices = get_scale_values())
+  scale.x <- match.arg(scale.x, choices = get_scale_values())
+  scale.y <- match.arg(scale.y, choices = get_scale_values())
   # useful measurements
   half_line <- base_size / 2
   quarter_line <- half_line / 2
@@ -258,9 +258,9 @@ theme_SPSS <- function(base_size = 12, base_family = "",
 #' @importFrom grDevices rgb
 #' @export
 
-paletteSPSS <- function(n = NULL, version = r2spssOptions$get("version")) {
+paletteSPSS <- function(n = NULL, version = r2spss_options$get("version")) {
   # initializations
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
   # define red, green and blue vectors
   if (version == "legacy") {
     red <-   c( 62,  46, 211, 121, 251, 239,  72, 204, 122,  10, 248, 221,  26, 204, 187, 153,   0, 182, 255, 121, 112,  51, 172, 162,  93, 228,  39, 184, 102,  13)
@@ -307,9 +307,9 @@ paletteSPSS <- function(n = NULL, version = r2spssOptions$get("version")) {
 #'
 #' @export
 
-SPSS_pal <- function(version = r2spssOptions$get("version"), direction = 1) {
+SPSS_pal <- function(version = r2spss_options$get("version"), direction = 1) {
   # initializations
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
   # return function to be used for discrete color scales in ggolot2
   function(n) {
     pal <- suppressWarnings(paletteSPSS(n, version))
@@ -333,7 +333,7 @@ SPSS_pal <- function(version = r2spssOptions$get("version"), direction = 1) {
 #'
 #' @export
 
-scale_color_SPSS <- function(..., version = r2spssOptions$get("version"),
+scale_color_SPSS <- function(..., version = r2spss_options$get("version"),
                              direction = 1, aesthetics = "color") {
   discrete_scale(aesthetics, "SPSS", SPSS_pal(version, direction), ...)
 }
@@ -342,7 +342,7 @@ scale_color_SPSS <- function(..., version = r2spssOptions$get("version"),
 #' @rdname paletteSPSS
 #' @export
 
-scale_colour_SPSS <- function(..., version = r2spssOptions$get("version"),
+scale_colour_SPSS <- function(..., version = r2spss_options$get("version"),
                               direction = 1, aesthetics = "colour") {
   discrete_scale(aesthetics, "SPSS", SPSS_pal(version, direction), ...)
 }
@@ -351,7 +351,7 @@ scale_colour_SPSS <- function(..., version = r2spssOptions$get("version"),
 #' @rdname paletteSPSS
 #' @export
 
-scale_fill_SPSS <- function(..., version = r2spssOptions$get("version"),
+scale_fill_SPSS <- function(..., version = r2spss_options$get("version"),
                             direction = 1, aesthetics = "fill") {
   discrete_scale(aesthetics, "SPSS", SPSS_pal(version, direction), ...)
 }

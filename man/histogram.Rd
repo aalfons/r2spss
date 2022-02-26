@@ -17,7 +17,7 @@ histogram(
   digits = 3,
   limits = NULL,
   expand = 0.05,
-  version = r2spssOptions$get("version"),
+  version = r2spss_options$get("version"),
   ...
 )
 }

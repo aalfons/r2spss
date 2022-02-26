@@ -23,8 +23,8 @@
 #' for the columns of the crosstabulation).
 #' @param p  a vector of probabilities for the categories in the
 #' goodness-of-fit test.
-#' @param object,x  an object of class \code{"chisqTestSPSS"} as returned by
-#' function \code{chisqTest}.
+#' @param object,x  an object of class \code{"chisq_test_SPSS"} as returned by
+#' function \code{chisq_test}.
 #' @param statistics  a character string or vector specifying which SPSS tables
 #' to produce.  Available options are \code{"frequencies"} for a table of the
 #' observed and expected frequencies, and \code{"test"} for test results.  For
@@ -40,10 +40,10 @@
 #' number of digits for the expected frequencies, and the second element
 #' corresponds to the number of digits in the table for the test.
 #' @param \dots additional arguments to be passed down to
-#' \code{\link{formatSPSS}}.
+#' \code{\link{format_SPSS}}.
 #'
 #' @return
-#' An object of class \code{"chisqTestSPSS"} with the following components:
+#' An object of class \code{"chisq_test_SPSS"} with the following components:
 #' \describe{
 #'   \item{\code{chisq}}{a list containing the results of the
 #'   \eqn{\chi^{2}}{chi-squared} test.}
@@ -90,18 +90,18 @@
 #'
 #' # test whether the traditional Dutch 4-3-3 (total football)
 #' # is still reflected in player composition
-#' chisqTest(Eredivisie, "Position", p = c(1, 4, 3, 3)/11)
+#' chisq_test(Eredivisie, "Position", p = c(1, 4, 3, 3)/11)
 #'
 #' # test whether playing position and dummy variable for
 #' # foreign players are independent
-#' chisqTest(Eredivisie, c("Position", "Foreign"))
+#' chisq_test(Eredivisie, c("Position", "Foreign"))
 #'
 #' @keywords htest
 #'
 #' @importFrom stats pchisq
 #' @export
 
-chisqTest <- function(data, variables, p = NULL) {
+chisq_test <- function(data, variables, p = NULL) {
   ## initializations
   data <- as.data.frame(data)
   variables <- as.character(variables)
@@ -118,7 +118,7 @@ chisqTest <- function(data, variables, p = NULL) {
     ok <- !is.na(x)
     x <- x[ok]
     # compute observed frequencies
-    observed <- table(x, dnn=variables[1])
+    observed <- table(x, dnn = variables[1])
     n <- sum(observed)
     if (n == 0) stop("at least one cell must be nonzero")
     # compute expected frequencies
@@ -131,11 +131,11 @@ chisqTest <- function(data, variables, p = NULL) {
     names(expected) <- names(observed)
     # perform chi-square test
     stat <- sum((observed - expected)^2 / expected)
-    p <- pchisq(stat, df=k-1, lower.tail=FALSE)
-    chisq <- list(statistic=stat, parameter=k-1, p.value=p)
+    p <- pchisq(stat, df = k-1, lower.tail = FALSE)
+    chisq <- list(statistic = stat, parameter = k-1, p.value = p)
     # construct object
-    out <- list(chisq=chisq, observed=observed, expected=expected, n=n,
-                k=k, variables=variables[1], type="goodness-of-fit")
+    out <- list(chisq = chisq, observed = observed, expected = expected, n = n,
+                k = k, variables = variables[1], type = "goodness-of-fit")
   } else {
     ## chi-square test of independence
     # check factors
@@ -151,36 +151,37 @@ chisqTest <- function(data, variables, p = NULL) {
     row <- row[ok]
     col <- col[ok]
     # compute observed and expected frequencies
-    observed <- table(row, col, dnn=variables[1:2])
+    observed <- table(row, col, dnn = variables[1:2])
     n <- sum(observed)
     if (n == 0) stop("at least one cell must be nonzero")
     expected <- outer(rowSums(observed), colSums(observed), "*") / n
     df <- (r-1) * (c-1)
     # perform chi-square test
     stat <- sum((observed - expected)^2 / expected)
-    p <- pchisq(stat, df=df, lower.tail=FALSE)
-    chisq <- list(statistic=stat, parameter=df, p.value=p)
+    p <- pchisq(stat, df = df, lower.tail = FALSE)
+    chisq <- list(statistic = stat, parameter = df, p.value = p)
     # perform likelihood ratio test
     keep <- observed != 0
-    stat <- 2 * sum(observed[keep] * log(observed[keep]/expected[keep]))
-    p <- pchisq(stat, df=df, lower.tail=FALSE)
-    lr <- list(statistic=stat, parameter=df, p.value=p)
+    stat <- 2 * sum(observed[keep] * log(observed[keep] / expected[keep]))
+    p <- pchisq(stat, df = df, lower.tail = FALSE)
+    lr <- list(statistic = stat, parameter = df, p.value = p)
     # construct object
-    out <- list(chisq=chisq, lr=lr, observed=observed, expected=expected, n=n,
-                r=r, c=c, variables=variables[1:2], type="independence")
+    out <- list(chisq = chisq, lr = lr, observed = observed,
+                expected = expected, n = n, r = r, c = c,
+                variables = variables[1:2], type = "independence")
   }
   ## return results
-  class(out) <- "chisqTestSPSS"
+  class(out) <- "chisq_test_SPSS"
   out
 }
 
 
-#' @rdname chisqTest
+#' @rdname chisq_test
 #' @export
 
-toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
-                                 version = r2spssOptions$get("version"),
-                                 digits = c(1, 3), ...) {
+toSPSS.chisq_test_SPSS <- function(object, statistics = c("test", "frequencies"),
+                                   version = r2spss_options$get("version"),
+                                   digits = c(1, 3), ...) {
   ## initializations
   statistics <- match.arg(statistics)
   digits <- rep_len(digits, 2)
@@ -201,7 +202,7 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
                                 Residual = observed - expected,
                                 check.names = FALSE)
       # format table nicely
-      formatted <- formatSPSS(frequencies, digits = digits[1], ...)
+      formatted <- format_SPSS(frequencies, digits = digits[1], ...)
       # construct list containing all necessary information
       spss <- list(table = formatted, main = object$variables,
                    header = TRUE, rowNames = TRUE, info = 0)
@@ -248,7 +249,7 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
   } else if (statistics == "test") {
 
     # initializations
-    version <- match.arg(version, choices = getVersionValues())
+    version <- match.arg(version, choices = get_version_values())
     legacy <- version == "legacy"
     # check too small expected counts
     nTooSmall <- sum(object$expected < 5)
@@ -263,9 +264,9 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
       values <- unlist(object$chisq)
       # format results nicely
       args <- list(values, digits = digits[2], ...)
-      if (is.null(args$pValue)) args$pValue <- c(FALSE, FALSE, !legacy)
-      if (is.null(args$checkInt)) args$checkInt <- c(FALSE, TRUE, FALSE)
-      formatted <- do.call(formatSPSS, args)
+      if (is.null(args$p_value)) args$p_value <- c(FALSE, FALSE, !legacy)
+      if (is.null(args$check_int)) args$check_int <- c(FALSE, TRUE, FALSE)
+      formatted <- do.call(format_SPSS, args)
       # put test results into SPSS format
       chisq <- data.frame(formatted, row.names = rn)
       names(chisq) <- object$variables
@@ -295,9 +296,9 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
                           check.names = FALSE, row.names = rn)
       # format table nicely
       args <- list(chisq, digits = digits[2], ...)
-      if (is.null(args$pValue)) args$pValue <- c(FALSE, FALSE, !legacy)
-      if (is.null(args$checkInt)) args$checkInt <- c(TRUE, FALSE, FALSE)
-      formatted <- do.call(formatSPSS, args)
+      if (is.null(args$p_value)) args$p_value <- c(FALSE, FALSE, !legacy)
+      if (is.null(args$check_int)) args$check_int <- c(TRUE, FALSE, FALSE)
+      formatted <- do.call(format_SPSS, args)
       # define header with line breaks
       header <- c("", wrapText(names(chisq), limit = 15))
       # define footnote
@@ -322,17 +323,17 @@ toSPSS.chisqTestSPSS <- function(object, statistics = c("test", "frequencies"),
 }
 
 
-#' @rdname chisqTest
+#' @rdname chisq_test
 #' @export
 
-print.chisqTestSPSS <- function(x, statistics = c("frequencies", "test"),
-                                version = r2spssOptions$get("version"),
-                                digits = c(1, 3), ...) {
+print.chisq_test_SPSS <- function(x, statistics = c("frequencies", "test"),
+                                  version = r2spss_options$get("version"),
+                                  digits = c(1, 3), ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
   digits <- rep_len(digits, 2)
 
   ## print LaTeX table for frequencies
@@ -359,4 +360,13 @@ print.chisqTestSPSS <- function(x, statistics = c("frequencies", "test"),
     cat("\n")
   }
 
+}
+
+
+#' @rdname chisq_test
+#' @export
+
+chisqTest <- function(data, variables, p = NULL) {
+  .Deprecated("chisq_test")
+  chisq_test(data, variables = variables, p = p)
 }

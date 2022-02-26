@@ -17,14 +17,14 @@
 #' @param \dots  for \code{regression}, at least one formula specifying a
 #' regression model.  Different models can be compared by supplying multiple
 #' formulas.  For  the \code{toSPSS} and \code{print} methods, additional
-#' arguments to be passed down to \code{\link{formatSPSS}}.  For the
+#' arguments to be passed down to \code{\link{format_SPSS}}.  For the
 #' \code{plot} method, additional arguments to be passed down to
 #' \code{\link{histSPSS}} or \code{\link{plotSPSS}}, in particular graphical
 #' parameters.  For other methods, this is currently ignored.
 #' @param data  a data frame containing the variables.
 #' @param labels  a character or numeric vector giving labels for the
 #' regression models in the output tables.
-#' @param object,x  an object of class \code{"regressionSPSS"} as returned by
+#' @param object,x  an object of class \code{"regression_SPSS"} as returned by
 #' function \code{regression}.
 #' @param statistics  a character string or vector specifying which SPSS tables
 #' to produce.  Available options are \code{"summary"} for model summaries,
@@ -50,7 +50,7 @@
 #' \code{"scatter"} for a scatterplot of the standardized residuals against the
 #' standardized fitted values.
 #'
-#' @return  An object of class \code{"regressionSPSS"} with the following
+#' @return  An object of class \code{"regression_SPSS"} with the following
 #' components:
 #' \describe{
 #'   \item{\code{models}}{a list in which each component is an ojbect of class
@@ -131,7 +131,7 @@ regression <- function(..., data, labels = NULL) {
   formulas <- list(...)
   if (is.null(labels)) labels <- seq_along(formulas)
   names(formulas) <- labels
-  nFormulas <- length(formulas)
+  n_formulas <- length(formulas)
   # check if response is the same in all models
   response <- vapply(formulas, function(x) as.character(x[[2]]), character(1))
   response <- unique(response)
@@ -139,7 +139,7 @@ regression <- function(..., data, labels = NULL) {
     stop("the same response must be used for all models")
   }
   # extract response and predictor matrix for each formula
-  xyList <- lapply(formulas, function(f) {
+  xy_list <- lapply(formulas, function(f) {
     mf <- model.frame(f, data = data, na.action = na.pass,
                       drop.unused.levels = TRUE)
     terms <- attr(mf, "terms")
@@ -147,29 +147,29 @@ regression <- function(..., data, labels = NULL) {
          intercept = attr(terms, "intercept"))
   })
   # check whether all formulas include an intercept
-  haveIntercept <- vapply(xyList, function(xy) xy$intercept == 1, logical(1))
-  if (!all(haveIntercept)) stop("all models must have an intercept")
+  have_intercept <- vapply(xy_list, function(xy) xy$intercept == 1, logical(1))
+  if (!all(have_intercept)) stop("all models must have an intercept")
   # check whether models are nested and store index of largest model
-  if (nFormulas == 1) {
+  if (n_formulas == 1) {
     largest <- 1
     method <- "enter"
   } else {
     # check if we have a forward series (adding variables) or backward series
     # (removing variables) of nested models
-    varNames <- lapply(xyList, function(xy) colnames(xy$x))
-    forwards <- backwards <- rep.int(NA, nFormulas - 1)
-    for (i in seq(nFormulas - 1)) {
-      forwards[i] <- (length(varNames[[i]]) < length(varNames[[i+1]])) &&
-        all(varNames[[i]] %in% varNames[[i+1]])
-      backwards[i] <- (length(varNames[[i+1]]) < length(varNames[[i]])) &&
-        all(varNames[[i+1]] %in% varNames[[i]])
+    var_names <- lapply(xy_list, function(xy) colnames(xy$x))
+    forwards <- backwards <- rep.int(NA, n_formulas - 1)
+    for (i in seq(n_formulas - 1)) {
+      forwards[i] <- (length(var_names[[i]]) < length(var_names[[i+1]])) &&
+        all(var_names[[i]] %in% var_names[[i+1]])
+      backwards[i] <- (length(var_names[[i+1]]) < length(var_names[[i]])) &&
+        all(var_names[[i+1]] %in% var_names[[i]])
     }
     if (!all(forwards) && !all(backwards)) {
       stop("you must specify a series of nested models")
     }
     # store index of largest model
     if (all(forwards)) {
-      largest <- nFormulas
+      largest <- n_formulas
       method <- "enter"
     } else {
       largest <- 1
@@ -178,18 +178,18 @@ regression <- function(..., data, labels = NULL) {
   }
 
   ## remove observations with missing values in the largest model
-  yx <- cbind(xyList[[largest]]$y, xyList[[largest]]$x)
+  yx <- cbind(xy_list[[largest]]$y, xy_list[[largest]]$x)
   names(yx)[1] <- response
   keep <- complete.cases(yx)
 
   ## fit linear models
-  models <- lapply(formulas, lm, data=data[keep, ])
+  models <- lapply(formulas, lm, data = data[keep, ])
   summaries <- lapply(models, summary)
 
   ## return results
-  out <- list(models=models, summaries=summaries, response=response,
-              method=method)
-  class(out) <- "regressionSPSS"
+  out <- list(models = models, summaries = summaries,
+              response = response, method = method)
+  class(out) <- "regression_SPSS"
   out
 }
 
@@ -198,15 +198,15 @@ regression <- function(..., data, labels = NULL) {
 #' @importFrom stats aggregate anova model.matrix model.response pf
 #' @export
 
-toSPSS.regressionSPSS <- function(object,
-                                  statistics = c("estimates", "anova", "summary"),
-                                  change = FALSE,
-                                  version = r2spssOptions$get("version"),
-                                  ...) {
+toSPSS.regression_SPSS <- function(object,
+                                   statistics = c("estimates", "anova", "summary"),
+                                   change = FALSE,
+                                   version = r2spss_options$get("version"),
+                                   ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
   legacy <- version == "legacy"
   models <- object$models
   k <- length(models)
@@ -275,11 +275,11 @@ toSPSS.regressionSPSS <- function(object,
     cn <- c("Model", names(fits))
     if (change && !legacy) {
       args <- list(fits, ...)
-      if (is.null(args$pValue)) {
-        args$pValue <- grepl("Sig.", names(fits), fixed = TRUE)
+      if (is.null(args$p_value)) {
+        args$p_value <- grepl("Sig.", names(fits), fixed = TRUE)
       }
-      formatted <- do.call(formatSPSS, args)
-    } else formatted <- formatSPSS(fits, ...)
+      formatted <- do.call(format_SPSS, args)
+    } else formatted <- format_SPSS(fits, ...)
     ## define header with line breaks
     cn <- c("Model", names(fits))
     limit <- rep_len(if (change) 10 else 15, length(cn))
@@ -343,11 +343,11 @@ toSPSS.regressionSPSS <- function(object,
     }, models, summaries, labels, SIMPLIFY=FALSE, USE.NAMES = FALSE)
     anovas <- do.call(rbind, anovas)
     # format table nicely
-    if (legacy) formatted <- formatSPSS(anovas, ...)
+    if (legacy) formatted <- format_SPSS(anovas, ...)
     else {
       args <- list(anovas, ...)
-      if (is.null(args$pValue)) args$pValue <- names(anovas) == "Sig."
-      formatted <- do.call(formatSPSS, args)
+      if (is.null(args$p_value)) args$p_value <- names(anovas) == "Sig."
+      formatted <- do.call(format_SPSS, args)
     }
     # define header with line breaks
     cn <- gsub("Type", "", names(anovas), fixed = TRUE)
@@ -393,11 +393,11 @@ toSPSS.regressionSPSS <- function(object,
     ## combine coefficient tables
     coefficients <- do.call(rbind, coefficients)
     ## format table nicely
-    if (legacy) formatted <- formatSPSS(coefficients, ...)
+    if (legacy) formatted <- format_SPSS(coefficients, ...)
     else {
       args <- list(coefficients, ...)
-      if (is.null(args$pValue)) args$pValue <- names(coefficients) == "Sig."
-      formatted <- do.call(formatSPSS, args)
+      if (is.null(args$p_value)) args$p_value <- names(coefficients) == "Sig."
+      formatted <- do.call(format_SPSS, args)
     }
     ## define header with line breaks
     cn <- gsub("Variable", "", names(coefficients), fixed = TRUE)
@@ -436,16 +436,16 @@ toSPSS.regressionSPSS <- function(object,
 #' @rdname regression
 #' @export
 
-print.regressionSPSS <- function(x,
-                                 statistics = c("summary", "anova", "estimates"),
-                                 change = FALSE,
-                                 version = r2spssOptions$get("version"),
-                                 ...) {
+print.regression_SPSS <- function(x,
+                                  statistics = c("summary", "anova", "estimates"),
+                                  change = FALSE,
+                                  version = r2spss_options$get("version"),
+                                  ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
 
   ## print LaTeX table for descriptives
   if ("summary" %in% statistics) {
@@ -488,7 +488,7 @@ print.regressionSPSS <- function(x,
 #' @importFrom stats coef
 #' @export
 
-coef.regressionSPSS <- function(object, ...) {
+coef.regression_SPSS <- function(object, ...) {
   nm <- length(object$models)
   coef(object$models[[nm]])
 }
@@ -498,7 +498,7 @@ coef.regressionSPSS <- function(object, ...) {
 #' @importFrom stats df.residual
 #' @export
 
-df.residual.regressionSPSS <- function(object, ...) {
+df.residual.regression_SPSS <- function(object, ...) {
   nm <- length(object$models)
   df.residual(object$models[[nm]])
 }
@@ -508,7 +508,7 @@ df.residual.regressionSPSS <- function(object, ...) {
 #' @importFrom stats fitted sd
 #' @export
 
-fitted.regressionSPSS <- function(object, standardized = FALSE, ...) {
+fitted.regression_SPSS <- function(object, standardized = FALSE, ...) {
   # extract fitted values from the last model
   nm <- length(object$models)
   fitted <- fitted(object$models[[nm]])
@@ -523,7 +523,7 @@ fitted.regressionSPSS <- function(object, standardized = FALSE, ...) {
 #' @importFrom stats df.residual residuals
 #' @export
 
-residuals.regressionSPSS <- function(object, standardized = FALSE, ...) {
+residuals.regression_SPSS <- function(object, standardized = FALSE, ...) {
   # extract residuals from the last model
   nm <- length(object$models)
   residuals <- residuals(object$models[[nm]])
@@ -541,11 +541,12 @@ residuals.regressionSPSS <- function(object, standardized = FALSE, ...) {
 #' @importFrom stats fitted residuals
 #' @export
 
-plot.regressionSPSS <- function(x, y, which = c("histogram", "scatter"),
-                                version = r2spssOptions$get("version"), ...) {
+plot.regression_SPSS <- function(x, y, which = c("histogram", "scatter"),
+                                 version = r2spss_options$get("version"),
+                                 ...) {
   # initializations
   which <- match.arg(which)
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
   # default title
   title <- paste0("Dependent Variable: ", x$response)
   # construct data frame containing relevant information
@@ -557,11 +558,11 @@ plot.regressionSPSS <- function(x, y, which = c("histogram", "scatter"),
     # default x-axis label
     xlab <- "Regression Standardized Residual"
     # define local function that overrides default for normal density
-    localHistogram <- function(..., normal = TRUE) {
+    local_histogram <- function(..., normal = TRUE) {
       histogram(..., normal = normal)
     }
     # create histogram of standardized residuals
-    localHistogram(data, "residual", version = version, ...) +
+    local_histogram(data, "residual", version = version, ...) +
       labs(title = title, x = xlab)
   } else if (which == "scatter") {
     ## scatter plot

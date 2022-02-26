@@ -123,7 +123,7 @@
 #' tables have the same content irrespective of the SPSS version, and this
 #' argument controls the look of those tables.
 #' @param \dots  for the \code{"data.frame"} method, additional arguments to be
-#' passed to \code{\link{formatSPSS}}.  For the \code{"SPSSTable"} method,
+#' passed to \code{\link{format_SPSS}}.  For the \code{"SPSSTable"} method,
 #' additional arguments are currently ignored.
 #'
 #' @return  Nothing is returned, the function is called for its side effects.
@@ -142,7 +142,7 @@
 #'
 #' # compute a Kruskual-Wallis test to investigate whether
 #' # market values differ by playing position
-#' kw <- kruskalTest(Eredivisie, "MarketValue",
+#' kw <- kruskal_test(Eredivisie, "MarketValue",
 #'                   group = "Position")
 #'
 #' # convert to an object of class "SPSSTable" that
@@ -165,7 +165,7 @@
 #'
 #' # test whether the average grade on the resit
 #' # differs from 5.5 (minimum passing grade)
-#' t <- tTest(Exams, "Resit", mu = 5.5)
+#' t <- t_test(Exams, "Resit", mu = 5.5)
 #'
 #' # convert to an object of class "SPSSTable" that
 #' # contains the table with the test results
@@ -186,7 +186,7 @@
 #' @importFrom utils toLatex
 #' @export
 
-toLatex.SPSSTable <- function(object, version = r2spssOptions$get("version"),
+toLatex.SPSSTable <- function(object, version = r2spss_options$get("version"),
                               ...) {
   # object of class "SPSSTable" contains all the relevant information that
   # needs to be passed down to the data.frame method
@@ -200,7 +200,7 @@ toLatex.SPSSTable <- function(object, version = r2spssOptions$get("version"),
   # the appearance is defined by argument 'version'.
   which <- grep("version", names(args), fixed = TRUE)
   if (length(which) == 0) {
-    args$version <- match.arg(version, choices = getVersionValues())
+    args$version <- match.arg(version, choices = get_version_values())
   }
   # call workhorse method
   do.call(toLatex, args)
@@ -214,7 +214,7 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
                                label = NULL, rowNames = TRUE, info = NULL,
                                alignment = NULL, border = NULL,
                                footnotes = NULL, major = NULL, minor = NULL,
-                               version = r2spssOptions$get("version"), ...) {
+                               version = r2spss_options$get("version"), ...) {
 
   ## initializations
   d <- dim(object)
@@ -276,7 +276,7 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
     # TODO: perform checks
   }
   # check theme
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
   legacy <- version == "legacy"
   # check border indicators
   if (is.null(border)) {
@@ -430,14 +430,14 @@ toLatex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
   ok <- vapply(object, inherits, logical(1), "character", USE.NAMES = FALSE)
   if (all(ok)) formatted <- as.matrix(object)
   else {
-    if (legacy) formatted <- formatSPSS(object, ...)
+    if (legacy) formatted <- format_SPSS(object, ...)
     else {
       # for modern theme, set a reasonable default to format p-values nicely
       args <- list(object, ...)
-      if (is.null(args$pValue)) {
-        args$pValue <- grepl("Sig.", names(object), fixed = TRUE)
+      if (is.null(args$p_value)) {
+        args$p_value <- grepl("Sig.", names(object), fixed = TRUE)
       }
-      formatted <- do.call(formatSPSS, args)
+      formatted <- do.call(format_SPSS, args)
     }
   }
   # if supplied, insert footnote markers

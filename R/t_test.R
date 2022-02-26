@@ -28,8 +28,8 @@
 #' t test.
 #' @param conf.level  a number between 0 and 1 giving the confidence level of
 #' the confidence interval.
-#' @param object,x  an object of class \code{"tTestSPSS"} as returned by
-#' function \code{tTest}.
+#' @param object,x  an object of class \code{"t_test_SPSS"} as returned by
+#' function \code{t_test}.
 #' @param statistics  a character string or vector specifying which SPSS tables
 #' to produce.  Available options are \code{"statistics"} for descriptive
 #' statistics and \code{"test"} for test results.  For the \code{toSPSS}
@@ -46,9 +46,9 @@
 #' @param digits  an integer giving the number of digits after the comma to be
 #' printed in the SPSS tables.
 #' @param \dots additional arguments to be passed down to
-#' \code{\link{formatSPSS}}.
+#' \code{\link{format_SPSS}}.
 #'
-#' @return  An object of class \code{"tTestSPSS"} with the following
+#' @return  An object of class \code{"t_test_SPSS"} with the following
 #' components:
 #' \describe{
 #'   \item{\code{statistics}}{a data frame containing the relevant descriptive
@@ -96,11 +96,11 @@
 #'
 #' # test whether the average grade on the resit
 #' # differs from 5.5 (minimum passing grade)
-#' tTest(Exams, "Resit", mu = 5.5)
+#' t_test(Exams, "Resit", mu = 5.5)
 #'
 #' # test whether average grades differ between the
 #' # regular exam and the resit
-#' tTest(Exams, c("Resit", "Regular"))
+#' t_test(Exams, c("Resit", "Regular"))
 #'
 #'
 #' ## independent-samples t test
@@ -112,7 +112,7 @@
 #'
 #' # test whether average log market values differ between
 #' # Dutch and foreign players
-#' tTest(Eredivisie, "logMarketValue", group = "Foreign")
+#' t_test(Eredivisie, "logMarketValue", group = "Foreign")
 #'
 #' @keywords htest
 #'
@@ -120,7 +120,7 @@
 #' @importFrom car leveneTest
 #' @export
 
-tTest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
+t_test <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
   ## initializations
   data <- as.data.frame(data)
   variables <- as.character(variables)
@@ -137,10 +137,10 @@ tTest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
       # perform test
       ok <- is.finite(x)
       x <- x[ok]
-      test <- t.test(x, mu=mu, conf.level=conf.level)
+      test <- t.test(x, mu = mu, conf.level = conf.level)
       # construct object
-      out <- list(statistics=stat, test=test, variables=variables[1],
-                  type="one-sample")
+      out <- list(statistics = stat, test = test, variables = variables[1],
+                  type = "one-sample")
     } else {
       ## paired-sample t test
       x <- data[, variables[1]]
@@ -152,10 +152,10 @@ tTest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
       ok <- is.finite(x) & is.finite(y)
       x <- x[ok]
       y <- y[ok]
-      test <- t.test(x, y, mu=0, paired=TRUE, conf.level=conf.level)
+      test <- t.test(x, y, mu = 0, paired = TRUE, conf.level = conf.level)
       # construct object
-      out <- list(statistics=stat, test=test, variables=variables[1:2],
-                  n=length(x), type="paired")
+      out <- list(statistics = stat, test = test, variables = variables[1:2],
+                  n = length(x), type = "paired")
     }
   } else {
     ## independent-samples t test
@@ -168,23 +168,23 @@ tTest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
     variable <- variable[ok]
     by <- by[ok]
     # perform tests
-    levene <- leveneTest(variable, by, center="mean")
+    levene <- leveneTest(variable, by, center = "mean")
     x <- variable[by == levels(by)[1]]
     y <- variable[by == levels(by)[2]]
-    pooled <- t.test(x, y, mu=0, paired=FALSE, var.equal=TRUE,
-                     conf.level=conf.level)
-    satterthwaite <- t.test(x, y, mu=0, paired=FALSE, var.equal=FALSE,
-                            conf.level=conf.level)
+    pooled <- t.test(x, y, mu = 0, paired = FALSE, var.equal = TRUE,
+                     conf.level = conf.level)
+    satterthwaite <- t.test(x, y, mu = 0, paired = FALSE, var.equal = FALSE,
+                            conf.level = conf.level)
     # compute statistics
     stat <- rbind(.stat(x), .stat(y))
     row.names(stat) <- levels(by)
     # construct object
-    out <- list(statistics=stat, levene=levene, pooled=pooled,
-                satterthwaite=satterthwaite, variables=variables[1],
-                group=group[1], type="independent")
+    out <- list(statistics = stat, levene = levene, pooled = pooled,
+                satterthwaite = satterthwaite, variables = variables[1],
+                group = group[1], type = "independent")
   }
   ## return results
-  class(out) <- "tTestSPSS"
+  class(out) <- "t_test_SPSS"
   out
 }
 
@@ -199,18 +199,18 @@ tTest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
   sd <- sd(x)
   se <- sd / sqrt(n)
   # return data frame
-  data.frame(N=n, Mean=mean, "Std. Deviation"=sd, "Std. Error Mean"=se,
-             check.names=FALSE)
+  data.frame(N = n, Mean = mean, "Std. Deviation" = sd,
+             "Std. Error Mean" = se, check.names = FALSE)
 }
 
 
-#' @rdname tTest
+#' @rdname t_test
 #' @importFrom stats qt
 #' @export
 
-toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
-                             version = r2spssOptions$get("version"),
-                             digits = 3, ...) {
+toSPSS.t_test_SPSS <- function(object, statistics = c("test", "statistics"),
+                               version = r2spss_options$get("version"),
+                               digits = 3, ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
@@ -218,7 +218,7 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
   if (statistics == "statistics") {
 
     # format table nicely
-    formatted <- formatSPSS(object$statistics, digits = digits, ...)
+    formatted <- format_SPSS(object$statistics, digits = digits, ...)
     # define main title
     prefix <- switch(object$type, "one-sample" = "One-Sample",
                      paired = "Paired Samples", independent = "Group")
@@ -234,7 +234,7 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
                    rowNames = TRUE, info = 0)
     } else if (object$type == "paired") {
       # initializations
-      version <- match.arg(version, choices = getVersionValues())
+      version <- match.arg(version, choices = get_version_values())
       legacy <- version == "legacy"
       # define header and label
       if (legacy) {
@@ -260,7 +260,7 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
   } else if (statistics == "test") {
 
     # initializations
-    version <- match.arg(version, choices = getVersionValues())
+    version <- match.arg(version, choices = get_version_values())
     legacy <- version == "legacy"
     # define main title
     prefix <- switch(object$type, "one-sample" = "One-Sample",
@@ -320,12 +320,12 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
                     rbind(pooled = pooled, satterthwaite = satterthwaite))
       ## format table nicely
       args <- list(test, digits = digits, ...)
-      if (!legacy && is.null(args$pValue)) {
-        args$pValue <- grepl("Sig", names(test), fixed = TRUE) |
+      if (!legacy && is.null(args$p_value)) {
+        args$p_value <- grepl("Sig", names(test), fixed = TRUE) |
           grepl("-Sided", names(test), fixed = TRUE)
       }
-      if (is.null(args$checkInt)) args$checkInt <- names(test) == "df"
-      formatted <- do.call(formatSPSS, args)
+      if (is.null(args$check_int)) args$check_int <- names(test) == "df"
+      formatted <- do.call(format_SPSS, args)
       ## construct header
       cn <- c("", "", names(test))
       # construct top-level header
@@ -421,13 +421,13 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
                            row.names = rn, check.names = FALSE)
       }
       ## format results nicely
-      if (legacy) formatted <- formatSPSS(test, digits = digits, ...)
+      if (legacy) formatted <- format_SPSS(test, digits = digits, ...)
       else {
         args <- list(test, digits = digits, ...)
-        if (is.null(args$pValue)) {
-          args$pValue <- grepl("-Sided", names(test), fixed = TRUE)
+        if (is.null(args$p_value)) {
+          args$p_value <- grepl("-Sided", names(test), fixed = TRUE)
         }
-        formatted <- do.call(formatSPSS, args)
+        formatted <- do.call(format_SPSS, args)
       }
       ## construct header
       cn <- c(if (object$type == "paired" && !legacy) "", "", names(test))
@@ -510,17 +510,17 @@ toSPSS.tTestSPSS <- function(object, statistics = c("test", "statistics"),
 }
 
 
-#' @rdname tTest
+#' @rdname t_test
 #' @export
 
-print.tTestSPSS <- function(x, statistics = c("statistics", "test"),
-                            version = r2spssOptions$get("version"),
-                            digits = 3, ...) {
+print.t_test_SPSS <- function(x, statistics = c("statistics", "test"),
+                              version = r2spss_options$get("version"),
+                              digits = 3, ...) {
 
   ## initializations
   count <- 0
   statistics <- match.arg(statistics, several.ok = TRUE)
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
 
   ## print LaTeX table for ranks
   if ("statistics" %in% statistics) {
@@ -546,4 +546,14 @@ print.tTestSPSS <- function(x, statistics = c("statistics", "test"),
     cat("\n")
   }
 
+}
+
+
+#' @rdname t_test
+#' @export
+
+tTest <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
+  .Deprecated("t_test")
+  t_test(data, variables = variables, group = group,
+         mu = mu, conf.level = conf.level)
 }

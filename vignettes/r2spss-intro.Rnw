@@ -216,10 +216,10 @@ environment may require several \proglang{LaTeX} compilations to be displayed
 correctly.  For portability reasons, this vignette therefore only displays
 \proglang{LaTeX} tables that mimic the simpler look of older \proglang{SPSS}
 versions.  For convenience, such a global preference within an \proglang{R}
-session can be set with the accessor function \code{r2spssOptions$set()}.
+session can be set with the accessor function \code{r2spss_options$set()}.
 
 <<>>=
-r2spssOptions$set(version = "legacy")
+r2spss_options$set(version = "legacy")
 @
 
 
@@ -323,12 +323,12 @@ scatter_plot(Eredivisie, c("Age", "Minutes", "logMarketValue"))
 
 With the \code{Exams} data, we can perform a one-sample $t$ test on whether the
 average grade on the resit exam differs from 5.5, which is the minimum passing
-grade in the Netherlands.  For this purpose, we can use function \code{tTest()}
+grade in the Netherlands.  For this purpose, we can use function \code{t_test()}
 with a single variable as well as the value under the null-hypothesis.
 %
 \begin{center}
 <<results="asis">>=
-tTest(Exams, "Resit", mu = 5.5)
+t_test(Exams, "Resit", mu = 5.5)
 @
 \end{center}
 
@@ -337,27 +337,27 @@ tTest(Exams, "Resit", mu = 5.5)
 
 Similarly, we can perform a paired-sample $t$ test on whether the average
 grades differ between the regular exam and the resit by supplying the two
-corresponding variables to function \code{tTest()}.
+corresponding variables to function \code{t_test()}.
 %
 \begin{center}
 <<results="asis">>=
-tTest(Exams, c("Resit", "Regular"))
+t_test(Exams, c("Resit", "Regular"))
 @
 \end{center}
 
 As nonparametric alternatives, we can perform a Wilcoxon signed rank test
-with function \code{wilcoxonTest()} or a sign test with function
-\code{signTest()}.
+with function \code{wilcoxon_test()} or a sign test with function
+\code{sign_test()}.
 %
 \begin{center}
 <<results="asis">>=
-wilcoxonTest(Exams, c("Regular", "Resit"))
+wilcoxon_test(Exams, c("Regular", "Resit"))
 @
 \end{center}
 %
 \begin{center}
 <<results="asis">>=
-signTest(Exams, c("Regular", "Resit"))
+sign_test(Exams, c("Regular", "Resit"))
 @
 \end{center}
 
@@ -377,29 +377,29 @@ box_plot(Exams, c("Regular", "Resit"))
 
 \subsection{Comparing two groups}
 
-An independent-samples $t$ test can be performed with function \code{tTest()}
+An independent-samples $t$ test can be performed with function \code{t_test()}
 by specifying the numeric variable of interest as well as a grouping variable.
 As an example, we test whether the average log market values differ between
 Dutch and foreign football players.
 %
 \begin{center}
 <<eval=FALSE>>=
-tTest(Eredivisie, "logMarketValue", group = "Foreign")
+t_test(Eredivisie, "logMarketValue", group = "Foreign")
 @
 \footnotesize
 <<echo=FALSE, results="asis">>=
-tTest(Eredivisie, "logMarketValue", group = "Foreign")
+t_test(Eredivisie, "logMarketValue", group = "Foreign")
 @
 \end{center}
 
 As a nonparametric alternative, we can perform a Wilcoxon rank sum test
-with function \code{wilcoxonTest()} in a similar manner.  Note that it is
+with function \code{wilcoxon_test()} in a similar manner.  Note that it is
 not necessary to use the logarithms of the market values here, as this test
 works with ranks instead of the observed values.
 %
 \begin{center}
 <<results="asis">>=
-wilcoxonTest(Eredivisie, "MarketValue", group = "Foreign")
+wilcoxon_test(Eredivisie, "MarketValue", group = "Foreign")
 @
 \end{center}
 
@@ -432,12 +432,12 @@ plot(oneway)
 @
 
 A nonparametric alternative based on ranks is the Kruskal-Wallis test, which
-can be applied with function \code{kruskalTest()}.  It is again not necessary
+can be applied with function \code{kruskal_test()}.  It is again not necessary
 to use the logarithms of the market values for this test.
 %
 \begin{center}
 <<results="asis">>=
-kruskalTest(Eredivisie, "MarketValue", group = "Position")
+kruskal_test(Eredivisie, "MarketValue", group = "Position")
 @
 \end{center}
 
@@ -461,14 +461,14 @@ the default being the first grouping variable.
 plot(twoway)
 @
 
-The \code{plot()} method illustrated in this section calls function
-\code{line_plot()} to produce the plots.  The latter is more generally
-applicable and can also be used, e.g., for plotting time series.
+The \code{plot()} method illustrated works similarly to function
+\code{line_plot()}.  The latter is more generally applicable and
+can also be used, e.g., for plotting time series.
 
 
 \subsection[Chi-squared tests]{$\chi^{2}$ tests}
 
-Function \code{chisqTest()} implements $\chi^{2}$ goodness-of-fit tests and
+Function \code{chisq_test()} implements $\chi^{2}$ goodness-of-fit tests and
 $\chi^{2}$ tests on independence.  With the \code{Eredivisie} data, we can
 first perform a goodness-of-fit test to see whether the traditional Dutch 4-3-3
 system of total football is still reflected in player composition of Dutch
@@ -478,7 +478,7 @@ $3/11$ for goalkeepers, defenders, midfielders, and forwards, respectively.
 %
 \begin{center}
 <<results="asis">>=
-chisqTest(Eredivisie, "Position", p = c(1, 4, 3, 3)/11)
+chisq_test(Eredivisie, "Position", p = c(1, 4, 3, 3)/11)
 @
 \end{center}
 
@@ -487,7 +487,7 @@ Furthermore, we can test whether the categorical variables \code{Position} and
 foreign players are the same for all playing positions.
 \begin{center}
 <<results="asis">>=
-chisqTest(Eredivisie, c("Position", "Foreign"))
+chisq_test(Eredivisie, c("Position", "Foreign"))
 @
 \end{center}
 

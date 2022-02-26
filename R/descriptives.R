@@ -17,18 +17,18 @@
 #' @param data  a data frame containing the variables.
 #' @param variables  a character vector specifying numeric variables for which
 #' to compute descriptive statistics.
-#' @param object,x  an object of class \code{"descriptivesSPSS"} as returned by
-#' function \code{descriptives}.
+#' @param object,x  an object of class \code{"descriptives_SPSS"} as returned
+#' by function \code{descriptives}.
 #' @param digits  an integer giving the number of digits after the comma to be
 #' printed in the SPSS table.
 #' @param \dots additional arguments to be passed down to
-#' \code{\link{formatSPSS}}.
+#' \code{\link{format_SPSS}}.
 #' @param version  a character string specifying whether the table should
 #' mimic the look of recent SPSS versions (\code{"modern"}) or older versions
 #' (<24; \code{"legacy"}).
 #'
 #' @return
-#' An object of class \code{"descriptivesSPSS"} with the following components:
+#' An object of class \code{"descriptives_SPSS"} with the following components:
 #' \describe{
 #'   \item{\code{classes}}{a character vector giving the (first) class of the
 #'   variables of interest.}
@@ -77,8 +77,8 @@ descriptives <- function(data, variables) {
   desc <- do.call(rbind, lapply(x, .descriptives))
   row.names(desc) <- variables
   # return descriptives
-  out <- list(classes=classes, descriptives=desc, n=n)
-  class(out) <- "descriptivesSPSS"
+  out <- list(classes = classes, descriptives = desc, n = n)
+  class(out) <- "descriptives_SPSS"
   out
 }
 
@@ -93,15 +93,15 @@ descriptives <- function(data, variables) {
   mean <- mean(x)
   sd <- sd(x)
   # return data frame
-  data.frame(N=n, Minimum=range[1], Maximum=range[2], Mean=mean,
-             "Std. Deviation"=sd, check.names=FALSE)
+  data.frame(N = n, Minimum = range[1], Maximum = range[2], Mean = mean,
+             "Std. Deviation" = sd, check.names = FALSE)
 }
 
 
 #' @rdname descriptives
 #' @export
 
-toSPSS.descriptivesSPSS <- function(object, digits = 2, ...) {
+toSPSS.descriptives_SPSS <- function(object, digits = 2, ...) {
   # put table of results into SPSS format
   p <- ncol(object$descriptives)
   descriptives <- rbind(object$descriptives,
@@ -111,10 +111,10 @@ toSPSS.descriptivesSPSS <- function(object, digits = 2, ...) {
   header <- c("", wrapText(colNames, limit = 10))
   # format table nicely
   args <- list(descriptives, digits = digits, ...)
-  if (is.null(args$checkInt)) {
-    args$checkInt <- colNames %in% c("Minimum", "Maximum")
+  if (is.null(args$check_int)) {
+    args$check_int <- colNames %in% c("Minimum", "Maximum")
   }
-  formatted <- do.call(formatSPSS, args)
+  formatted <- do.call(format_SPSS, args)
   # construct return object
   spss <- list(table = formatted, main = "Descriptive Statistics",
                header = header, rowNames = TRUE, info = 0)
@@ -126,10 +126,10 @@ toSPSS.descriptivesSPSS <- function(object, digits = 2, ...) {
 #' @rdname descriptives
 #' @export
 
-print.descriptivesSPSS <- function(x, version = r2spssOptions$get("version"),
+print.descriptives_SPSS <- function(x, version = r2spss_options$get("version"),
                                    ...) {
   # initializations
-  version <- match.arg(version, choices = getVersionValues())
+  version <- match.arg(version, choices = get_version_values())
   # put table of results into SPSS format
   spss <- toSPSS(x, ...)
   # print LaTeX table
