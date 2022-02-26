@@ -19,29 +19,29 @@ initialize_options = function(...) {
   # accessor function to get (selected) current options
   set = function(...) {
     # combine supplied options into list and extract names
-    newValues <- list(...)
-    optionNames <- names(newValues)
+    new_values <- list(...)
+    option_names <- names(new_values)
     # check if a list is supplied as a single unnamed argument
-    if (length(newValues) == 1 && is.null(optionNames) && is.list(newValues[[1]])) {
-      newValues <- newValues[[1]]
-      optionNames <- names(newValues)
+    if (length(new_values) == 1 && is.null(option_names) && is.list(new_values[[1]])) {
+      new_values <- new_values[[1]]
+      option_names <- names(new_values)
     }
     # check if there is anything to do
-    if (length(newValues) == 0 || is.null(optionNames)) {
+    if (length(new_values) == 0 || is.null(option_names)) {
       warning("no names or values of options supplied; no options were set",
               call. = FALSE)
     } else {
       # check if supplied options are meaningful
-      keep <- optionNames %in% names(values)
-      newValues <- newValues[keep]
-      optionNames <- optionNames[keep]
-      if (length(newValues) == 0) {
+      keep <- option_names %in% names(values)
+      new_values <- new_values[keep]
+      option_names <- option_names[keep]
+      if (length(new_values) == 0) {
         warning("supplied options do not exist; no options were set",
                 call. = FALSE)
       } else if (!all(keep)) {
         warning("some supplied options do not exist; those were not set",
                 call. = FALSE)
-      } else values[optionNames] <<- newValues
+      } else values[option_names] <<- new_values
     }
     # don't return anything
     invisible()

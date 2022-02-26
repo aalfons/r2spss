@@ -16,6 +16,8 @@ Changes in r2spss version 0.3.0
       r2spss.sty() puts a LaTeX style file of the same name in a specified
       folder.
 
+    + Functions now uses under_scores rather than camelCase.
+
 
 
 Changes in r2spss version 0.2.0

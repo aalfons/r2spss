@@ -2,13 +2,13 @@
 % Please edit documentation in R/descriptives.R
 \name{descriptives}
 \alias{descriptives}
-\alias{toSPSS.descriptives_SPSS}
+\alias{to_SPSS.descriptives_SPSS}
 \alias{print.descriptives_SPSS}
 \title{Descriptive Statistics}
 \usage{
 descriptives(data, variables)
 
-\method{toSPSS}{descriptives_SPSS}(object, digits = 2, ...)
+\method{to_SPSS}{descriptives_SPSS}(object, digits = 2, ...)
 
 \method{print}{descriptives_SPSS}(x, version = r2spss_options$get("version"), ...)
 }
@@ -41,11 +41,10 @@ An object of class \code{"descriptives_SPSS"} with the following components:
   \item{\code{n}}{an integer giving the number of observations.}
 }
 
-The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+The \code{to_SPSS} method returns an object of class \code{"SPSS_table"}
 which contains all relevant information in the required format to produce
-the LaTeX table.  See \code{\link[=toLatex.SPSSTable]{toLatex}} for possible
-components and how to further customize the LaTeX table based on the
-returned object.
+the LaTeX table.  See \code{\link{to_latex}} for possible components and
+how to further customize the LaTeX table based on the returned object.
 
 The \code{print} method produces a LaTeX table that mimics the look of SPSS
 output.
@@ -56,10 +55,10 @@ observations, minimum, maximum, mean, standard deviaiton).  The output is
 printed as a LaTeX table that mimics the look of SPSS output.
 }
 \details{
-The \code{print} method first calls the \code{toSPSS} method followed by
-\code{\link[=toLatex.SPSSTable]{toLatex}}.  Further customization can be
-done by calling those two functions separately, and modifying the object
-returned by \code{toSPSS}.
+The \code{print} method first calls the \code{to_SPSS} method followed
+by \code{\link{to_latex}}.  Further customization can be done by calling
+those two functions separately, and modifying the object returned by
+\code{to_SPSS}.
 }
 \note{
 LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})

@@ -2,7 +2,7 @@
 % Please edit documentation in R/regression.R
 \name{regression}
 \alias{regression}
-\alias{toSPSS.regression_SPSS}
+\alias{to_SPSS.regression_SPSS}
 \alias{print.regression_SPSS}
 \alias{coef.regression_SPSS}
 \alias{df.residual.regression_SPSS}
@@ -13,7 +13,7 @@
 \usage{
 regression(..., data, labels = NULL)
 
-\method{toSPSS}{regression_SPSS}(
+\method{to_SPSS}{regression_SPSS}(
   object,
   statistics = c("estimates", "anova", "summary"),
   change = FALSE,
@@ -48,7 +48,7 @@ regression(..., data, labels = NULL)
 \arguments{
 \item{\dots}{for \code{regression}, at least one formula specifying a
 regression model.  Different models can be compared by supplying multiple
-formulas.  For  the \code{toSPSS} and \code{print} methods, additional
+formulas.  For  the \code{to_SPSS} and \code{print} methods, additional
 arguments to be passed down to \code{\link{format_SPSS}}.  For the
 \code{plot} method, additional arguments to be passed down to
 \code{\link{histSPSS}} or \code{\link{plotSPSS}}, in particular graphical
@@ -65,7 +65,7 @@ function \code{regression}.}
 \item{statistics}{a character string or vector specifying which SPSS tables
 to produce.  Available options are \code{"summary"} for model summaries,
 \code{"anova"} for ANOVA results, and \code{"estimates"} for estimated
-coefficients.  For the \code{toSPSS} method, only one option is allowed
+coefficients.  For the \code{to_SPSS} method, only one option is allowed
 (the default is the table of ANOVA results), but the \code{print} method
 allows several options (the default is to print all tables).}
 
@@ -109,11 +109,10 @@ components:
   (\code{"remove"}).}
 }
 
-The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+The \code{to_SPSS} method returns an object of class \code{"SPSS_table"}
 which contains all relevant information in the required format to produce
-the LaTeX table.  See \code{\link[=toLatex.SPSSTable]{toLatex}} for possible
-components and how to further customize the LaTeX table based on the
-returned object.
+the LaTeX table.  See \code{\link{to_latex}} for possible components and
+how to further customize the LaTeX table based on the returned object.
 
 The \code{print} method produces a LaTeX table that mimics the look of SPSS
 output.
@@ -133,10 +132,10 @@ as a LaTeX table that mimics the look of SPSS output, and plots of the
 results mimic the look of SPSS graphs.
 }
 \details{
-The \code{print} method first calls the \code{toSPSS} method followed by
-\code{\link[=toLatex.SPSSTable]{toLatex}}.  Further customization can be
-done by calling those two functions separately, and modifying the object
-returned by \code{toSPSS}.
+The \code{print} method first calls the \code{to_SPSS} method followed
+by \code{\link{to_latex}}.  Further customization can be done by calling
+those two functions separately, and modifying the object returned by
+\code{to_SPSS}.
 }
 \note{
 LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})

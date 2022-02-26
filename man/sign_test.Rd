@@ -2,14 +2,14 @@
 % Please edit documentation in R/sign_test.R
 \name{sign_test}
 \alias{sign_test}
-\alias{toSPSS.sign_test_SPSS}
+\alias{to_SPSS.sign_test_SPSS}
 \alias{print.sign_test_SPSS}
 \alias{signTest}
 \title{Sign Test}
 \usage{
 sign_test(data, variables, exact = FALSE)
 
-\method{toSPSS}{sign_test_SPSS}(
+\method{to_SPSS}{sign_test_SPSS}(
   object,
   statistics = c("test", "frequencies"),
   version = r2spss_options$get("version"),
@@ -40,7 +40,7 @@ function \code{sign_test}.}
 
 \item{statistics}{a character string or vector specifying which SPSS tables
 to produce.   Available options are \code{"frequencies"} for a summary of
-the frequencies and \code{"test"} for test results.  For the \code{toSPSS}
+the frequencies and \code{"test"} for test results.  For the \code{to_SPSS}
 method, only one option is allowed (the default is the table of test
 results), but the \code{print} method allows several options (the default
 is to print all tables).}
@@ -69,11 +69,10 @@ components:
   \item{\code{n}}{an integer giving the number of observations.}
 }
 
-The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+The \code{to_SPSS} method returns an object of class \code{"SPSS_table"}
 which contains all relevant information in the required format to produce
-the LaTeX table.  See \code{\link[=toLatex.SPSSTable]{toLatex}} for possible
-components and how to further customize the LaTeX table based on the
-returned object.
+the LaTeX table.  See \code{\link{to_latex}} for possible components and
+how to further customize the LaTeX table based on the returned object.
 
 The \code{print} method produces a LaTeX table that mimics the look of SPSS
 output.
@@ -83,10 +82,10 @@ Perform a sign test for a paired sample on variables of a data set.  The
 output is printed as a LaTeX table that mimics the look of SPSS output.
 }
 \details{
-The \code{print} method first calls the \code{toSPSS} method followed by
-\code{\link[=toLatex.SPSSTable]{toLatex}}.  Further customization can be
-done by calling those two functions separately, and modifying the object
-returned by \code{toSPSS}.
+The \code{print} method first calls the \code{to_SPSS} method followed
+by \code{\link{to_latex}}.  Further customization can be done by calling
+those two functions separately, and modifying the object returned by
+\code{to_SPSS}.
 }
 \note{
 LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})

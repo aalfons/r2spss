@@ -2,14 +2,14 @@
 % Please edit documentation in R/ANOVA.R
 \name{ANOVA}
 \alias{ANOVA}
-\alias{toSPSS.ANOVA_SPSS}
+\alias{to_SPSS.ANOVA_SPSS}
 \alias{print.ANOVA_SPSS}
 \alias{plot.ANOVA_SPSS}
 \title{One-way and Two-way ANOVA}
 \usage{
 ANOVA(data, variable, group, conf.level = 0.95)
 
-\method{toSPSS}{ANOVA_SPSS}(
+\method{to_SPSS}{ANOVA_SPSS}(
   object,
   statistics = c("test", "variance", "descriptives"),
   version = r2spss_options$get("version"),
@@ -43,7 +43,7 @@ function \code{ANOVA}.}
 \item{statistics}{a character string or vector specifying which SPSS tables
 to produce.  Available options are \code{"descriptives"} for descriptive
 statistics, \code{"variance"} for Levene's test on homogeneity of the
-variances, and \code{"test"} for ANOVA results.  For the \code{toSPSS}
+variances, and \code{"test"} for ANOVA results.  For the \code{to_SPSS}
 method, only one option is allowed (the default is the table of ANOVA
 results), but the \code{print} method allows several options (the default
 is to print all tables).}
@@ -58,7 +58,7 @@ differently.}
 \item{digits}{an integer giving the number of digits after the comma to be
 printed in the SPSS tables.}
 
-\item{\dots}{for  the \code{toSPSS} and \code{print} methods, additional
+\item{\dots}{for  the \code{to_SPSS} and \code{print} methods, additional
 arguments to be passed down to \code{\link{format_SPSS}}.  For the
 \code{plot} method, additional arguments to be passed down to
 \code{\link{linesSPSS}}, in particular graphical parameters.}
@@ -95,11 +95,10 @@ following components:
   (\code{"one-way"} or \code{"two-way"}).}
 }
 
-The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+The \code{to_SPSS} method returns an object of class \code{"SPSS_table"}
 which contains all relevant information in the required format to produce
-the LaTeX table.  See \code{\link[=toLatex.SPSSTable]{toLatex}} for possible
-components and how to further customize the LaTeX table based on the
-returned object.
+the LaTeX table.  See \code{\link{to_latex}} for possible components and
+how to further customize the LaTeX table based on the returned object.
 
 The \code{print} method produces a LaTeX table that mimics the look of SPSS
 output.
@@ -114,10 +113,10 @@ printed as a LaTeX table that mimics the look of SPSS output, and a profile
 plot of the results mimics the look of SPSS graphs.
 }
 \details{
-The \code{print} method first calls the \code{toSPSS} method followed by
-\code{\link[=toLatex.SPSSTable]{toLatex}}.  Further customization can be
-done by calling those two functions separately, and modifying the object
-returned by \code{toSPSS}.
+The \code{print} method first calls the \code{to_SPSS} method followed
+by \code{\link{to_latex}}.  Further customization can be done by calling
+those two functions separately, and modifying the object returned by
+\code{to_SPSS}.
 }
 \note{
 The test statistic and p-value for Levene's test based on the trimmed mean

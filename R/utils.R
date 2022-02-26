@@ -14,7 +14,7 @@ get_scale_values <- function() c("continuous", "discrete")
 ## character limit is not exceeded per line
 # text .... a character vector for which each element will be wrapped
 # limit ... integer vector giving the character limit for each element of 'text'
-wrapText <- function(text, limit = 66) {
+wrap_text <- function(text, limit = 66) {
   # initializations
   n <- length(text)
   limit <- rep_len(limit, n)

@@ -9,10 +9,10 @@
 #' sum test for independent samples on variables of a data set.  The output
 #' is printed as a LaTeX table that mimics the look of SPSS output.
 #'
-#' The \code{print} method first calls the \code{toSPSS} method followed by
-#' \code{\link[=toLatex.SPSSTable]{toLatex}}.  Further customization can be
-#' done by calling those two functions separately, and modifying the object
-#' returned by \code{toSPSS}.
+#' The \code{print} method first calls the \code{to_SPSS} method followed
+#' by \code{\link{to_latex}}.  Further customization can be done by calling
+#' those two functions separately, and modifying the object returned by
+#' \code{to_SPSS}.
 #'
 #' @param data  a data frame containing the variables.
 #' @param variables  a character vector specifying numeric variable(s) to be
@@ -31,7 +31,7 @@
 #' by function \code{wilcoxon_test}.
 #' @param statistics  a character string or vector specifying which SPSS tables
 #' to produce.  Available options are \code{"ranks"} for a summary of the ranks
-#' and \code{"test"} for test results.  For the \code{toSPSS} method, only one
+#' and \code{"test"} for test results.  For the \code{to_SPSS} method, only one
 #' option is allowed (the default is the table of test results), but the
 #' \code{print} method allows several options (the default is to print all
 #' tables).
@@ -39,8 +39,8 @@
 #' mimic the content and look of recent SPSS versions (\code{"modern"}) or
 #' older versions (<24; \code{"legacy"}).  The main difference in terms of
 #' content is that small p-values are displayed differently.
-#' @param digits  for the \code{toSPSS} method, an integer giving the number of
-#' digits after the comma to be printed in the SPSS table.  For the
+#' @param digits  for the \code{to_SPSS} method, an integer giving the number
+#' of digits after the comma to be printed in the SPSS table.  For the
 #' \code{print} method, this should be an integer vector of length 2, with the
 #' first element corresponding to the number of digits in table with the
 #' summary of the ranks, and the second element corresponding to the number of
@@ -74,11 +74,10 @@
 #'   performed \code{"paired"} or \code{"independent"}).}
 #' }
 #'
-#' The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+#' The \code{to_SPSS} method returns an object of class \code{"SPSS_table"}
 #' which contains all relevant information in the required format to produce
-#' the LaTeX table.  See \code{\link[=toLatex.SPSSTable]{toLatex}} for possible
-#' components and how to further customize the LaTeX table based on the
-#' returned object.
+#' the LaTeX table.  See \code{\link{to_latex}} for possible components and
+#' how to further customize the LaTeX table based on the returned object.
 #'
 #' The \code{print} method produces a LaTeX table that mimics the look of SPSS
 #' output.
@@ -207,9 +206,9 @@ wilcoxon_test <- function(data, variables, group = NULL, exact = FALSE) {
 #' @rdname wilcoxon_test
 #' @export
 
-toSPSS.wilcoxon_test_SPSS <- function(object, statistics = c("test", "ranks"),
-                                      version = r2spss_options$get("version"),
-                                      digits = NULL, ...) {
+to_SPSS.wilcoxon_test_SPSS <- function(object, statistics = c("test", "ranks"),
+                                       version = r2spss_options$get("version"),
+                                       digits = NULL, ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
@@ -240,7 +239,7 @@ toSPSS.wilcoxon_test_SPSS <- function(object, statistics = c("test", "ranks"),
                               column = rep.int(1, 3), text = footnotes)
       # construct list containing all necessary information
       spss <- list(table = formatted, main = "Ranks", header = TRUE,
-                   label = label, rowNames = TRUE, info = 1,
+                   label = label, row_names = TRUE, info = 1,
                    footnotes = footnotes)
     } else if (object$type == "independent") {
       # put table into SPSS format
@@ -251,7 +250,7 @@ toSPSS.wilcoxon_test_SPSS <- function(object, statistics = c("test", "ranks"),
       formatted <- format_SPSS(ranks, digits = digits, ...)
       # construct list containing all necessary information
       spss <- list(table = formatted, main = "Ranks", header = TRUE,
-                   label = label, rowNames = TRUE, info = 0)
+                   label = label, row_names = TRUE, info = 0)
     } else stop("type of test not supported")
 
   } else if (statistics == "test") {
@@ -279,16 +278,16 @@ toSPSS.wilcoxon_test_SPSS <- function(object, statistics = c("test", "ranks"),
                                        "Based on positive ranks."))
       # construct list containing all necessary information
       spss <- list(table = test, main = "Test Statistics",
-                   header = TRUE, rowNames = TRUE, info = 0,
+                   header = TRUE, row_names = TRUE, info = 0,
                    footnotes = footnotes, version = version)
     } else if (object$type == "independent") {
       # initializations
-      haveExact <- !is.null(object$exact)
+      have_exact <- !is.null(object$exact)
       # extract results
       rn <- c("Mann-Whitney U", "Wilcoxon W", "Z", "Asymp. Sig. (2-tailed)")
       values <- c(object$u, object$w, unlist(object$asymptotic))
       p_value <- c(FALSE, FALSE, FALSE, !legacy)
-      if (haveExact) {
+      if (have_exact) {
         rn <- c(rn, "Exact Sig. [2*(1-tailed Sig.)]")
         values <- c(values, object$exact)
         p_value <- c(p_value, !legacy)
@@ -305,7 +304,7 @@ toSPSS.wilcoxon_test_SPSS <- function(object, statistics = c("test", "ranks"),
       row <- "main"
       column <- NA_integer_
       footnote <- paste("Grouping Variable:", object$group)
-      if (haveExact) {
+      if (have_exact) {
         marker <- c(marker, "b")
         row <- c(row, 5)
         column <- c(column, 1)
@@ -315,14 +314,14 @@ toSPSS.wilcoxon_test_SPSS <- function(object, statistics = c("test", "ranks"),
                               text = footnote)
       # construct list containing all necessary information
       spss <- list(table = test, main = "Test Statistics",
-                   header = TRUE, rowNames = TRUE, info = 0,
+                   header = TRUE, row_names = TRUE, info = 0,
                    footnotes = footnotes, version = version)
     } else stop("type of test not supported")
 
   } else stop ("type of 'statistics' not supported")  # shouldn't happen
 
   # add class and return object
-  class(spss) <- "SPSSTable"
+  class(spss) <- "SPSS_table"
   spss
 
 }
@@ -345,10 +344,10 @@ print.wilcoxon_test_SPSS <- function(x, statistics = c("ranks", "test"),
   if ("ranks" %in% statistics) {
     cat("\n")
     # put table into SPSS format
-    spss <- toSPSS(x, digits = digits[1], statistics = "ranks",
-                   version = version, ...)
+    spss <- to_SPSS(x, digits = digits[1], statistics = "ranks",
+                    version = version, ...)
     # print LaTeX table
-    toLatex(spss, version = version)
+    to_latex(spss, version = version)
     cat("\n")
     count <- count + 1
   }
@@ -358,10 +357,10 @@ print.wilcoxon_test_SPSS <- function(x, statistics = c("ranks", "test"),
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
     # put test results into SPSS format
-    spss <- toSPSS(x, digits = digits[2], statistics = "test",
-                   version = version, ...)
+    spss <- to_SPSS(x, digits = digits[2], statistics = "test",
+                    version = version, ...)
     # print LaTeX table
-    toLatex(spss, version = version)
+    to_latex(spss, version = version)
     cat("\n")
   }
 

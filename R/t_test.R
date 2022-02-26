@@ -9,10 +9,10 @@
 #' independent-samples t test on variables of a data set.  The output
 #' is printed as a LaTeX table that mimics the look of SPSS output.
 #'
-#' The \code{print} method first calls the \code{toSPSS} method followed by
-#' \code{\link[=toLatex.SPSSTable]{toLatex}}.  Further customization can be
-#' done by calling those two functions separately, and modifying the object
-#' returned by \code{toSPSS}.
+#' The \code{print} method first calls the \code{to_SPSS} method followed
+#' by \code{\link{to_latex}}.  Further customization can be done by calling
+#' those two functions separately, and modifying the object returned by
+#' \code{to_SPSS}.
 #'
 #' @param data  a data frame containing the variables.
 #' @param variables  a character vector specifying numeric variable(s) to be
@@ -32,7 +32,7 @@
 #' function \code{t_test}.
 #' @param statistics  a character string or vector specifying which SPSS tables
 #' to produce.  Available options are \code{"statistics"} for descriptive
-#' statistics and \code{"test"} for test results.  For the \code{toSPSS}
+#' statistics and \code{"test"} for test results.  For the \code{to_SPSS}
 #' method, only one option is allowed (the default is the table of test
 #' results), but the \code{print} method allows several options (the default
 #' is to print all tables).
@@ -73,11 +73,10 @@
 #'   (\code{"one-sample"}, \code{"paired"}, or \code{"independent"}).}
 #' }
 #'
-#' The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+#' The \code{to_SPSS} method returns an object of class \code{"SPSS_table"}
 #' which contains all relevant information in the required format to produce
-#' the LaTeX table.  See \code{\link[=toLatex.SPSSTable]{toLatex}} for possible
-#' components and how to further customize the LaTeX table based on the
-#' returned object.
+#' the LaTeX table.  See \code{\link{to_latex}} for possible components and
+#' how to further customize the LaTeX table based on the returned object.
 #'
 #' The \code{print} method produces a LaTeX table that mimics the look of SPSS
 #' output.
@@ -208,9 +207,9 @@ t_test <- function(data, variables, group = NULL, mu = 0, conf.level = 0.95) {
 #' @importFrom stats qt
 #' @export
 
-toSPSS.t_test_SPSS <- function(object, statistics = c("test", "statistics"),
-                               version = r2spss_options$get("version"),
-                               digits = 3, ...) {
+to_SPSS.t_test_SPSS <- function(object, statistics = c("test", "statistics"),
+                                version = r2spss_options$get("version"),
+                                digits = 3, ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
@@ -224,14 +223,14 @@ toSPSS.t_test_SPSS <- function(object, statistics = c("test", "statistics"),
                      paired = "Paired Samples", independent = "Group")
     main <- paste(prefix, "Statistics")
     # add line breaks to column names for header
-    header <- wrapText(names(object$statistics), limit = 10)
+    header <- wrap_text(names(object$statistics), limit = 10)
     # construct list containing all necessary information
     if (object$type == "one-sample") {
       # define header
       header <- c("", header)
       # construct list
       spss <- list(table = formatted, main = main, header = header,
-                   rowNames = TRUE, info = 0)
+                   row_names = TRUE, info = 0)
     } else if (object$type == "paired") {
       # initializations
       version <- match.arg(version, choices = get_version_values())
@@ -246,7 +245,7 @@ toSPSS.t_test_SPSS <- function(object, statistics = c("test", "statistics"),
       }
       # construct list
       spss <- list(table = formatted, main = main, header = header,
-                   label = label, rowNames = TRUE, info = 0,
+                   label = label, row_names = TRUE, info = 0,
                    version = version)
     } else if (object$type == "independent") {
       # define header and label
@@ -254,7 +253,7 @@ toSPSS.t_test_SPSS <- function(object, statistics = c("test", "statistics"),
       label <- object$variables
       # construct list
       spss <- list(table = formatted, main = main, header = header,
-                   label = label, rowNames = TRUE, info = 0)
+                   label = label, row_names = TRUE, info = 0)
     } else stop("type of test not supported")
 
   } else if (statistics == "test") {
@@ -348,8 +347,8 @@ toSPSS.t_test_SPSS <- function(object, statistics = c("test", "statistics"),
       # merged header for confidence interval
       lower <- which(cn == "Lower")
       upper <- which(cn == "Upper")
-      ciText <- paste0(format(100*gamma, digits = digits),
-                       "\\% Confidence\nInterval of the\nDifference")
+      ci_text <- paste0(format(100*gamma, digits = digits),
+                        "\\% Confidence\nInterval of the\nDifference")
       # construct mid-level header
       middle <- data.frame(first = c(seq_len(onesided-1), onesided,
                                      seq(from = twosided+1, to = lower-1),
@@ -359,19 +358,19 @@ toSPSS.t_test_SPSS <- function(object, statistics = c("test", "statistics"),
                                     upper),
                            text = c(rep.int("", onesided-1), pText,
                                     rep.int("", lower-twosided-1),
-                                    ciText))
+                                    ci_text))
       # construct bottom-level header
-      bottom <- c(wrapText(cn, limit = wrap))
+      bottom <- c(wrap_text(cn, limit = wrap))
       bottom <- gsub("-", "-\n", bottom, fixed = TRUE)
       # define header
       header <- list(top, middle, bottom)
       ## define nice labels for the rows
-      rowLabels <- c(pooled = "assumed", satterthwaite = "not assumed")
-      rowLabels <- paste("Equal variances", rowLabels[row.names(test)])
-      rowLabels <- gsub(" ", "\n", rowLabels, fixed = TRUE)
+      row_labels <- c(pooled = "assumed", satterthwaite = "not assumed")
+      row_labels <- paste("Equal variances", row_labels[row.names(test)])
+      row_labels <- gsub(" ", "\n", row_labels, fixed = TRUE)
       ## construct list containing all necessary information
       spss <- list(table = formatted, main = main, label = object$variables,
-                   header = header, rowNames = rowLabels, info = 0,
+                   header = header, row_names = row_labels, info = 0,
                    # width = width,
                    version = version)
 
@@ -443,8 +442,8 @@ toSPSS.t_test_SPSS <- function(object, statistics = c("test", "statistics"),
       # merged header for confidence interval
       lower <- which(cn == "Lower")
       upper <- which(cn == "Upper")
-      ciText <- paste0(format(100*gamma, digits = digits),
-                       "\\% Confidence\nInterval of the\nDifference")
+      ci_text <- paste0(format(100*gamma, digits = digits),
+                        "\\% Confidence\nInterval of the\nDifference")
       # construct top-level and mid-level header
       if (object$type == "one-sample") {
         # top-level
@@ -461,7 +460,7 @@ toSPSS.t_test_SPSS <- function(object, statistics = c("test", "statistics"),
                                       upper),
                              text = c(rep.int("", onesided-1), pText,
                                       rep.int("", lower-twosided-1),
-                                      ciText))
+                                      ci_text))
       } else {
         blank <- if (object$type == "paired" && !legacy) 2 else 1
         # top-level
@@ -479,11 +478,11 @@ toSPSS.t_test_SPSS <- function(object, statistics = c("test", "statistics"),
                                        seq(from = upper+1, to = length(cn))),
                              last = c(seq_len(lower-1), upper,
                                       seq(from = upper+1, to = length(cn))),
-                             text = c(rep.int("", lower-1), ciText,
+                             text = c(rep.int("", lower-1), ci_text,
                                       rep.int("", length(cn)-upper)))
       }
       # construct bottom-level header
-      bottom <- c(wrapText(cn, limit = wrap))
+      bottom <- c(wrap_text(cn, limit = wrap))
       if (legacy) bottom <- gsub("\n(2-", "(2-\n", bottom, fixed = TRUE)
       else if (wrap < 9) bottom <- gsub("-", "-\n", bottom, fixed = TRUE)
       # define header
@@ -491,11 +490,11 @@ toSPSS.t_test_SPSS <- function(object, statistics = c("test", "statistics"),
       ## construct list containing all necessary information
       if (object$type == "one-sample") {
         spss <- list(table = formatted, main = main, header = header,
-                     rowNames = TRUE, info = 0, version = version)
+                     row_names = TRUE, info = 0, version = version)
       } else if (object$type == "paired") {
         label <- if (!legacy) "Pair 1"
         spss <- list(table = formatted, main = main, label = label,
-                     header = header, rowNames = TRUE, info = 0,
+                     header = header, row_names = TRUE, info = 0,
                      version = version)
       }
 
@@ -504,7 +503,7 @@ toSPSS.t_test_SPSS <- function(object, statistics = c("test", "statistics"),
   } else stop ("type of 'statistics' not supported")  # shouldn't happen
 
   # add class and return object
-  class(spss) <- "SPSSTable"
+  class(spss) <- "SPSS_table"
   spss
 
 }
@@ -526,10 +525,10 @@ print.t_test_SPSS <- function(x, statistics = c("statistics", "test"),
   if ("statistics" %in% statistics) {
     cat("\n")
     # put table into SPSS format
-    spss <- toSPSS(x, digits = digits, statistics = "statistics",
-                   version = version, ...)
+    spss <- to_SPSS(x, digits = digits, statistics = "statistics",
+                    version = version, ...)
     # print LaTeX table
-    toLatex(spss, version = version)
+    to_latex(spss, version = version)
     cat("\n")
     count <- count + 1
   }
@@ -539,10 +538,10 @@ print.t_test_SPSS <- function(x, statistics = c("statistics", "test"),
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
     # put test results into SPSS format
-    spss <- toSPSS(x, digits = digits, statistics = "test",
-                   version = version, ...)
+    spss <- to_SPSS(x, digits = digits, statistics = "test",
+                    version = version, ...)
     # print LaTeX table
-    toLatex(spss, version = version)
+    to_latex(spss, version = version)
     cat("\n")
   }
 

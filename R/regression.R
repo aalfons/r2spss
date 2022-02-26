@@ -9,14 +9,14 @@
 #' as a LaTeX table that mimics the look of SPSS output, and plots of the
 #' results mimic the look of SPSS graphs.
 #'
-#' The \code{print} method first calls the \code{toSPSS} method followed by
-#' \code{\link[=toLatex.SPSSTable]{toLatex}}.  Further customization can be
-#' done by calling those two functions separately, and modifying the object
-#' returned by \code{toSPSS}.
+#' The \code{print} method first calls the \code{to_SPSS} method followed
+#' by \code{\link{to_latex}}.  Further customization can be done by calling
+#' those two functions separately, and modifying the object returned by
+#' \code{to_SPSS}.
 #'
 #' @param \dots  for \code{regression}, at least one formula specifying a
 #' regression model.  Different models can be compared by supplying multiple
-#' formulas.  For  the \code{toSPSS} and \code{print} methods, additional
+#' formulas.  For  the \code{to_SPSS} and \code{print} methods, additional
 #' arguments to be passed down to \code{\link{format_SPSS}}.  For the
 #' \code{plot} method, additional arguments to be passed down to
 #' \code{\link{histSPSS}} or \code{\link{plotSPSS}}, in particular graphical
@@ -29,7 +29,7 @@
 #' @param statistics  a character string or vector specifying which SPSS tables
 #' to produce.  Available options are \code{"summary"} for model summaries,
 #' \code{"anova"} for ANOVA results, and \code{"estimates"} for estimated
-#' coefficients.  For the \code{toSPSS} method, only one option is allowed
+#' coefficients.  For the \code{to_SPSS} method, only one option is allowed
 #' (the default is the table of ANOVA results), but the \code{print} method
 #' allows several options (the default is to print all tables).
 #' @param change  a logical indicating whether tests on the
@@ -67,11 +67,10 @@
 #'   (\code{"remove"}).}
 #' }
 #'
-#' The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+#' The \code{to_SPSS} method returns an object of class \code{"SPSS_table"}
 #' which contains all relevant information in the required format to produce
-#' the LaTeX table.  See \code{\link[=toLatex.SPSSTable]{toLatex}} for possible
-#' components and how to further customize the LaTeX table based on the
-#' returned object.
+#' the LaTeX table.  See \code{\link{to_latex}} for possible components and
+#' how to further customize the LaTeX table based on the returned object.
 #'
 #' The \code{print} method produces a LaTeX table that mimics the look of SPSS
 #' output.
@@ -198,11 +197,11 @@ regression <- function(..., data, labels = NULL) {
 #' @importFrom stats aggregate anova model.matrix model.response pf
 #' @export
 
-toSPSS.regression_SPSS <- function(object,
-                                   statistics = c("estimates", "anova", "summary"),
-                                   change = FALSE,
-                                   version = r2spss_options$get("version"),
-                                   ...) {
+to_SPSS.regression_SPSS <- function(object,
+                                    statistics = c("estimates", "anova", "summary"),
+                                    change = FALSE,
+                                    version = r2spss_options$get("version"),
+                                    ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
@@ -213,9 +212,9 @@ toSPSS.regression_SPSS <- function(object,
   summaries <- object$summaries
   labels <- names(models)
   # define footnote that lists the response variable
-  footnoteResponse <- paste("Dependent Variable:", object$response)
+  footnote_response <- paste("Dependent Variable:", object$response)
   # define footnotes that list predictors in regression models
-  footnotesPredictors <- vapply(models, function(m) {
+  footnotes_predictors <- vapply(models, function(m) {
     strings <- c("Predictors: (Constant)", names(coef(m))[-1])
     paste(strings, collapse = ", ")
   }, character(1), USE.NAMES = FALSE)
@@ -284,7 +283,7 @@ toSPSS.regression_SPSS <- function(object,
     cn <- c("Model", names(fits))
     limit <- rep_len(if (change) 10 else 15, length(cn))
     limit[grepl("Adjusted", cn, fixed = TRUE)] <- 9
-    header <- wrapText(cn, limit = limit)
+    header <- wrap_text(cn, limit = limit)
     # add a top-level header if we have change statistics
     if (change) {
       # top-level header
@@ -300,12 +299,12 @@ toSPSS.regression_SPSS <- function(object,
     ## define footnotes
     row <- seq_len(k)
     column <- rep.int(1, k)
-    footnotes <- wrapText(footnotesPredictors, limit = wrap)
+    footnotes <- wrap_text(footnotes_predictors, limit = wrap)
     footnotes <- data.frame(marker = letters[seq_len(k)], row = row,
                             column = column, text = footnotes)
     ## construct list containing all necessary information
     spss <- list(table = formatted, main = "Model Summary",
-                 header = header, rowNames = TRUE, info = 0,
+                 header = header, row_names = TRUE, info = 0,
                  footnotes = footnotes)
     if (change) spss$version <- version
 
@@ -351,17 +350,17 @@ toSPSS.regression_SPSS <- function(object,
     }
     # define header with line breaks
     cn <- gsub("Type", "", names(anovas), fixed = TRUE)
-    header <- wrapText(cn, limit = 12)
+    header <- wrap_text(cn, limit = 12)
     # define footnotes
     row <- c("main", seq(from = 1, by = 3, length.out=k))
     column <- c(NA_integer_, rep.int(ncol(anovas), k))
-    footnotes <- wrapText(c(footnoteResponse, footnotesPredictors),
-                          limit = wrap)
+    footnotes <- wrap_text(c(footnote_response, footnotes_predictors),
+                           limit = wrap)
     footnotes <- data.frame(marker = letters[seq_len(k+1)], row = row,
                             column = column, text = footnotes)
     # construct list containing all necessary information
     spss <- list(table = formatted, main = "ANOVA", header = header,
-                 rowNames = FALSE, info = 2, footnotes = footnotes,
+                 row_names = FALSE, info = 2, footnotes = footnotes,
                  major = 3 * seq_len(k-1), version = version)
 
   } else if (statistics == "estimates") {
@@ -418,16 +417,16 @@ toSPSS.regression_SPSS <- function(object,
     ## define footnotes
     footnotes <- data.frame(marker = "a", row = "main",
                             column = NA_integer_,
-                            text = footnoteResponse)
+                            text = footnote_response)
     ## construct list containing all necessary information
     spss <- list(table = formatted, main = "Coefficients", header = header,
-                 rowNames = FALSE, info = 2, footnotes = footnotes,
+                 row_names = FALSE, info = 2, footnotes = footnotes,
                  major = cumsum(p[-k]), version = version)
 
   } else stop ("type of 'statistics' not supported")  # shouldn't happen
 
   # add class and return object
-  class(spss) <- "SPSSTable"
+  class(spss) <- "SPSS_table"
   spss
 
 }
@@ -451,10 +450,10 @@ print.regression_SPSS <- function(x,
   if ("summary" %in% statistics) {
     cat("\n")
     # put frequencies into SPSS format
-    spss <- toSPSS(x, statistics = "summary", change = change,
-                   version = version, ...)
+    spss <- to_SPSS(x, statistics = "summary", change = change,
+                    version = version, ...)
     # print LaTeX table
-    toLatex(spss, version = version)
+    to_latex(spss, version = version)
     cat("\n")
     count <- count + 1
   }
@@ -464,9 +463,9 @@ print.regression_SPSS <- function(x,
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
     # put frequencies into SPSS format
-    spss <- toSPSS(x, statistics = "anova", version = version, ...)
+    spss <- to_SPSS(x, statistics = "anova", version = version, ...)
     # print LaTeX table
-    toLatex(spss, version = version)
+    to_latex(spss, version = version)
     cat("\n")
   }
 
@@ -475,9 +474,9 @@ print.regression_SPSS <- function(x,
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
     # put frequencies into SPSS format
-    spss <- toSPSS(x, statistics = "estimates", version = version, ...)
+    spss <- to_SPSS(x, statistics = "estimates", version = version, ...)
     # print LaTeX table
-    toLatex(spss, version = version)
+    to_latex(spss, version = version)
     cat("\n")
   }
 

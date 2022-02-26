@@ -6,7 +6,7 @@
 #' Format Objects
 #'
 #' Format an object for printing, mostly used to print numeric data in the same
-#' way as SPSS.  This is mainly for internal use in \code{\link{toSPSS}} and
+#' way as SPSS.  This is mainly for internal use in \code{\link{to_SPSS}} and
 #' \code{\link{print}} methods.
 #'
 #' @param object  an \R object.  Currently methods are implemented

@@ -2,14 +2,14 @@
 % Please edit documentation in R/chisq_test.R
 \name{chisq_test}
 \alias{chisq_test}
-\alias{toSPSS.chisq_test_SPSS}
+\alias{to_SPSS.chisq_test_SPSS}
 \alias{print.chisq_test_SPSS}
 \alias{chisqTest}
 \title{\eqn{\chi^{2}}{Chi-squared} Tests}
 \usage{
 chisq_test(data, variables, p = NULL)
 
-\method{toSPSS}{chisq_test_SPSS}(
+\method{to_SPSS}{chisq_test_SPSS}(
   object,
   statistics = c("test", "frequencies"),
   version = r2spss_options$get("version"),
@@ -45,7 +45,7 @@ function \code{chisq_test}.}
 \item{statistics}{a character string or vector specifying which SPSS tables
 to produce.  Available options are \code{"frequencies"} for a table of the
 observed and expected frequencies, and \code{"test"} for test results.  For
-the \code{toSPSS} method, only one option is allowed (the default is the
+the \code{to_SPSS} method, only one option is allowed (the default is the
 table of test results), but the \code{print} method allows several options
 (the default is to print all tables).}
 
@@ -86,11 +86,10 @@ An object of class \code{"chisq_test_SPSS"} with the following components:
   or \code{"independence"}).}
 }
 
-The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+The \code{to_SPSS} method returns an object of class \code{"SPSS_table"}
 which contains all relevant information in the required format to produce
-the LaTeX table.  See \code{\link[=toLatex.SPSSTable]{toLatex}} for possible
-components and how to further customize the LaTeX table based on the
-returned object.
+the LaTeX table.  See \code{\link{to_latex}} for possible components and
+how to further customize the LaTeX table based on the returned object.
 
 The \code{print} method produces a LaTeX table that mimics the look of SPSS
 output.
@@ -102,10 +101,10 @@ a data set.  The output is printed as a LaTeX table that mimics
 the look of SPSS output.
 }
 \details{
-The \code{print} method first calls the \code{toSPSS} method followed by
-\code{\link[=toLatex.SPSSTable]{toLatex}}.  Further customization can be
-done by calling those two functions separately, and modifying the object
-returned by \code{toSPSS}.
+The \code{print} method first calls the \code{to_SPSS} method followed
+by \code{\link{to_latex}}.  Further customization can be done by calling
+those two functions separately, and modifying the object returned by
+\code{to_SPSS}.
 }
 \note{
 The test on independence also reports the results of a likelihood

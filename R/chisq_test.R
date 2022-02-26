@@ -10,10 +10,10 @@
 #' a data set.  The output is printed as a LaTeX table that mimics
 #' the look of SPSS output.
 #'
-#' The \code{print} method first calls the \code{toSPSS} method followed by
-#' \code{\link[=toLatex.SPSSTable]{toLatex}}.  Further customization can be
-#' done by calling those two functions separately, and modifying the object
-#' returned by \code{toSPSS}.
+#' The \code{print} method first calls the \code{to_SPSS} method followed
+#' by \code{\link{to_latex}}.  Further customization can be done by calling
+#' those two functions separately, and modifying the object returned by
+#' \code{to_SPSS}.
 #'
 #' @param data  a data frame containing the variables.
 #' @param variables  a character vector specifying the categorical variable(s)
@@ -28,7 +28,7 @@
 #' @param statistics  a character string or vector specifying which SPSS tables
 #' to produce.  Available options are \code{"frequencies"} for a table of the
 #' observed and expected frequencies, and \code{"test"} for test results.  For
-#' the \code{toSPSS} method, only one option is allowed (the default is the
+#' the \code{to_SPSS} method, only one option is allowed (the default is the
 #' table of test results), but the \code{print} method allows several options
 #' (the default is to print all tables).
 #' @param version  a character string specifying whether the table should
@@ -66,11 +66,10 @@
 #'   or \code{"independence"}).}
 #' }
 #'
-#' The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+#' The \code{to_SPSS} method returns an object of class \code{"SPSS_table"}
 #' which contains all relevant information in the required format to produce
-#' the LaTeX table.  See \code{\link[=toLatex.SPSSTable]{toLatex}} for possible
-#' components and how to further customize the LaTeX table based on the
-#' returned object.
+#' the LaTeX table.  See \code{\link{to_latex}} for possible components and
+#' how to further customize the LaTeX table based on the returned object.
 #'
 #' The \code{print} method produces a LaTeX table that mimics the look of SPSS
 #' output.
@@ -179,9 +178,9 @@ chisq_test <- function(data, variables, p = NULL) {
 #' @rdname chisq_test
 #' @export
 
-toSPSS.chisq_test_SPSS <- function(object, statistics = c("test", "frequencies"),
-                                   version = r2spss_options$get("version"),
-                                   digits = c(1, 3), ...) {
+to_SPSS.chisq_test_SPSS <- function(object, statistics = c("test", "frequencies"),
+                                    version = r2spss_options$get("version"),
+                                    digits = c(1, 3), ...) {
   ## initializations
   statistics <- match.arg(statistics)
   digits <- rep_len(digits, 2)
@@ -205,7 +204,7 @@ toSPSS.chisq_test_SPSS <- function(object, statistics = c("test", "frequencies")
       formatted <- format_SPSS(frequencies, digits = digits[1], ...)
       # construct list containing all necessary information
       spss <- list(table = formatted, main = object$variables,
-                   header = TRUE, rowNames = TRUE, info = 0)
+                   header = TRUE, row_names = TRUE, info = 0)
     } else if (object$type == "independence") {
       # add totals
       observed <- cbind(observed, Total = rowSums(observed))
@@ -215,16 +214,16 @@ toSPSS.chisq_test_SPSS <- function(object, statistics = c("test", "frequencies")
       # number format for expected counts
       fmt <- paste0("%.", digits[1], "f")
       # create cross table in SPSS format
-      rowNames <- rownames(observed)
-      countLabels <- c("Count", "Expected Count")
-      crosstab <- lapply(rowNames, function(i) {
-        if (i == rowNames[1]) label <- c(object$variables[1], "")
+      row_names <- rownames(observed)
+      count_labels <- c("Count", "Expected Count")
+      crosstab <- lapply(row_names, function(i) {
+        if (i == row_names[1]) label <- c(object$variables[1], "")
         else if (i == "Total") label <- c(i, "")
         else label <- c("", "")
         row <- if (i == "Total") c("", "") else c(i, "")
         counts <- rbind(as.character(observed[i, ]),
                         sprintf(fmt, expected[i, ]))
-        data.frame(Label = label, Row = row, Type = countLabels, counts,
+        data.frame(Label = label, Row = row, Type = count_labels, counts,
                    check.names = FALSE, stringsAsFactors = FALSE)
       })
       crosstab <- do.call(rbind, crosstab)
@@ -242,7 +241,7 @@ toSPSS.chisq_test_SPSS <- function(object, statistics = c("test", "frequencies")
                           last = c(ncol(crosstab)))
       # construct list containing all necessary information
       spss <- list(table = crosstab, main = main, header = header,
-                   rowNames = FALSE, info = 3, major = 2*object$r,
+                   row_names = FALSE, info = 3, major = 2*object$r,
                    minor = minor)
     } else stop("type of test not supported")
 
@@ -252,8 +251,8 @@ toSPSS.chisq_test_SPSS <- function(object, statistics = c("test", "frequencies")
     version <- match.arg(version, choices = get_version_values())
     legacy <- version == "legacy"
     # check too small expected counts
-    nTooSmall <- sum(object$expected < 5)
-    pTooSmall <- nTooSmall / length(object$expected)
+    n_too_small <- sum(object$expected < 5)
+    p_too_small <- n_too_small / length(object$expected)
     smallest <- min(object$expected)
     # number format for percentage of cells in footnote
     fmt <- paste0("%.", digits[1], "f")
@@ -271,15 +270,15 @@ toSPSS.chisq_test_SPSS <- function(object, statistics = c("test", "frequencies")
       chisq <- data.frame(formatted, row.names = rn)
       names(chisq) <- object$variables
       # define footnote
-      footnote <- paste0(nTooSmall, " cells (", sprintf(fmt, pTooSmall),
+      footnote <- paste0(n_too_small, " cells (", sprintf(fmt, p_too_small),
                          "\\%) have expected frequencies less than 5. ",
                          "The minimum expected cell frequency is ",
                          sprintf(fmt, smallest), ".")
       footnotes <- data.frame(marker = "a", row = 1, column = 1,
-                              text = wrapText(footnote, limit = 30))
+                              text = wrap_text(footnote, limit = 30))
       # construct list containing all necessary information
       spss <- list(table = chisq, main = "Test Statistics",
-                   header = TRUE, rowNames = TRUE, info = 0,
+                   header = TRUE, row_names = TRUE, info = 0,
                    footnotes = footnotes, version = version)
     } else if (object$type == "independence") {
       # put test results into SPSS format
@@ -300,24 +299,24 @@ toSPSS.chisq_test_SPSS <- function(object, statistics = c("test", "frequencies")
       if (is.null(args$check_int)) args$check_int <- c(TRUE, FALSE, FALSE)
       formatted <- do.call(format_SPSS, args)
       # define header with line breaks
-      header <- c("", wrapText(names(chisq), limit = 15))
+      header <- c("", wrap_text(names(chisq), limit = 15))
       # define footnote
-      footnote <- paste0(nTooSmall, " cells (", sprintf(fmt, pTooSmall),
+      footnote <- paste0(n_too_small, " cells (", sprintf(fmt, p_too_small),
                          "\\%) have expected count less than 5. ",
                          "The minimum expected count is ",
                          sprintf(fmt, smallest), ".")
       footnotes <- data.frame(marker = "a", row = 1, column = 1,
-                              text = wrapText(footnote, limit = 50))
+                              text = wrap_text(footnote, limit = 50))
       # construct list containing all necessary information
       spss <- list(table = formatted, main = "Chi-Square Tests",
-                   header = header, rowNames = TRUE, info = 0,
+                   header = header, row_names = TRUE, info = 0,
                    footnotes = footnotes, version = version)
     } else stop("type of test not supported")
 
   } else stop ("type of 'statistics' not supported")  # shouldn't happen
 
   # add class and return object
-  class(spss) <- "SPSSTable"
+  class(spss) <- "SPSS_table"
   spss
 
 }
@@ -340,10 +339,10 @@ print.chisq_test_SPSS <- function(x, statistics = c("frequencies", "test"),
   if ("frequencies" %in% statistics) {
     cat("\n")
     # put frequencies into SPSS format
-    spss <- toSPSS(x, digits = digits, statistics = "frequencies",
-                   version = version, ...)
+    spss <- to_SPSS(x, digits = digits, statistics = "frequencies",
+                    version = version, ...)
     # print LaTeX table
-    toLatex(spss, version = version)
+    to_latex(spss, version = version)
     cat("\n")
     count <- count + 1
   }
@@ -353,10 +352,10 @@ print.chisq_test_SPSS <- function(x, statistics = c("frequencies", "test"),
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
     # put test results into SPSS format
-    spss <- toSPSS(x, digits = digits, statistics = "test",
-                   version = version, ...)
+    spss <- to_SPSS(x, digits = digits, statistics = "test",
+                    version = version, ...)
     # print LaTeX table
-    toLatex(spss, version = version)
+    to_latex(spss, version = version)
     cat("\n")
   }
 

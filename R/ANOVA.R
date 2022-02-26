@@ -9,10 +9,10 @@
 #' printed as a LaTeX table that mimics the look of SPSS output, and a profile
 #' plot of the results mimics the look of SPSS graphs.
 #'
-#' The \code{print} method first calls the \code{toSPSS} method followed by
-#' \code{\link[=toLatex.SPSSTable]{toLatex}}.  Further customization can be
-#' done by calling those two functions separately, and modifying the object
-#' returned by \code{toSPSS}.
+#' The \code{print} method first calls the \code{to_SPSS} method followed
+#' by \code{\link{to_latex}}.  Further customization can be done by calling
+#' those two functions separately, and modifying the object returned by
+#' \code{to_SPSS}.
 #'
 #' @param data  a data frame containing the variables.
 #' @param variable  a character string specifying the numeric variable of
@@ -25,7 +25,7 @@
 #' @param statistics  a character string or vector specifying which SPSS tables
 #' to produce.  Available options are \code{"descriptives"} for descriptive
 #' statistics, \code{"variance"} for Levene's test on homogeneity of the
-#' variances, and \code{"test"} for ANOVA results.  For the \code{toSPSS}
+#' variances, and \code{"test"} for ANOVA results.  For the \code{to_SPSS}
 #' method, only one option is allowed (the default is the table of ANOVA
 #' results), but the \code{print} method allows several options (the default
 #' is to print all tables).
@@ -37,7 +37,7 @@
 #' differently.
 #' @param digits  an integer giving the number of digits after the comma to be
 #' printed in the SPSS tables.
-#' @param \dots  for  the \code{toSPSS} and \code{print} methods, additional
+#' @param \dots  for  the \code{to_SPSS} and \code{print} methods, additional
 #' arguments to be passed down to \code{\link{format_SPSS}}.  For the
 #' \code{plot} method, additional arguments to be passed down to
 #' \code{\link{linesSPSS}}, in particular graphical parameters.
@@ -66,11 +66,10 @@
 #'   (\code{"one-way"} or \code{"two-way"}).}
 #' }
 #'
-#' The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+#' The \code{to_SPSS} method returns an object of class \code{"SPSS_table"}
 #' which contains all relevant information in the required format to produce
-#' the LaTeX table.  See \code{\link[=toLatex.SPSSTable]{toLatex}} for possible
-#' components and how to further customize the LaTeX table based on the
-#' returned object.
+#' the LaTeX table.  See \code{\link{to_latex}} for possible components and
+#' how to further customize the LaTeX table based on the returned object.
 #'
 #' The \code{print} method produces a LaTeX table that mimics the look of SPSS
 #' output.
@@ -268,10 +267,10 @@ ANOVA <- function(data, variable, group, conf.level = 0.95) {
 #' @rdname ANOVA
 #' @export
 
-toSPSS.ANOVA_SPSS <- function(object,
-                              statistics = c("test", "variance", "descriptives"),
-                              version = r2spss_options$get("version"),
-                              digits = 3, ...) {
+to_SPSS.ANOVA_SPSS <- function(object,
+                               statistics = c("test", "variance", "descriptives"),
+                               version = r2spss_options$get("version"),
+                               digits = 3, ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
@@ -290,22 +289,22 @@ toSPSS.ANOVA_SPSS <- function(object,
       # merged header for confidence interval
       lower <- grep("Lower", cn)
       upper <- grep("Upper", cn)
-      ciText <- paste0(format(100*object$conf.level, digits = digits),
-                       "\\% Confidence\nInterval for Mean")
+      ci_text <- paste0(format(100*object$conf.level, digits = digits),
+                        "\\% Confidence\nInterval for Mean")
       # top-level header
       top <- data.frame(first = c(seq_len(lower-1), lower,
                                   seq(from = upper+1, to = nc)),
                         last = c(seq_len(lower-1), upper,
                                  seq(from = upper+1, to = nc)),
-                        text = c(rep.int("", lower-1), ciText,
+                        text = c(rep.int("", lower-1), ci_text,
                                  rep.int("", nc-upper)))
       # bottom-level header
-      bottom <- wrapText(cn, limit = 8)
+      bottom <- wrap_text(cn, limit = 8)
       # construct header
       header <- list(top, bottom)
       ## construct list containing all necessary information
       spss <- list(table = formatted, main = "Descriptives", sub = sub,
-                   header = header, rowNames = TRUE, info = 0)
+                   header = header, row_names = TRUE, info = 0)
     } else if (object$type == "two-way") {
       # extract relevant information
       descriptives <- object$descriptives
@@ -318,13 +317,13 @@ toSPSS.ANOVA_SPSS <- function(object,
       # format table nicely
       formatted <- format_SPSS(descriptives, digits = digits, ...)
       # define header with line breaks
-      header <- wrapText(names(descriptives), limit = 12)
+      header <- wrap_text(names(descriptives), limit = 12)
       # define positions for major grid lines
       major <- seq(from = nLevels[2], by = nLevels[2],
                    length.out = nLevels[1] - 1)
       # construct list containing all necessary information
       spss <- list(table = formatted, main = "Descriptive Statistics",
-                   sub = sub, header = header, rowNames = FALSE, info = 2,
+                   sub = sub, header = header, row_names = FALSE, info = 2,
                    major = major)
     } else stop("type of ANOVA not supported")
 
@@ -363,12 +362,12 @@ toSPSS.ANOVA_SPSS <- function(object,
         if (is.null(args$check_int)) args$check_int <- names(levene) == "df2"
         formatted <- do.call(format_SPSS, args)
         # define header with line breaks
-        header <- c("", "", wrapText(names(levene), limit = 8))
+        header <- c("", "", wrap_text(names(levene), limit = 8))
         # define nice labels for the rows
-        rowLabels <- c(mean = "Mean", median = "Median",
-                       adjusted = "Median and\nwith adjusted df",
-                       trimmed = "trimmed\nmean")
-        rowLabels <- paste("Based on", rowLabels[row.names(levene)])
+        row_labels <- c(mean = "Mean", median = "Median",
+                        adjusted = "Median and\nwith adjusted df",
+                        trimmed = "trimmed\nmean")
+        row_labels <- paste("Based on", row_labels[row.names(levene)])
         # # define column widths
         # width <- c("", "0.3\\linewidth", rep.int("", ncol(levene)))
       }
@@ -377,13 +376,13 @@ toSPSS.ANOVA_SPSS <- function(object,
         if (legacy) {
           spss <- list(table = formatted,
                        main = "Test of Homogeneity of Variances",
-                       header = TRUE, rowNames = FALSE, info = 0,
+                       header = TRUE, row_names = FALSE, info = 0,
                        version = "legacy")
         } else {
           spss <- list(table = formatted,
                        main = "Tests of Homogeneity of Variances",
                        header = header, label = object$variable,
-                       rowNames = rowLabels, info = 0, #width = width,
+                       row_names = row_labels, info = 0, #width = width,
                        version = "modern")
         }
       } else if (object$type == "two-way") {
@@ -402,10 +401,11 @@ toSPSS.ANOVA_SPSS <- function(object,
           # define footnotes
           footnotes <- data.frame(marker = c("", "a"), row = c(NA, "main"),
                                   column = rep(NA_integer_, 2),
-                                  text = wrapText(footnotes, limit = c(35, 32)))
+                                  text = wrap_text(footnotes,
+                                                   limit = c(35, 32)))
           # construct list
           spss <- list(table = formatted, main = main, sub = sub,
-                       header = TRUE, rowNames = FALSE, info = 0,
+                       header = TRUE, row_names = FALSE, info = 0,
                        footnotes = footnotes, version = "legacy")
         } else {
           # define main title
@@ -414,12 +414,12 @@ toSPSS.ANOVA_SPSS <- function(object,
           footnotes <- data.frame(marker = c("", "a", "b"),
                                   row = c(NA, "main", "main"),
                                   column = rep(NA_integer_, 3),
-                                  text = wrapText(footnotes,
-                                                  limit = c(75, 72, 72)))
+                                  text = wrap_text(footnotes,
+                                                   limit = c(75, 72, 72)))
           # construct list
           spss <- list(table = formatted, main = main, header = header,
-                       label = object$variable, rowNames = rowLabels, info = 0,
-                       # width = width,
+                       label = object$variable, row_names = row_labels,
+                       info = 0, # width = width,
                        footnotes = footnotes, version = "modern")
         }
       } else stop("type of ANOVA not supported")
@@ -451,24 +451,24 @@ toSPSS.ANOVA_SPSS <- function(object,
       ## construct list containing all necessary information
       if (object$type == "one-way") {
         spss <- list(table = formatted, main = "ANOVA", sub = sub,
-                     header = TRUE, rowNames = TRUE, info = 0,
+                     header = TRUE, row_names = TRUE, info = 0,
                      version = version)
       } else if (object$type == "two-way") {
         # define header with line breaks
-        header <- c("Source", wrapText(names(test), limit = 12))
+        header <- c("Source", wrap_text(names(test), limit = 12))
         # define footnotes
-        RSq <- 1 - object$test["Error", "Sum Sq"] / object$test["Corrected Total", "Sum Sq"]
-        AdjRSq <- 1 - object$test["Error", "Mean Sq"] /
+        rsq <- 1 - object$test["Error", "Sum Sq"] / object$test["Corrected Total", "Sum Sq"]
+        adjrsq <- 1 - object$test["Error", "Mean Sq"] /
           (object$test["Corrected Total", "Sum Sq"] / object$test["Corrected Total", "Df"])
-        footnote <- paste0("R Squared = ", format_SPSS(RSq, digits=digits),
+        footnote <- paste0("R Squared = ", format_SPSS(rsq, digits=digits),
                            " (Adjusted R Squared = ",
-                           format_SPSS(AdjRSq, digits=digits), ")")
+                           format_SPSS(adjrsq, digits=digits), ")")
         footnotes <- data.frame(marker = "a", row = 1, column = 1,
                                 text = footnote)
         # construct list
         spss <- list(table = formatted,
                      main = "Tests of Between-Subject Effects", sub = sub,
-                     header = header, rowNames = TRUE, info = 0,
+                     header = header, row_names = TRUE, info = 0,
                      footnotes = footnotes, version = version)
       }
 
@@ -477,7 +477,7 @@ toSPSS.ANOVA_SPSS <- function(object,
   }
 
   # add class and return object
-  class(spss) <- "SPSSTable"
+  class(spss) <- "SPSS_table"
   spss
 
 }
@@ -499,9 +499,9 @@ print.ANOVA_SPSS <- function(x,
   if ("descriptives" %in% statistics) {
     cat("\n")
     # put frequencies into SPSS format
-    spss <- toSPSS(x, statistics = "descriptives", version = version, ...)
+    spss <- to_SPSS(x, statistics = "descriptives", version = version, ...)
     # print LaTeX table
-    toLatex(spss, version = version)
+    to_latex(spss, version = version)
     cat("\n")
     count <- count + 1
   }
@@ -511,9 +511,9 @@ print.ANOVA_SPSS <- function(x,
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
     # put frequencies into SPSS format
-    spss <- toSPSS(x, statistics = "variance", version = version, ...)
+    spss <- to_SPSS(x, statistics = "variance", version = version, ...)
     # print LaTeX table
-    toLatex(spss, version = version)
+    to_latex(spss, version = version)
     cat("\n")
   }
 
@@ -522,9 +522,9 @@ print.ANOVA_SPSS <- function(x,
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
     # put frequencies into SPSS format
-    spss <- toSPSS(x, statistics = "test", version = version, ...)
+    spss <- to_SPSS(x, statistics = "test", version = version, ...)
     # print LaTeX table
-    toLatex(spss, version = version)
+    to_latex(spss, version = version)
     cat("\n")
   }
 

@@ -183,22 +183,22 @@ and \verb+\begin{document}+.
 Functions in package \pkg{r2spss} create certain \proglang{R} objects, whose
 \code{print()} method prints the \proglang{LaTeX} tables that mimic the
 corresponding \proglang{SPSS} output.  Essentially, such a \code{print()}
-method first calls function \code{toSPSS()}, which produces an object of class
-\code{"SPSSTable"}.  Its component \code{table} contains a data frame of the
+method first calls function \code{to_SPSS()}, which produces an object of class
+\code{"SPSS_table"}.  Its component \code{table} contains a data frame of the
 results in SPSS format.  Other components of the object contain any necessary
 additional information of the SPSS table, such as the main title, the header
 layout, or footnotes.  Afterwards, the \code{print()} method calls function
-\code{toLatex()} with the \code{"SPSSTable"} object to print the
+\code{to_latex()} with the \code{"SPSS_table"} object to print the
 \proglang{LaTeX} table.
 
-These two function can also be called separately by the user, which allows for
-further customization of the \proglang{LaTeX} tables.  Some examples can be
-found in the help file of \code{toSPSS()} or the \code{toLatex()} method for
-\code{"SPSSTable"} objects, which can be accessed from the \proglang{R} console
-with \code{?toSPSS} and \code{?toLatex.SPSSTable}, respectively.  In addition,
-the \code{"data.frame"} method of \code{toLatex()} allows to extend the
-functionality of \pkg{r2spss} with additional \proglang{LaTeX} tables that
-mimic the look of \proglang{SPSS} output.
+These two function can also be called separately by the user, which allows
+for further customization of the \proglang{LaTeX} tables.  Some examples
+can be found in the help file of \code{to_SPSS()} or \code{to_latex()},
+which can be accessed from the \proglang{R} console with \code{?to_SPSS} and
+\code{?to_latex}, respectively.  In addition, the \code{"data.frame"} method
+of \code{to_latex()} allows to extend the functionality of \pkg{r2spss} with
+additional \proglang{LaTeX} tables that mimic the look of \proglang{SPSS}
+output.
 
 Package \pkg{r2spss} can create output that mimics the look of current
 \proglang{SPSS} versions, as well as the look of older versions.  The above

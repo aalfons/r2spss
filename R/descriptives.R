@@ -9,10 +9,10 @@
 #' observations, minimum, maximum, mean, standard deviaiton).  The output is
 #' printed as a LaTeX table that mimics the look of SPSS output.
 #'
-#' The \code{print} method first calls the \code{toSPSS} method followed by
-#' \code{\link[=toLatex.SPSSTable]{toLatex}}.  Further customization can be
-#' done by calling those two functions separately, and modifying the object
-#' returned by \code{toSPSS}.
+#' The \code{print} method first calls the \code{to_SPSS} method followed
+#' by \code{\link{to_latex}}.  Further customization can be done by calling
+#' those two functions separately, and modifying the object returned by
+#' \code{to_SPSS}.
 #'
 #' @param data  a data frame containing the variables.
 #' @param variables  a character vector specifying numeric variables for which
@@ -37,11 +37,10 @@
 #'   \item{\code{n}}{an integer giving the number of observations.}
 #' }
 #'
-#' The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+#' The \code{to_SPSS} method returns an object of class \code{"SPSS_table"}
 #' which contains all relevant information in the required format to produce
-#' the LaTeX table.  See \code{\link[=toLatex.SPSSTable]{toLatex}} for possible
-#' components and how to further customize the LaTeX table based on the
-#' returned object.
+#' the LaTeX table.  See \code{\link{to_latex}} for possible components and
+#' how to further customize the LaTeX table based on the returned object.
 #'
 #' The \code{print} method produces a LaTeX table that mimics the look of SPSS
 #' output.
@@ -101,24 +100,24 @@ descriptives <- function(data, variables) {
 #' @rdname descriptives
 #' @export
 
-toSPSS.descriptives_SPSS <- function(object, digits = 2, ...) {
+to_SPSS.descriptives_SPSS <- function(object, digits = 2, ...) {
   # put table of results into SPSS format
   p <- ncol(object$descriptives)
   descriptives <- rbind(object$descriptives,
                         "Valid N (listwise)" = c(object$n, rep.int(NA, p)))
   # define header with line breaks
-  colNames <- names(descriptives)
-  header <- c("", wrapText(colNames, limit = 10))
+  col_names <- names(descriptives)
+  header <- c("", wrap_text(col_names, limit = 10))
   # format table nicely
   args <- list(descriptives, digits = digits, ...)
   if (is.null(args$check_int)) {
-    args$check_int <- colNames %in% c("Minimum", "Maximum")
+    args$check_int <- col_names %in% c("Minimum", "Maximum")
   }
   formatted <- do.call(format_SPSS, args)
   # construct return object
   spss <- list(table = formatted, main = "Descriptive Statistics",
-               header = header, rowNames = TRUE, info = 0)
-  class(spss) <- "SPSSTable"
+               header = header, row_names = TRUE, info = 0)
+  class(spss) <- "SPSS_table"
   spss
 }
 
@@ -127,11 +126,11 @@ toSPSS.descriptives_SPSS <- function(object, digits = 2, ...) {
 #' @export
 
 print.descriptives_SPSS <- function(x, version = r2spss_options$get("version"),
-                                   ...) {
+                                    ...) {
   # initializations
   version <- match.arg(version, choices = get_version_values())
   # put table of results into SPSS format
-  spss <- toSPSS(x, ...)
+  spss <- to_SPSS(x, ...)
   # print LaTeX table
-  toLatex(spss, version = version)
+  to_latex(spss, version = version)
 }

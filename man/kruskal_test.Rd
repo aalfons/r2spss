@@ -2,14 +2,14 @@
 % Please edit documentation in R/kruskal_test.R
 \name{kruskal_test}
 \alias{kruskal_test}
-\alias{toSPSS.kruskal_test_SPSS}
+\alias{to_SPSS.kruskal_test_SPSS}
 \alias{print.kruskal_test_SPSS}
 \alias{kruskalTest}
 \title{Kruskal-Wallis Test}
 \usage{
 kruskal_test(data, variable, group)
 
-\method{toSPSS}{kruskal_test_SPSS}(
+\method{to_SPSS}{kruskal_test_SPSS}(
   object,
   statistics = c("test", "ranks"),
   version = r2spss_options$get("version"),
@@ -40,7 +40,7 @@ by function \code{kruskal_test}.}
 
 \item{statistics}{a character string or vector specifying which SPSS tables
 to produce.  Available options are \code{"ranks"} for a summary of the ranks
-and \code{"test"} for test results.  For the \code{toSPSS} method, only one
+and \code{"test"} for test results.  For the \code{to_SPSS} method, only one
 option is allowed (the default is the table of test results), but the
 \code{print} method allows several options (the default is to print all
 tables).}
@@ -51,8 +51,8 @@ older versions (<24; \code{"legacy"}).  The main differences in terms of
 content are the label of the test statistic and that small p-values are
 displayed differently.}
 
-\item{digits}{for the \code{toSPSS} method, an integer giving the number of
-digits after the comma to be printed in the SPSS table.  For the
+\item{digits}{for the \code{to_SPSS} method, an integer giving the number
+of digits after the comma to be printed in the SPSS table.  For the
 \code{print} method, this should be an integer vector of length 2, with the
 first element corresponding to the number of digits in table with the
 summary of the ranks, and the second element corresponding to the number of
@@ -74,11 +74,10 @@ An object of class \code{"kruskal_test_SPSS"} with the following components:
   grouping variable.}
 }
 
-The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+The \code{to_SPSS} method returns an object of class \code{"SPSS_table"}
 which contains all relevant information in the required format to produce
-the LaTeX table.  See \code{\link[=toLatex.SPSSTable]{toLatex}} for possible
-components and how to further customize the LaTeX table based on the
-returned object.
+the LaTeX table.  See \code{\link{to_latex}} for possible components and
+how to further customize the LaTeX table based on the returned object.
 
 The \code{print} method produces a LaTeX table that mimics the look of SPSS
 output.
@@ -88,10 +87,10 @@ Perform a Kruskal-Wallis test on variables of a data set.  The output is
 printed as a LaTeX table that mimics the look of SPSS output.
 }
 \details{
-The \code{print} method first calls the \code{toSPSS} method followed by
-\code{\link[=toLatex.SPSSTable]{toLatex}}.  Further customization can be
-done by calling those two functions separately, and modifying the object
-returned by \code{toSPSS}.
+The \code{print} method first calls the \code{to_SPSS} method followed
+by \code{\link{to_latex}}.  Further customization can be done by calling
+those two functions separately, and modifying the object returned by
+\code{to_SPSS}.
 }
 \note{
 LaTeX tables that mimic recent versions of SPSS (\code{version = "modern"})

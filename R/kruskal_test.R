@@ -8,10 +8,10 @@
 #' Perform a Kruskal-Wallis test on variables of a data set.  The output is
 #' printed as a LaTeX table that mimics the look of SPSS output.
 #'
-#' The \code{print} method first calls the \code{toSPSS} method followed by
-#' \code{\link[=toLatex.SPSSTable]{toLatex}}.  Further customization can be
-#' done by calling those two functions separately, and modifying the object
-#' returned by \code{toSPSS}.
+#' The \code{print} method first calls the \code{to_SPSS} method followed
+#' by \code{\link{to_latex}}.  Further customization can be done by calling
+#' those two functions separately, and modifying the object returned by
+#' \code{to_SPSS}.
 #'
 #' @param data  a data frame containing the variables.
 #' @param variable  a character string specifying the numeric variable of
@@ -21,7 +21,7 @@
 #' by function \code{kruskal_test}.
 #' @param statistics  a character string or vector specifying which SPSS tables
 #' to produce.  Available options are \code{"ranks"} for a summary of the ranks
-#' and \code{"test"} for test results.  For the \code{toSPSS} method, only one
+#' and \code{"test"} for test results.  For the \code{to_SPSS} method, only one
 #' option is allowed (the default is the table of test results), but the
 #' \code{print} method allows several options (the default is to print all
 #' tables).
@@ -30,8 +30,8 @@
 #' older versions (<24; \code{"legacy"}).  The main differences in terms of
 #' content are the label of the test statistic and that small p-values are
 #' displayed differently.
-#' @param digits  for the \code{toSPSS} method, an integer giving the number of
-#' digits after the comma to be printed in the SPSS table.  For the
+#' @param digits  for the \code{to_SPSS} method, an integer giving the number
+#' of digits after the comma to be printed in the SPSS table.  For the
 #' \code{print} method, this should be an integer vector of length 2, with the
 #' first element corresponding to the number of digits in table with the
 #' summary of the ranks, and the second element corresponding to the number of
@@ -52,11 +52,10 @@
 #'   grouping variable.}
 #' }
 #'
-#' The \code{toSPSS} method returns an object of class \code{"SPSSTable"}
+#' The \code{to_SPSS} method returns an object of class \code{"SPSS_table"}
 #' which contains all relevant information in the required format to produce
-#' the LaTeX table.  See \code{\link[=toLatex.SPSSTable]{toLatex}} for possible
-#' components and how to further customize the LaTeX table based on the
-#' returned object.
+#' the LaTeX table.  See \code{\link{to_latex}} for possible components and
+#' how to further customize the LaTeX table based on the returned object.
 #'
 #' The \code{print} method produces a LaTeX table that mimics the look of SPSS
 #' output.
@@ -119,9 +118,9 @@ kruskal_test <- function(data, variable, group) {
 #' @rdname kruskal_test
 #' @export
 
-toSPSS.kruskal_test_SPSS <- function(object, statistics = c("test", "ranks"),
-                                     version = r2spss_options$get("version"),
-                                     digits = NULL, ...) {
+to_SPSS.kruskal_test_SPSS <- function(object, statistics = c("test", "ranks"),
+                                      version = r2spss_options$get("version"),
+                                      digits = NULL, ...) {
 
   ## initializations
   statistics <- match.arg(statistics)
@@ -141,7 +140,7 @@ toSPSS.kruskal_test_SPSS <- function(object, statistics = c("test", "ranks"),
     header <- c("", object$group, names(ranks))
     # construct list containing all necessary information
     spss <- list(table = formatted, main = "Ranks", header = header,
-                 label = object$variable, rowNames = TRUE, info = 0)
+                 label = object$variable, row_names = TRUE, info = 0)
 
   } else if (statistics == "test") {
 
@@ -170,13 +169,13 @@ toSPSS.kruskal_test_SPSS <- function(object, statistics = c("test", "ranks"),
                             text = footnotes)
     # construct list containing all necessary information
     spss <- list(table = test, main = "Test Statistics",
-                 header = TRUE, rowNames = TRUE, info = 0,
+                 header = TRUE, row_names = TRUE, info = 0,
                  footnotes = footnotes, version = version)
 
   } else stop ("type of 'statistics' not supported")  # shouldn't happen
 
   # add class and return object
-  class(spss) <- "SPSSTable"
+  class(spss) <- "SPSS_table"
   spss
 
 }
@@ -199,10 +198,10 @@ print.kruskal_test_SPSS <- function(x, statistics = c("ranks", "test"),
   if ("ranks" %in% statistics) {
     cat("\n")
     # put table into SPSS format
-    spss <- toSPSS(x, digits = digits[1], statistics = "ranks",
-                   version = version, ...)
+    spss <- to_SPSS(x, digits = digits[1], statistics = "ranks",
+                    version = version, ...)
     # print LaTeX table
-    toLatex(spss, version = version)
+    to_latex(spss, version = version)
     cat("\n")
     count <- count + 1
   }
@@ -212,10 +211,10 @@ print.kruskal_test_SPSS <- function(x, statistics = c("ranks", "test"),
     if (count == 0) cat("\n")
     else cat("\\medskip\n")
     # put test results into SPSS format
-    spss <- toSPSS(x, digits = digits[2], statistics = "test",
-                   version = version, ...)
+    spss <- to_SPSS(x, digits = digits[2], statistics = "test",
+                    version = version, ...)
     # print LaTeX table
-    toLatex(spss, version = version)
+    to_latex(spss, version = version)
     cat("\n")
   }
 
