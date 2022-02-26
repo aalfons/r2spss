@@ -12,9 +12,9 @@ Changes in r2spss version 0.3.0
     + All plots and tables allow to easily switch between look of modern SPSS
       versions or older ones.
 
-    + Modern SPSS tables have more LaTeX requirements, hence function
-      r2spss.sty() puts a LaTeX style file of the same name in a specified
-      folder.
+    + Tables that mimic modern SPSS versions have more LaTeX requirements,
+      hence function r2spss.sty() puts a LaTeX style file of the same name
+      in a specified folder.
 
     + Functions now use under_scores rather than camelCase.
 
