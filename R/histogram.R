@@ -145,9 +145,9 @@ histogram <- function(data, variable, bins = NULL, normal = FALSE,
           axis.text.y.right = element_text(vjust = 1,
                                            margin = margin(l = 0.5,
                                                            unit = "line"))) +
-    scale_x_continuous(labels = numberSPSS, limits = xlim,
+    scale_x_continuous(labels = number_SPSS, limits = xlim,
                        expand = expansion(mult = 0)) +
-    scale_y_continuous(labels = numberSPSS, limits = ylim,
+    scale_y_continuous(labels = number_SPSS, limits = ylim,
                        expand = expansion(mult = c(0, expand)),
                        sec.axis = dup_axis(name = NULL,
                                            breaks = ylim[2],

@@ -612,7 +612,7 @@ plot.ANOVA_SPSS <- function(x, y, which = 1,
   # finalize plot
   p <- p +
     theme_SPSS(version = version, scale.x = "discrete") +
-    scale_y_continuous(labels = numberSPSS) +
+    scale_y_continuous(labels = number_SPSS) +
     labs(title = title, x = xlab, y = ylab)
   # return plot
   p

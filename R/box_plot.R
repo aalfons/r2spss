@@ -164,9 +164,9 @@ box_plot <- function(data, variables, group = NULL,
   }
   # finalize plot
   p <- p + theme_SPSS(version = version, scale.x = scales$x, scale.y = scales$y)
-  if (scales$x == "continuous") p <- p + scale_x_continuous(labels = numberSPSS)
-  else if (cut.names) p <- p + scale_x_discrete(labels = substrSPSS)
-  if (scales$y == "continuous") p <- p + scale_y_continuous(labels = numberSPSS)
+  if (scales$x == "continuous") p <- p + scale_x_continuous(labels = number_SPSS)
+  else if (cut.names) p <- p + scale_x_discrete(labels = substr_SPSS)
+  if (scales$y == "continuous") p <- p + scale_y_continuous(labels = number_SPSS)
   p <- p + labs(x = xlab, y = ylab)
   # return plot
   p

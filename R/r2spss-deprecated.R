@@ -199,7 +199,7 @@ linesSPSS <- function(data, variables, index = NULL,
 # internal function for matrix line plot with different defaults
 .matlines <- function(x, y, ..., type = c("l", "o"), xlim = NULL, ylim = NULL,
                       mar = NULL, bg = "#F0F0F0", lty = 1, lwd = 1.5, pch = 1,
-                      col = paletteSPSS(), main = NULL, xlab = NULL,
+                      col = palette_SPSS(), main = NULL, xlab = NULL,
                       ylab = NULL, title = NULL, font.lab = 2, cex.lab = 1.2,
                       las = 1,
                       # the following arguments are currently ignored

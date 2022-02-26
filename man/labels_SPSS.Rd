@@ -2,17 +2,23 @@
 % Please edit documentation in R/ggplot2.R
 \name{labels_SPSS}
 \alias{labels_SPSS}
+\alias{number_SPSS}
 \alias{numberSPSS}
+\alias{substr_SPSS}
 \alias{substrSPSS}
 \title{Format axis tick labels similar to SPSS}
 \usage{
+number_SPSS(x, big.mark = "", ...)
+
 numberSPSS(x, big.mark = "", ...)
+
+substr_SPSS(x, start = 1, stop = 8)
 
 substrSPSS(x, start = 1, stop = 8)
 }
 \arguments{
-\item{x}{for \code{numberSPSS}, a numeric vector to format.  For
-\code{substrSPSS}, a vector of character strings to be cut.}
+\item{x}{for \code{number_SPSS}, a numeric vector to format.  For
+\code{substr_SPSS}, a vector of character strings to be cut.}
 
 \item{big.mark}{a character string to be inserted every 3 digits to
 separate thousands.  The default is an empty string for no separation.}
@@ -32,14 +38,14 @@ Format axis tick labels in a similar manner to SPSS to mimic the look of
 SPSS graphs.
 }
 \details{
-\code{numberSPSS} is a wrapper for \code{\link[scales]{number}} that by
+\code{number_SPSS} is a wrapper for \code{\link[scales]{number}} that by
 default does not put a separator every 3 digits so separate thousands.  It
 mainly exists to prevent scientific notation in axis tick labels, hence it
 is typically supplied as the \code{labels} argument of
 \code{\link[ggplot2]{scale_x_continuous}} or
 \code{\link[ggplot2]{scale_y_continuous}}.
 
-\code{substrSPSS} is a wrapper for \code{\link{substr}} to cut character
+\code{substr_SPSS} is a wrapper for \code{\link{substr}} to cut character
 strings by default to the first 8 characters, which is SPSS behavior for
 the tick labels of a discrete axis in some (but not all) plots.  It is
 typically supplied as the  \code{labels} argument of

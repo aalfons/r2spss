@@ -97,18 +97,13 @@ line_plot <- function(data, variables, index = NULL,
     ylab <- "Value"
   }
   # extract scales of axes
-  scales <- sapply(layer_scales(p), function(scale) {
+  scales <- lapply(layer_scales(p), function(scale) {
     if (scale$is_discrete()) "discrete" else "continuous"
   })
   # finalize plot
-  p <- p +
-    theme_SPSS(version = version, scale.x = scales["x"], scale.y = scales["y"])
-  if (scales["x"] == "continuous") {
-    p <- p + scale_x_continuous(labels = numberSPSS)
-  }
-  if (scales["y"] == "continuous") {
-    p <- p + scale_y_continuous(labels = numberSPSS)
-  }
+  p <- p + theme_SPSS(version = version, scale.x = scales$x, scale.y = scales$y)
+  if (scales$x == "continuous") p <- p + scale_x_continuous(labels = number_SPSS)
+  if (scales$y == "continuous") p <- p + scale_y_continuous(labels = number_SPSS)
   p <- p + labs(x = xlab, y = ylab)
   # return plot
   p

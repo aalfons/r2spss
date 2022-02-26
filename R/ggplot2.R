@@ -232,7 +232,7 @@ theme_SPSS <- function(base_size = 12, base_family = "",
 #' palette of recent SPSS versions (\code{"modern"}) or older versions (<24;
 #' \code{"legacy"}).
 #'
-#' @return  \code{paletteSPSS} returns a character vector specifying up to 30
+#' @return  \code{palette_SPSS} returns a character vector specifying up to 30
 #' colors as used by SPSS.
 #'
 #' @author Andreas Alfons
@@ -258,7 +258,7 @@ theme_SPSS <- function(base_size = 12, base_family = "",
 #' @importFrom grDevices rgb
 #' @export
 
-paletteSPSS <- function(n = NULL, version = r2spss_options$get("version")) {
+palette_SPSS <- function(n = NULL, version = r2spss_options$get("version")) {
   # initializations
   version <- match.arg(version, choices = get_version_values())
   # define red, green and blue vectors
@@ -295,7 +295,16 @@ paletteSPSS <- function(n = NULL, version = r2spss_options$get("version")) {
 }
 
 
-#' @rdname paletteSPSS
+#' @rdname palette_SPSS
+#' @export
+
+paletteSPSS <- function(n = NULL, version = r2spss_options$get("version")) {
+  .Deprecated("palette_SPSS")
+  palette_SPSS(n, version = version)
+}
+
+
+#' @rdname palette_SPSS
 #'
 #' @param direction  an integer giving the direction to travel through the
 #' palette.  Possible values are 1 for forward (the default) and -1 for
@@ -312,14 +321,14 @@ SPSS_pal <- function(version = r2spss_options$get("version"), direction = 1) {
   version <- match.arg(version, choices = get_version_values())
   # return function to be used for discrete color scales in ggolot2
   function(n) {
-    pal <- suppressWarnings(paletteSPSS(n, version))
+    pal <- suppressWarnings(palette_SPSS(n, version))
     if (direction == -1) pal <- rev(pal)
     pal
   }
 }
 
 
-#' @rdname paletteSPSS
+#' @rdname palette_SPSS
 #'
 #' @param \dots  additional arguments to be passed to
 #' \code{\link[ggplot2]{discrete_scale}}.
@@ -339,7 +348,7 @@ scale_color_SPSS <- function(..., version = r2spss_options$get("version"),
 }
 
 
-#' @rdname paletteSPSS
+#' @rdname palette_SPSS
 #' @export
 
 scale_colour_SPSS <- function(..., version = r2spss_options$get("version"),
@@ -348,7 +357,7 @@ scale_colour_SPSS <- function(..., version = r2spss_options$get("version"),
 }
 
 
-#' @rdname paletteSPSS
+#' @rdname palette_SPSS
 #' @export
 
 scale_fill_SPSS <- function(..., version = r2spss_options$get("version"),
@@ -362,14 +371,14 @@ scale_fill_SPSS <- function(..., version = r2spss_options$get("version"),
 #' Format axis tick labels in a similar manner to SPSS to mimic the look of
 #' SPSS graphs.
 #'
-#' \code{numberSPSS} is a wrapper for \code{\link[scales]{number}} that by
+#' \code{number_SPSS} is a wrapper for \code{\link[scales]{number}} that by
 #' default does not put a separator every 3 digits so separate thousands.  It
 #' mainly exists to prevent scientific notation in axis tick labels, hence it
 #' is typically supplied as the \code{labels} argument of
 #' \code{\link[ggplot2]{scale_x_continuous}} or
 #' \code{\link[ggplot2]{scale_y_continuous}}.
 #'
-#' \code{substrSPSS} is a wrapper for \code{\link{substr}} to cut character
+#' \code{substr_SPSS} is a wrapper for \code{\link{substr}} to cut character
 #' strings by default to the first 8 characters, which is SPSS behavior for
 #' the tick labels of a discrete axis in some (but not all) plots.  It is
 #' typically supplied as the  \code{labels} argument of
@@ -378,8 +387,8 @@ scale_fill_SPSS <- function(..., version = r2spss_options$get("version"),
 #'
 #' @name labels_SPSS
 #'
-#' @param x  for \code{numberSPSS}, a numeric vector to format.  For
-#' \code{substrSPSS}, a vector of character strings to be cut.
+#' @param x  for \code{number_SPSS}, a numeric vector to format.  For
+#' \code{substr_SPSS}, a vector of character strings to be cut.
 #' @param big.mark  a character string to be inserted every 3 digits to
 #' separate thousands.  The default is an empty string for no separation.
 #' @param \dots  additional arguments to be passed to
@@ -399,7 +408,7 @@ NULL
 #' @importFrom scales number
 #' @export
 
-numberSPSS <- function(x, big.mark = "", ...) {
+number_SPSS <- function(x, big.mark = "", ...) {
   scales::number(x, big.mark = big.mark, ...)
 }
 
@@ -407,8 +416,26 @@ numberSPSS <- function(x, big.mark = "", ...) {
 #' @rdname labels_SPSS
 #' @export
 
-substrSPSS <- function(x, start = 1, stop = 8) {
+numberSPSS <- function(x, big.mark = "", ...) {
+  .Deprecated("number_SPSS")
+  number_SPSS(x, big.mark = big.mark, ...)
+}
+
+
+#' @rdname labels_SPSS
+#' @export
+
+substr_SPSS <- function(x, start = 1, stop = 8) {
   substr(x, start = start, stop = stop)
+}
+
+
+#' @rdname labels_SPSS
+#' @export
+
+substrSPSS <- function(x, start = 1, stop = 8) {
+  .Deprecated("substr_SPSS")
+  substr_SPSS(x, start = start, stop = stop)
 }
 
 
