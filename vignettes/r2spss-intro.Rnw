@@ -226,13 +226,14 @@ r2spss_options$set(version = "legacy")
 \subsection[Dynamic documents and knitr options]%
 {Dynamic documents and \pkg{knitr} options}
 
-Package \pkg{r2spss} is the most useful when creating dynamic documents with
-tools such as the \proglang{R} package \pkg{knitr} \citep{xie15, knitr}.  When
-creating \proglang{LaTeX} tables in \proglang{R} code chunks with \pkg{knitr},
-the output of the chunk should be written directly into the output document by
-setting the chunk option \verb+results='asis'+.  For more information on
-\pkg{knitr} chunk options, in particular various options for figures, please
-see \url{https://yihui.org/knitr/options/}.
+Package \pkg{r2spss} is the most useful when writing dynamic \proglang{LaTeX}
+documents with tools such as the \proglang{R} package \pkg{knitr}
+\citep{xie15, knitr}.  When creating \proglang{LaTeX} tables in \proglang{R}
+code chunks with \pkg{knitr}, the output of the chunk should be written
+directly into the output document by setting the chunk option
+\verb+results='asis'+.  For more information on \pkg{knitr} chunk options,
+in particular various options for figures, please see
+\url{https://yihui.org/knitr/options/}.
 
 
 %% -- Illustrations ------------------------------------------------------------

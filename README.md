@@ -3,7 +3,7 @@
 [![CRAN](https://www.R-pkg.org/badges/version/r2spss)](https://CRAN.R-project.org/package=r2spss) 
 
 
-Create plots and `LaTeX` tables that look like `SPSS` output for use in teaching materials.  Rather than copying-and-pasting `SPSS` output into documents, `R` code that mocks up `SPSS` output can be integrated directly into dynamic `LaTeX` documents with tools such as [`knitr`](https://yihui.org/knitr/).  Functionality includes methods that are typically covered in introductory statistics classes: descriptive statistics, common hypothesis tests, ANOVA, and linear regression, as well as boxplots, histograms, scatterplots, and line plots (including profile plots).
+Create plots and `LaTeX` tables that look like `SPSS` output for use in teaching materials.  Rather than copying-and-pasting `SPSS` output into documents, `R` code that mocks up `SPSS` output can be integrated directly into dynamic `LaTeX` documents with tools such as [`knitr`](https://yihui.org/knitr/).  Functionality includes statistical techniques that are typically covered in introductory statistics classes: descriptive statistics, common hypothesis tests, ANOVA, and linear regression, as well as box plots, histograms, scatter plots, and line plots (including profile plots).
 
 
 ## Installation
@@ -27,16 +27,37 @@ devtools::install_github("aalfons/r2spss")
 If you already have package `devtools` installed, you can skip the first line.
 
 
-## LaTeX requirements and knitr options
+## LaTeX requirements
 
-Some of the tables produced by `r2spss` require the `LaTeX` package `amsmath`, hence the following command should be included in the preamble of your `LaTeX` document.
+`LaTeX` tables created with package `r2spss` build upon several `LaTeX` packages.  A `LaTeX` style file that includes all requirements can be produced with function `r2spss.sty()`.  By default, it prints the content of the style file on the `R` console, but its only argument `path` can be used to specify the path to a folder in which to put the file *r2spss.sty*.  For instance, the following command can be used to put the style file in the current working directory.
 
 ```
-% somewhere before \begin{document}
-\usepackage{amsmath}
+r2spss.sty(path = ".")
 ```
 
-When creating `LaTeX` tables in `R` code chunks with `knitr`, the output of the chunk should be written directly into the output document by setting the chunk option `results='asis'`.  For more information on `knitr` chunk options, in particular various options for figures, please consult the [knitr documentation](https://yihui.org/knitr/options/).
+After putting the style file in the folder that contains your `LaTeX` document, the following command should be included in the preamble of your `LaTeX` document, i.e., somewhere in between `\documentclass{}` and `\begin{document}`.
+
+```
+\usepackage{r2spss}
+```
+
+## Dynamic documents and knitr options
+
+Package `r2spss` is the most useful when writing dynamic `LaTeX` documents with
+tools such as the `R` package [`knitr`](https://yihui.org/knitr/).  When creating `LaTeX` tables in `R` code chunks with `knitr`, the output of the chunk should be written directly into the output document by setting the chunk option `results='asis'`.  For more information on `knitr` chunk options, in particular various options for figures, please consult the [knitr documentation](https://yihui.org/knitr/options/).
+
+
+## Mimicking different SPSS versions
+
+Package `r2spss` can create output that mimics the look of current `SPSS` versions, as well as the look of older versions.  The relevant functions contain the argument `version` for specifying which type of output to create.  Possible values are `"modern"` to mimic recent versions and `"legacy"` to mimic older versions.  `LaTeX` tables that mimic the look of recent SPSS version thereby build upon the `LaTeX` package [`nicematrix`](https://ctan.org/pkg/nicematrix) and its `NiceTabular` environment, which is preferred for its seamless display of background colors in the table.
+
+However, `r2spss` requires `nicematrix` version 6.5 (2022-01-23) or later.  It is also important to note that tables using the `NiceTabular` environment may require several `LaTeX` compilations to be displayed correctly.  
+
+Within a dynamic `LaTeX` document or any other `R` session, it can be useful to set a global preference for which `SPSS` version to mimic.  This can be done with the accessor function `r2spss_options$set()`.  For instance, a default to mimic older `SPSS` versions can be set with:
+
+```
+r2spss_options$set(version = "legacy")
+```
 
 
 ## Package vignette
