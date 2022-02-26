@@ -65,7 +65,7 @@ Eredivisie$AgeSq <- Eredivisie$Age^2
 \setlength{\tabcolsep}{3pt}
 {\tiny
 <<echo=FALSE, results="asis">>=
-twosample <- tTest(Eredivisie, "logMarketValue", group = "Foreign")
+twosample <- t_test(Eredivisie, "logMarketValue", group = "Foreign")
 print(twosample, statistics = "test", theme = "modern")
 @
 }

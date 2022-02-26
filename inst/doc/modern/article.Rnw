@@ -80,7 +80,7 @@ print(oneway, version = "modern")
 \newpage
 \begin{center}
 <<echo=FALSE, results="asis">>=
-oneway <- kruskalTest(Eredivisie, "MarketValue", group = "Position")
+oneway <- kruskal_test(Eredivisie, "MarketValue", group = "Position")
 print(oneway, version = "legacy")
 print(oneway, version = "modern")
 @
@@ -99,7 +99,7 @@ print(twoway, version = "modern")
 \newpage
 \begin{center}
 <<echo=FALSE, results="asis">>=
-test <- chisqTest(Eredivisie, "Position", p = c(1, 4, 3, 3)/11)
+test <- chisq_test(Eredivisie, "Position", p = c(1, 4, 3, 3)/11)
 print(test, version = "legacy")
 print(test, version = "modern")
 @
@@ -108,7 +108,7 @@ print(test, version = "modern")
 \newpage
 \begin{center}
 <<echo=FALSE, results="asis">>=
-test <- chisqTest(Eredivisie, c("Position", "Foreign"))
+test <- chisq_test(Eredivisie, c("Position", "Foreign"))
 print(test, version = "legacy")
 print(test, version = "modern")
 @
@@ -126,7 +126,7 @@ print(stats, version = "modern")
 \newpage
 \begin{center}
 <<echo=FALSE, results="asis">>=
-sign <- signTest(Exams, c("Regular", "Resit"), exact = TRUE)
+sign <- sign_test(Exams, c("Regular", "Resit"), exact = TRUE)
 print(sign, version = "legacy")
 print(sign, version = "modern")
 @
@@ -135,7 +135,7 @@ print(sign, version = "modern")
 \newpage
 \begin{center}
 <<echo=FALSE, results="asis">>=
-signedRank <- wilcoxonTest(Exams, c("Regular", "Resit"))
+signedRank <- wilcoxon_test(Exams, c("Regular", "Resit"))
 print(signedRank, version = "legacy")
 print(signedRank, version = "modern")
 @
@@ -144,7 +144,7 @@ print(signedRank, version = "modern")
 \newpage
 \begin{center}
 <<echo=FALSE, results="asis">>=
-rankSum <- wilcoxonTest(Eredivisie, "MarketValue", group = "Foreign")
+rankSum <- wilcoxon_test(Eredivisie, "MarketValue", group = "Foreign")
 print(rankSum, version = "legacy")
 print(rankSum, version = "modern")
 @
@@ -153,7 +153,7 @@ print(rankSum, version = "modern")
 \newpage
 \begin{center}
 <<echo=FALSE, results="asis">>=
-onesample <- tTest(Exams, "Resit", mu = 5.5)
+onesample <- t_test(Exams, "Resit", mu = 5.5)
 print(onesample, version = "legacy")
 print(onesample, version = "modern")
 @
@@ -163,7 +163,7 @@ print(onesample, version = "modern")
 \begin{center}
 \footnotesize
 <<echo=FALSE, results="asis">>=
-paired <- tTest(Exams, c("Resit", "Regular"))
+paired <- t_test(Exams, c("Resit", "Regular"))
 print(paired, version = "legacy")
 print(paired, version = "modern")
 @
@@ -174,7 +174,7 @@ print(paired, version = "modern")
 \scriptsize
 \setlength{\tabcolsep}{4pt}
 <<echo=FALSE, results="asis">>=
-twosample <- tTest(Eredivisie, "logMarketValue", group = "Foreign")
+twosample <- t_test(Eredivisie, "logMarketValue", group = "Foreign")
 print(twosample, version = "legacy")
 print(twosample, version = "modern")
 @
