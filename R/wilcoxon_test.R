@@ -212,8 +212,9 @@ to_SPSS.wilcoxon_test_SPSS <- function(object, statistics = c("test", "ranks"),
 
   ## initializations
   statistics <- match.arg(statistics)
-  label <- if (object$type == "paired") {
-    paste(rev(object$variables), collapse = " - ")
+  if (object$type == "paired") {
+    variables <- rev(object$variables)
+    label <- paste(variables, collapse = " - ")
   } else label <- object$variables
 
   if (statistics == "ranks") {
@@ -232,14 +233,14 @@ to_SPSS.wilcoxon_test_SPSS <- function(object, statistics = c("test", "ranks"),
       # format table nicely
       formatted <- format_SPSS(ranks, digits = digits, ...)
       # define footnotes
-      footnotes <- c(paste(object$variables, collapse = " < "),
-                     paste(object$variables, collapse = " > "),
-                     paste(object$variables, collapse = " = "))
+      footnotes <- c(paste(variables, collapse = " < "),
+                     paste(variables, collapse = " > "),
+                     paste(variables, collapse = " = "))
       footnotes <- data.frame(marker = c("a", "b", "c"), row = 1:3,
                               column = rep.int(1, 3), text = footnotes)
       # construct list containing all necessary information
       spss <- list(table = formatted, main = "Ranks", header = TRUE,
-                   label = label, row_names = TRUE, info = 1,
+                   label = label, row_names = TRUE, info = 0,
                    footnotes = footnotes)
     } else if (object$type == "independent") {
       # put table into SPSS format

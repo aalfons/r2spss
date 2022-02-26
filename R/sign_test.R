@@ -126,7 +126,8 @@ to_SPSS.sign_test_SPSS <- function(object,
 
   ## initializations
   statistics <- match.arg(statistics)
-  label <- paste(rev(object$variables), collapse = " - ")
+  variables <- rev(object$variables)
+  label <- paste(variables, collapse = " - ")
 
   if (statistics == "frequencies") {
 
@@ -141,9 +142,9 @@ to_SPSS.sign_test_SPSS <- function(object,
     # define header
     header <- c("", "", "N")
     # define footnotes
-    footnotes <- c(paste(object$variables, collapse = " < "),
-                   paste(object$variables, collapse = " > "),
-                   paste(object$variables, collapse = " = "))
+    footnotes <- c(paste(variables, collapse = " < "),
+                   paste(variables, collapse = " > "),
+                   paste(variables, collapse = " = "))
     footnotes <- data.frame(marker = c("a", "b", "c"), row = 1:3,
                             column = rep.int(1, 3), text = footnotes)
     # construct list containing all necessary information
