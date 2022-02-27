@@ -255,24 +255,29 @@ theme_SPSS <- function(base_size = 12, base_family = "",
 #'
 #' @keywords color
 #'
-#' @importFrom grDevices rgb
 #' @export
 
 palette_SPSS <- function(n = NULL, version = r2spss_options$get("version")) {
   # initializations
   version <- match.arg(version, choices = get_version_values())
-  # define red, green and blue vectors
+  # define color vectors
   if (version == "legacy") {
-    red <-   c( 62,  46, 211, 121, 251, 239,  72, 204, 122,  10, 248, 221,  26, 204, 187, 153,   0, 182, 255, 121, 112,  51, 172, 162,  93, 228,  39, 184, 102,  13)
-    green <- c( 88, 184, 206,  40, 248,  51, 194, 204, 170,  86, 152, 186,  95, 255,  63, 153,   0, 231, 255, 122, 220,  51, 208,  22,  97, 228, 139, 155, 102, 141)
-    blue <-  c(172,  72, 151, 125, 115,  56, 197, 204, 213,  44,  29, 241, 118, 204, 127, 153,   0, 232, 255, 167, 132,  51, 238,  25, 255, 228, 172, 201, 102,  70)
+    colors <- c("#3E58AC", "#2EB848", "#D3CE97", "#79287D", "#FBF873",
+                "#EF3338", "#48C2C5", "#CCCCCC", "#7AAAD5", "#0A562C",
+                "#F8981D", "#DDBAF1", "#1A5F76", "#CCFFCC", "#BB3F7F",
+                "#999999", "#000000", "#B6E7E8", "#FFFFFF", "#797AA7",
+                "#70DC84", "#333333", "#ACD0EE", "#A21619", "#5D61FF",
+                "#E4E4E4", "#278BAC", "#B89BC9", "#666666", "#0D8D46")
   } else {
-    red <-   c( 17,   0, 159, 250,  87,  25,   0, 238, 178,   0,   1, 138, 165, 236,  69,  92, 208, 204, 225, 237,  28,  92, 225,   9,  90, 155, 207, 150,  63, 105)
-    green <- c(146,  93,  24,  77,   4, 128,  45,  83, 134, 157,  39,  56, 110, 230,  70, 202,  83, 127, 188,  75, 205, 113, 139,  38, 100,   0, 172, 145, 235,  41)
-    blue <-  c(232,  93,  83,  86,   8,  56, 156, 139,   0, 154,  73,   0, 255, 208,  71, 136,  52, 228,  29,  75, 205,  72,  14, 114,  94,   0, 227, 145, 124, 196)
+    colors <- c("#1192E8", "#005D5D", "#9F1853", "#FA4D56", "#570408",
+                "#198038", "#002D9C", "#EE538B", "#B28600", "#009D9A",
+                "#012749", "#8A3800", "#A56EFF", "#ECE6D0", "#454647",
+                "#5CCA88", "#D05334", "#CC7FE4", "#E1BC1D", "#ED4B4B",
+                "#1CCDCD", "#5C7148", "#E18B0E", "#092672", "#5A645E",
+                "#9B0000", "#CFACE3", "#969191", "#3FEB7C", "#6929C4")
   }
   # check number of colors to return
-  max <- length(red)
+  max <- length(colors)
   if (is.numeric(n) && length(n) > 0) {
     n <- n[1]
     if (n < 1) {
@@ -282,16 +287,14 @@ palette_SPSS <- function(n = NULL, version = r2spss_options$get("version")) {
     }
     if (n <= max) {
       keep <- seq_len(n)
-      red <- red[keep]
-      green <- green[keep]
-      blue <- blue[keep]
+      colors <- colors[keep]
     } else {
       warning("only ", max, " colors available; returning those colors",
               call. = FALSE)
     }
   }
   # return colors
-  rgb(red, green, blue, maxColorValue = 255)
+  colors
 }
 
 
