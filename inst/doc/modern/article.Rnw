@@ -58,13 +58,69 @@ Eredivisie$logMarketValue <- log(Eredivisie$MarketValue)
 Eredivisie$AgeSq <- Eredivisie$Age^2
 @
 
+
 \begin{center}
 <<echo=FALSE, results="asis">>=
-fit <- regression(logMarketValue ~ Age + AgeSq,
-                  logMarketValue ~ Age + AgeSq + Contract + Foreign,
-                  data = Eredivisie)
-print(fit, version = "legacy")
-print(fit, version = "modern")
+stats <- descriptives(Eredivisie, c("MarketValue", "logMarketValue", "Age"))
+print(stats, version = "legacy")
+print(stats, version = "modern")
+@
+\end{center}
+
+\newpage
+\begin{center}
+<<echo=FALSE, results="asis">>=
+onesample <- t_test(Exams, "Resit", mu = 5.5)
+print(onesample, version = "legacy")
+print(onesample, version = "modern")
+@
+\end{center}
+
+\newpage
+\begin{center}
+\footnotesize
+<<echo=FALSE, results="asis">>=
+paired <- t_test(Exams, c("Resit", "Regular"))
+print(paired, version = "legacy")
+print(paired, version = "modern")
+@
+\end{center}
+
+\newpage
+\begin{center}
+<<echo=FALSE, results="asis">>=
+signed_rank <- wilcoxon_test(Exams, c("Regular", "Resit"))
+print(signed_rank, version = "legacy")
+print(signed_rank, version = "modern")
+@
+\end{center}
+
+\newpage
+\begin{center}
+<<echo=FALSE, results="asis">>=
+sign <- sign_test(Exams, c("Regular", "Resit"), exact = TRUE)
+print(sign, version = "legacy")
+print(sign, version = "modern")
+@
+\end{center}
+
+\newpage
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+<<echo=FALSE, results="asis">>=
+twosample <- t_test(Eredivisie, "logMarketValue", group = "Foreign")
+print(twosample, version = "legacy")
+print(twosample, version = "modern")
+@
+\end{center}
+
+\newpage
+\begin{center}
+<<echo=FALSE, results="asis">>=
+rank_sum <- wilcoxon_test(Eredivisie, "MarketValue", group = "Foreign")
+print(rank_sum, version = "legacy")
+print(rank_sum, version = "modern")
 @
 \end{center}
 
@@ -80,9 +136,9 @@ print(oneway, version = "modern")
 \newpage
 \begin{center}
 <<echo=FALSE, results="asis">>=
-oneway <- kruskal_test(Eredivisie, "MarketValue", group = "Position")
-print(oneway, version = "legacy")
-print(oneway, version = "modern")
+kruskal <- kruskal_test(Eredivisie, "MarketValue", group = "Position")
+print(kruskal, version = "legacy")
+print(kruskal, version = "modern")
 @
 \end{center}
 
@@ -117,69 +173,23 @@ print(test, version = "modern")
 \newpage
 \begin{center}
 <<echo=FALSE, results="asis">>=
-stats <- descriptives(Eredivisie, c("MarketValue", "logMarketValue", "Age"))
-print(stats, version = "legacy")
-print(stats, version = "modern")
+fit1 <- regression(logMarketValue ~ Age + AgeSq,
+                   data = Eredivisie)
+print(fit1, version = "legacy")
+print(fit1, version = "modern")
 @
 \end{center}
 
 \newpage
 \begin{center}
 <<echo=FALSE, results="asis">>=
-sign <- sign_test(Exams, c("Regular", "Resit"), exact = TRUE)
-print(sign, version = "legacy")
-print(sign, version = "modern")
+fit2 <- regression(logMarketValue ~ Age + AgeSq,
+                   logMarketValue ~ Age + AgeSq + Contract + Foreign,
+                   data = Eredivisie)
+print(fit2, version = "legacy")
+print(fit2, version = "modern")
 @
 \end{center}
-
-\newpage
-\begin{center}
-<<echo=FALSE, results="asis">>=
-signedRank <- wilcoxon_test(Exams, c("Regular", "Resit"))
-print(signedRank, version = "legacy")
-print(signedRank, version = "modern")
-@
-\end{center}
-
-\newpage
-\begin{center}
-<<echo=FALSE, results="asis">>=
-rankSum <- wilcoxon_test(Eredivisie, "MarketValue", group = "Foreign")
-print(rankSum, version = "legacy")
-print(rankSum, version = "modern")
-@
-\end{center}
-
-\newpage
-\begin{center}
-<<echo=FALSE, results="asis">>=
-onesample <- t_test(Exams, "Resit", mu = 5.5)
-print(onesample, version = "legacy")
-print(onesample, version = "modern")
-@
-\end{center}
-
-\newpage
-\begin{center}
-\footnotesize
-<<echo=FALSE, results="asis">>=
-paired <- t_test(Exams, c("Resit", "Regular"))
-print(paired, version = "legacy")
-print(paired, version = "modern")
-@
-\end{center}
-
-\newpage
-\begin{center}
-\scriptsize
-\setlength{\tabcolsep}{4pt}
-<<echo=FALSE, results="asis">>=
-twosample <- t_test(Eredivisie, "logMarketValue", group = "Foreign")
-print(twosample, version = "legacy")
-print(twosample, version = "modern")
-@
-\end{center}
-
 
 
 \end{document}
