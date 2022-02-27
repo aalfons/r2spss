@@ -302,10 +302,12 @@ to_SPSS.regression_SPSS <- function(object,
     footnotes <- wrap_text(footnotes_predictors, limit = wrap)
     footnotes <- data.frame(marker = letters[seq_len(k)], row = row,
                             column = column, text = footnotes)
+    ## define positions for minor grid lines
+    minor <- seq_len(k-1)
     ## construct list containing all necessary information
     spss <- list(table = formatted, main = "Model Summary",
                  header = header, row_names = TRUE, info = 0,
-                 footnotes = footnotes)
+                 footnotes = footnotes, minor = minor)
     if (change) spss$version <- version
 
   } else if (statistics == "anova") {
@@ -358,10 +360,16 @@ to_SPSS.regression_SPSS <- function(object,
                            limit = wrap)
     footnotes <- data.frame(marker = letters[seq_len(k+1)], row = row,
                             column = column, text = footnotes)
+    # define positions for major grid lines
+    major <- 3 * seq_len(k-1)
+    # define minor grid lines
+    row_list <- lapply(c(0, major), "+", 1:2)
+    minor <- data.frame(row = unlist(row_list, use.names = FALSE),
+                        first = 2, last = length(header))
     # construct list containing all necessary information
     spss <- list(table = formatted, main = "ANOVA", header = header,
                  row_names = FALSE, info = 2, footnotes = footnotes,
-                 major = 3 * seq_len(k-1), version = version)
+                 major = major, minor = minor, version = version)
 
   } else if (statistics == "estimates") {
 
@@ -418,10 +426,17 @@ to_SPSS.regression_SPSS <- function(object,
     footnotes <- data.frame(marker = "a", row = "main",
                             column = NA_integer_,
                             text = footnote_response)
+    ## define positions for major grid lines
+    major <- cumsum(p[-k])
+    ## define minor grid lines
+    row_list <- mapply("+", c(0, major), lapply(p-1, seq_len),
+                       SIMPLIFY = FALSE, USE.NAMES = FALSE)
+    minor <- data.frame(row = unlist(row_list, use.names = FALSE),
+                        first = 2, last = length(cn))
     ## construct list containing all necessary information
     spss <- list(table = formatted, main = "Coefficients", header = header,
                  row_names = FALSE, info = 2, footnotes = footnotes,
-                 major = cumsum(p[-k]), version = version)
+                 major = major, minor = minor, version = version)
 
   } else stop ("type of 'statistics' not supported")  # shouldn't happen
 

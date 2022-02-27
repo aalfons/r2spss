@@ -302,15 +302,18 @@ to_SPSS.ANOVA_SPSS <- function(object,
       bottom <- wrap_text(cn, limit = 8)
       # construct header
       header <- list(top, bottom)
+      ## define minor grid lines
+      minor <- seq_len(nrow(formatted) - 1)
       ## construct list containing all necessary information
       spss <- list(table = formatted, main = "Descriptives", sub = sub,
-                   header = header, row_names = TRUE, info = 0)
+                   header = header, row_names = TRUE, info = 0,
+                   minor = minor)
     } else if (object$type == "two-way") {
       # extract relevant information
       descriptives <- object$descriptives
       first <- object$group[1]
-      nLevels <- c(nlevels(descriptives[, first]),
-                   nlevels(descriptives[, object$group[2]]))
+      n_levels <- c(nlevels(descriptives[, first]),
+                    nlevels(descriptives[, object$group[2]]))
       # print values of first grouping variable only on first occurrence
       descriptives[, first] <- ifelse(duplicated(descriptives[, first]),
                                       "", as.character(descriptives[, first]))
@@ -319,12 +322,16 @@ to_SPSS.ANOVA_SPSS <- function(object,
       # define header with line breaks
       header <- wrap_text(names(descriptives), limit = 12)
       # define positions for major grid lines
-      major <- seq(from = nLevels[2], by = nLevels[2],
-                   length.out = nLevels[1] - 1)
+      major <- seq(from = n_levels[2], by = n_levels[2],
+                   length.out = n_levels[1] - 1)
+      # define minor grid lines
+      row_list <- lapply(c(0, major), "+", seq_len(n_levels[2] - 1))
+      minor <- data.frame(row = unlist(row_list, use.names = FALSE),
+                          first = 2, last = length(header))
       # construct list containing all necessary information
       spss <- list(table = formatted, main = "Descriptive Statistics",
                    sub = sub, header = header, row_names = FALSE, info = 2,
-                   major = major)
+                   major = major, minor = minor)
     } else stop("type of ANOVA not supported")
 
   } else {
@@ -368,8 +375,9 @@ to_SPSS.ANOVA_SPSS <- function(object,
                         adjusted = "Median and\nwith adjusted df",
                         trimmed = "trimmed\nmean")
         row_labels <- paste("Based on", row_labels[row.names(levene)])
-        # # define column widths
-        # width <- c("", "0.3\\linewidth", rep.int("", ncol(levene)))
+        # define minor grid lines
+        minor <- data.frame(row = seq_len(nrow(formatted) - 1),
+                            first = 2, last = length(header))
       }
       ## construct list containing all necessary information
       if (object$type == "one-way") {
@@ -382,8 +390,8 @@ to_SPSS.ANOVA_SPSS <- function(object,
           spss <- list(table = formatted,
                        main = "Tests of Homogeneity of Variances",
                        header = header, label = object$variable,
-                       row_names = row_labels, info = 0, #width = width,
-                       version = "modern")
+                       row_names = row_labels, info = 0,
+                       minor = minor, version = "modern")
         }
       } else if (object$type == "two-way") {
         # define text in footnotes
@@ -419,8 +427,8 @@ to_SPSS.ANOVA_SPSS <- function(object,
           # construct list
           spss <- list(table = formatted, main = main, header = header,
                        label = object$variable, row_names = row_labels,
-                       info = 0, # width = width,
-                       footnotes = footnotes, version = "modern")
+                       info = 0, footnotes = footnotes, minor = minor,
+                       version = "modern")
         }
       } else stop("type of ANOVA not supported")
 
@@ -448,11 +456,13 @@ to_SPSS.ANOVA_SPSS <- function(object,
         if (is.null(args$p_value)) args$p_value <- names(test) == "Sig."
         formatted <- do.call(format_SPSS, args)
       }
+      ## define minor grid lines
+      minor <- seq_len(nrow(formatted) - 1)
       ## construct list containing all necessary information
       if (object$type == "one-way") {
         spss <- list(table = formatted, main = "ANOVA", sub = sub,
                      header = TRUE, row_names = TRUE, info = 0,
-                     version = version)
+                     minor = minor, version = version)
       } else if (object$type == "two-way") {
         # define header with line breaks
         header <- c("Source", wrap_text(names(test), limit = 12))
@@ -467,9 +477,10 @@ to_SPSS.ANOVA_SPSS <- function(object,
                                 text = footnote)
         # construct list
         spss <- list(table = formatted,
-                     main = "Tests of Between-Subject Effects", sub = sub,
-                     header = header, row_names = TRUE, info = 0,
-                     footnotes = footnotes, version = version)
+                     main = "Tests of Between-Subject Effects",
+                     sub = sub, header = header, row_names = TRUE,
+                     info = 0, footnotes = footnotes, minor = minor,
+                     version = version)
       }
 
     } else stop ("type of 'statistics' not supported")  # shouldn't happen

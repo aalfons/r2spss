@@ -58,9 +58,9 @@ initialize_options = function(...) {
 #'
 #' The following options are available:
 #' \describe{
-#'   \item{\code{version}}{a character string that controls whether tables
-#'   and plots should mimic the content and look of recent SPSS versions
-#'   (\code{"modern"}) or older versions (<24; \code{"legacy"}).}
+#'   \item{\code{version}}{a character string that controls the default for
+#'   whether tables and plots should mimic the content and look of recent SPSS
+#'   versions (\code{"modern"}) or older versions (<24; \code{"legacy"}).}
 #'   \item{\code{minor}}{a logical that overrides whether function
 #'   \code{\link{to_latex}} should include any supplied minor grid lines
 #'   in SPSS tables.  In particular for tables that mimic older SPSS versions,

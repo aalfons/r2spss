@@ -235,25 +235,34 @@ to_SPSS.t_test_SPSS <- function(object, statistics = c("test", "statistics"),
       # initializations
       version <- match.arg(version, choices = get_version_values())
       legacy <- version == "legacy"
-      # define header and label
+      # define relevant information
       if (legacy) {
+        # header and label
         header <- c("", header)
         label <- NULL
+        # minor grid line
+        minor <- 1
       } else {
+        # header and label
         header <- c("", "", header)
         label <- "Pair 1"
+        # minor grid line
+        minor <- data.frame(row = 1, first = 2, last = length(header))
       }
       # construct list
       spss <- list(table = formatted, main = main, header = header,
                    label = label, row_names = TRUE, info = 0,
-                   version = version)
+                   minor = minor, version = version)
     } else if (object$type == "independent") {
       # define header and label
       header <- c("", object$group, header)
       label <- object$variables
+      # define minor grid line
+      minor <- data.frame(row = 1, first = 2, last = length(header))
       # construct list
       spss <- list(table = formatted, main = main, header = header,
-                   label = label, row_names = TRUE, info = 0)
+                   label = label, row_names = TRUE, info = 0,
+                   minor = minor)
     } else stop("type of test not supported")
 
   } else if (statistics == "test") {
@@ -368,11 +377,12 @@ to_SPSS.t_test_SPSS <- function(object, statistics = c("test", "statistics"),
       row_labels <- c(pooled = "assumed", satterthwaite = "not assumed")
       row_labels <- paste("Equal variances", row_labels[row.names(test)])
       row_labels <- gsub(" ", "\n", row_labels, fixed = TRUE)
+      ## define major grid line to separate the two tests
+      major <- data.frame(row = 1, first = 2, last = length(cn))
       ## construct list containing all necessary information
       spss <- list(table = formatted, main = main, label = object$variables,
                    header = header, row_names = row_labels, info = 0,
-                   # width = width,
-                   version = version)
+                   major = major, version = version)
 
     } else {
 

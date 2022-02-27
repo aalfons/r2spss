@@ -104,7 +104,7 @@ to_SPSS.descriptives_SPSS <- function(object, digits = 2, ...) {
   # put table of results into SPSS format
   p <- ncol(object$descriptives)
   descriptives <- rbind(object$descriptives,
-                        "Valid N (listwise)" = c(object$n, rep.int(NA, p)))
+                        "Valid N (listwise)" = c(object$n, rep.int(NA, p-1)))
   # define header with line breaks
   col_names <- names(descriptives)
   header <- c("", wrap_text(col_names, limit = 10))
@@ -114,9 +114,12 @@ to_SPSS.descriptives_SPSS <- function(object, digits = 2, ...) {
     args$check_int <- col_names %in% c("Minimum", "Maximum")
   }
   formatted <- do.call(format_SPSS, args)
+  # define grid lines
+  minor <- seq_len(nrow(formatted) - 1)
   # construct return object
   spss <- list(table = formatted, main = "Descriptive Statistics",
-               header = header, row_names = TRUE, info = 0)
+               header = header, row_names = TRUE, info = 0,
+               minor = minor)
   class(spss) <- "SPSS_table"
   spss
 }

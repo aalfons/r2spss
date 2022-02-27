@@ -202,9 +202,11 @@ to_SPSS.chisq_test_SPSS <- function(object, statistics = c("test", "frequencies"
                                 check.names = FALSE)
       # format table nicely
       formatted <- format_SPSS(frequencies, digits = digits[1], ...)
+      # define positions for minor grid lines
+      minor <- seq_len(nrow(formatted) - 1)
       # construct list containing all necessary information
-      spss <- list(table = formatted, main = object$variables,
-                   header = TRUE, row_names = TRUE, info = 0)
+      spss <- list(table = formatted, main = object$variables, header = TRUE,
+                   row_names = TRUE, info = 0, minor = minor)
     } else if (object$type == "independence") {
       # add totals
       observed <- cbind(observed, Total = rowSums(observed))
@@ -236,12 +238,17 @@ to_SPSS.chisq_test_SPSS <- function(object, statistics = c("test", "frequencies"
       top <- data.frame(first = c(1:3, 4, nc), last = c(1:3, nc-1, nc),
                         text = c("", "", "", object$variables[2], ""))
       header <- list(top, cn)
-      # define positions for minor grid lines
-      minor <- data.frame(row = 2 * seq_len(object$r-1), first = 2,
-                          last = c(ncol(crosstab)))
+      # define major grid lines
+      major <- rbind(data.frame(row = 2 * seq_len(object$r-1),
+                                first = 2, last = ncol(crosstab)),
+                     data.frame(row = 2 * object$r, first = 1,
+                                last = ncol(crosstab)))
+      # define minor grid lines
+      minor <- data.frame(row = seq(from = 1, by = 2, length.out = object$r+1),
+                          first = 3, last = ncol(crosstab))
       # construct list containing all necessary information
       spss <- list(table = crosstab, main = main, header = header,
-                   row_names = FALSE, info = 3, major = 2*object$r,
+                   row_names = FALSE, info = 3, major = major,
                    minor = minor)
     } else stop("type of test not supported")
 
@@ -276,10 +283,12 @@ to_SPSS.chisq_test_SPSS <- function(object, statistics = c("test", "frequencies"
                          sprintf(fmt, smallest), ".")
       footnotes <- data.frame(marker = "a", row = 1, column = 1,
                               text = wrap_text(footnote, limit = 30))
+      # define positions for minor grid lines
+      minor <- seq_len(nrow(chisq) - 1)
       # construct list containing all necessary information
-      spss <- list(table = chisq, main = "Test Statistics",
-                   header = TRUE, row_names = TRUE, info = 0,
-                   footnotes = footnotes, version = version)
+      spss <- list(table = chisq, main = "Test Statistics", header = TRUE,
+                   row_names = TRUE, info = 0, footnotes = footnotes,
+                   minor = minor, version = version)
     } else if (object$type == "independence") {
       # put test results into SPSS format
       rn <- c("Pearson Chi-Square", "Likelihood Ratio", "N of Valid Cases")
@@ -307,10 +316,13 @@ to_SPSS.chisq_test_SPSS <- function(object, statistics = c("test", "frequencies"
                          sprintf(fmt, smallest), ".")
       footnotes <- data.frame(marker = "a", row = 1, column = 1,
                               text = wrap_text(footnote, limit = 50))
+      # define positions for minor grid lines
+      minor <- seq_len(nrow(formatted) - 1)
       # construct list containing all necessary information
       spss <- list(table = formatted, main = "Chi-Square Tests",
                    header = header, row_names = TRUE, info = 0,
-                   footnotes = footnotes, version = version)
+                   footnotes = footnotes, minor = minor,
+                   version = version)
     } else stop("type of test not supported")
 
   } else stop ("type of 'statistics' not supported")  # shouldn't happen

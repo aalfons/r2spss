@@ -238,10 +238,13 @@ to_SPSS.wilcoxon_test_SPSS <- function(object, statistics = c("test", "ranks"),
                      paste(variables, collapse = " = "))
       footnotes <- data.frame(marker = c("a", "b", "c"), row = 1:3,
                               column = rep.int(1, 3), text = footnotes)
+      # define minor grid lines
+      minor <- data.frame(row = seq_len(nrow(formatted) - 1),
+                          first = 2, last = ncol(formatted) + 2)
       # construct list containing all necessary information
       spss <- list(table = formatted, main = "Ranks", header = TRUE,
                    label = label, row_names = TRUE, info = 0,
-                   footnotes = footnotes)
+                   footnotes = footnotes, minor = minor)
     } else if (object$type == "independent") {
       # put table into SPSS format
       N <- sum(object$statistics$N)
@@ -249,9 +252,13 @@ to_SPSS.wilcoxon_test_SPSS <- function(object, statistics = c("test", "ranks"),
                      Total = c(N, rep.int(NA_integer_, p-1)))
       # format table nicely
       formatted <- format_SPSS(ranks, digits = digits, ...)
+      # define minor grid lines
+      minor <- data.frame(row = seq_len(nrow(formatted) - 1),
+                          first = 2, last = ncol(formatted) + 2)
       # construct list containing all necessary information
       spss <- list(table = formatted, main = "Ranks", header = TRUE,
-                   label = label, row_names = TRUE, info = 0)
+                   label = label, row_names = TRUE, info = 0,
+                   minor = minor)
     } else stop("type of test not supported")
 
   } else if (statistics == "test") {
@@ -277,10 +284,12 @@ to_SPSS.wilcoxon_test_SPSS <- function(object, statistics = c("test", "ranks"),
                               column = c(NA_integer_, 1),
                               text = c("Wilcoxon Signed Ranks Test",
                                        "Based on positive ranks."))
+      # define minor grid lines
+      minor <- seq_len(nrow(test) - 1)
       # construct list containing all necessary information
-      spss <- list(table = test, main = "Test Statistics",
-                   header = TRUE, row_names = TRUE, info = 0,
-                   footnotes = footnotes, version = version)
+      spss <- list(table = test, main = "Test Statistics", header = TRUE,
+                   row_names = TRUE, info = 0, footnotes = footnotes,
+                   minor = minor, version = version)
     } else if (object$type == "independent") {
       # initializations
       have_exact <- !is.null(object$exact)
@@ -313,10 +322,12 @@ to_SPSS.wilcoxon_test_SPSS <- function(object, statistics = c("test", "ranks"),
       }
       footnotes <- data.frame(marker = marker, row = row, column = column,
                               text = footnote)
+      # define minor grid lines
+      minor <- seq_len(nrow(test) - 1)
       # construct list containing all necessary information
-      spss <- list(table = test, main = "Test Statistics",
-                   header = TRUE, row_names = TRUE, info = 0,
-                   footnotes = footnotes, version = version)
+      spss <- list(table = test, main = "Test Statistics", header = TRUE,
+                   row_names = TRUE, info = 0, footnotes = footnotes,
+                   minor = minor, version = version)
     } else stop("type of test not supported")
 
   } else stop ("type of 'statistics' not supported")  # shouldn't happen

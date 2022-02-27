@@ -205,7 +205,7 @@ Package \pkg{r2spss} can create output that mimics the look of current
 mentioned functions contain the argument \code{version} for specifying which
 type of output to create.  Possible values are \code{"modern"} to mimic recent
 versions and \code{"legacy"} to mimic older versions.  \proglang{LaTeX} tables
-that mimic the look of recent SPSS version thereby build upon the
+that mimic the look of recent \proglang{SPSS} version thereby build upon the
 \proglang{LaTeX} package \pkg{nicematrix} \citep{nicematrix} and its
 \code{NiceTabular} environment, which is preferred for its seamless display of
 background colors in the table.
@@ -213,13 +213,34 @@ background colors in the table.
 However, \pkg{r2spss} requires \pkg{nicematrix} version 6.5 (2022-01-23) or
 later.  It is also important to note that tables using the \code{NiceTabular}
 environment may require several \proglang{LaTeX} compilations to be displayed
-correctly.  For portability reasons, this vignette therefore only displays
-\proglang{LaTeX} tables that mimic the simpler look of older \proglang{SPSS}
-versions.  For convenience, such a global preference within an \proglang{R}
-session can be set with the accessor function \code{r2spss_options$set()}.
+correctly.
 
+
+\subsection{Global package options}
+
+Package \pkg{r2spss} allows to set global options within the current
+\proglang{R} session, which can be read and modified with the accessor
+functions \code{r2spss_options$get()} and \code{r2spss_options$set()},
+respectively.  Most importantly, the option \code{version} controls the
+default for whether tables and plots should mimic the content and look
+of recent \proglang{SPSS} versions (\code{"modern"}) or older versions
+(\code{"legacy"}).
+
+\proglang{SPSS} tables by default include horizontal grid lines in between all
+rows, which in particular in the look of older \proglang{SPSS} versions can be
+distracting from the content of the tables.  Package \pkg{r2spss} therefore
+distinguishes between major and minor grid lines in tables.  Minor grid lines
+can easily be suppressed by setting the global option \code{minor} to
+\code{FALSE}, which increases the readability of the tables while still
+closely mimicking the look of \proglang{SPSS}.
+
+For portability reasons, this vignette only displays \proglang{LaTeX} tables
+that mimic the simpler look of older \proglang{SPSS} versions, but with minor
+grid lines removed.  This is realized by setting global options with the
+following command.
+%
 <<>>=
-r2spss_options$set(version = "legacy")
+r2spss_options$set(version = "legacy", minor = FALSE)
 @
 
 

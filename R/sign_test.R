@@ -147,10 +147,13 @@ to_SPSS.sign_test_SPSS <- function(object,
                    paste(variables, collapse = " = "))
     footnotes <- data.frame(marker = c("a", "b", "c"), row = 1:3,
                             column = rep.int(1, 3), text = footnotes)
+    # define minor grid lines
+    minor <- data.frame(row = seq_len(nrow(formatted) - 1),
+                        first = 2, last = ncol(formatted) + 1)
     # construct list containing all necessary information
     spss <- list(table = formatted, main = "Frequencies",
                  header = header, label = label, row_names = FALSE,
-                 info = 1, footnotes = footnotes)
+                 info = 1, footnotes = footnotes, minor = minor)
 
   } else if (statistics == "test") {
 
@@ -177,10 +180,12 @@ to_SPSS.sign_test_SPSS <- function(object,
     footnotes <- data.frame(marker = "a", row = "main",
                             column = NA_integer_,
                             text = "Sign Test")
+    # define minor grid lines
+    minor <- seq_len(nrow(test) - 1)
     # construct list containing all necessary information
-    spss <- list(table = test, main = "Test Statistics",
-                 header = TRUE, row_names = TRUE, info = 0,
-                 footnotes = footnotes, version = version)
+    spss <- list(table = test, main = "Test Statistics", header = TRUE,
+                 row_names = TRUE, info = 0, footnotes = footnotes,
+                 minor = minor, version = version)
 
   } else stop ("type of 'statistics' not supported")  # shouldn't happen
 

@@ -319,18 +319,6 @@ to_latex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
   }
   # check major grid lines
   drawMajor <- !is.null(major)
-  # if (drawMajor) {
-  #   if (!is.numeric(major)) {
-  #     stop("'major' must be an integer vector")
-  #   }
-  #   major <- sort(as.integer(major))
-  #   keep <- (major > 0) & (major < d[1])
-  #   if (!all(keep)) {
-  #     major <- major[keep]
-  #     warning("some indices for major grid lines are out of bounds; ",
-  #             "those have been discarded", call. = FALSE)
-  #   }
-  # }
   if (drawMajor) {
     if (is.data.frame(major)) {
       # draw only partial lines
@@ -503,7 +491,6 @@ to_latex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
           "\\\\\n")
     }
     # if requested, draw major grid line
-    # if (drawMajor && (i %in% major)) cat(latexGridLine(version = version))
     if (drawMajor) {
       if (partialMajor) {
         which <- match(i, major$row)
