@@ -4,6 +4,10 @@ Changes in r2spss version 0.3.1
       palette_SPSS(), number_SPSS(), and substr_SPSS() to be in line with
       naming conventions.
 
+    + Better handling of major and minor grid lines in to_latex().  The former
+      can also be partial lines, and the latter can be suppressed globally via
+      'r2spss_options'.
+
 
 Changes in r2spss version 0.3.0
 
