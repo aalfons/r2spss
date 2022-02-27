@@ -24,21 +24,31 @@ Retrieve or set global options for package \pkg{r2spss} (within the current
 \R session) via accessor functions.
 }
 \details{
-Currently, the only available option is \code{version}, which controls
-tables and plots should mimic the content and look of recent SPSS versions
-(\code{"modern"}) or older versions (<24; \code{"legacy"}).
+The following options are available:
+\describe{
+  \item{\code{version}}{a character string that controls whether tables
+  and plots should mimic the content and look of recent SPSS versions
+  (\code{"modern"}) or older versions (<24; \code{"legacy"}).}
+  \item{\code{minor}}{a logical that overrides whether function
+  \code{\link{to_latex}} should include any supplied minor grid lines
+  in SPSS tables.  In particular for tables that mimic older SPSS versions,
+  minor grid lines can be somewhat distracting from the content, so setting
+  this option to \code{FALSE} provides a quick way to suppress them.  The
+  look of the resulting tables still closely mimics SPSS while being
+  somewhat cleaner.}
+}
 }
 \examples{
-# retrieve list of options:
+# retrieve the list of options
 r2spss_options$get()
 
-# retrieve a single option:
+# retrieve a single option
 r2spss_options$get("version")
 
 \dontrun{
 
-# set an option:
-r2spss_options$set(version = "legacy")
+# set options
+r2spss_options$set(version = "legacy", minor = FALSE)
 }
 
 }

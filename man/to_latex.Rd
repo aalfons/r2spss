@@ -43,7 +43,9 @@ different for current and older SPSS versions.  These objects contain a
 component \code{"version"} which will passed to the \code{"data.frame"}
 method to ensure that the content and look of the table match.  Other
 tables have the same content irrespective of the SPSS version, and this
-argument controls the look of those tables.}
+argument controls the look of those tables.  The default is to inherit
+from the global option within the current \R session (see
+\code{\link{r2spss_options}}).}
 
 \item{main}{a single character string defining the main title of the SPSS
 table, or \code{NULL} to suppress the main title.}
@@ -142,7 +144,10 @@ be a data frame with the following columns defining partial lines:
   partial line.}
   \item{\code{last}}{an integer vector specifying the last column of each
   partial line.}
-}}
+}
+Note that minor grid lines can also be suppressed globally within the
+current \R session by setting \code{r2spss_options$set(minor = FALSE)},
+see \code{\link{r2spss_options}}.}
 }
 \value{
 Nothing is returned, the function is called for its side effects.

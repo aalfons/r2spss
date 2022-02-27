@@ -113,6 +113,9 @@
 #'   \item{\code{last}}{an integer vector specifying the last column of each
 #'   partial line.}
 #' }
+#' Note that minor grid lines can also be suppressed globally within the
+#' current \R session by setting \code{r2spss_options$set(minor = FALSE)},
+#' see \code{\link{r2spss_options}}.
 #' @param version  a character string specifying whether the table should
 #' mimic the look of recent SPSS versions (\code{"modern"}) or older versions
 #' (<24; \code{"legacy"}).  For the \code{"SPSS_table"} method, note that also
@@ -121,7 +124,9 @@
 #' component \code{"version"} which will passed to the \code{"data.frame"}
 #' method to ensure that the content and look of the table match.  Other
 #' tables have the same content irrespective of the SPSS version, and this
-#' argument controls the look of those tables.
+#' argument controls the look of those tables.  The default is to inherit
+#' from the global option within the current \R session (see
+#' \code{\link{r2spss_options}}).
 #' @param \dots  for the \code{"data.frame"} method, additional arguments to be
 #' passed to \code{\link{format_SPSS}}.  For the \code{"SPSS_table"} method,
 #' additional arguments are currently ignored.
@@ -328,7 +333,7 @@ to_latex.data.frame <- function(object, main = NULL, sub = NULL, header = TRUE,
     }
   }
   # check minor grid lines
-  drawMinor <- !is.null(minor)
+  drawMinor <- isTRUE(r2spss_options$get("minor")) && !is.null(minor)
   if (drawMinor) {
     if (is.data.frame(minor)) {
       # draw only partial lines
