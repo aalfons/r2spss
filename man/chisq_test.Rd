@@ -69,6 +69,8 @@ An object of class \code{"chisq_test_SPSS"} with the following components:
   \eqn{\chi^{2}}{chi-squared} test.}
   \item{\code{lr}}{a list containing the results of a likelihood ratio
   test (only test on independence).}
+  \item{\code{MH}}{a list containing the results of a Mantel-Haenszel test
+  of linear association (only test on independence).}
   \item{\code{observed}}{a table containing the observed frequencies.}
   \item{\code{expected}}{a vector or matrix containing the expected
   frequencies.}
