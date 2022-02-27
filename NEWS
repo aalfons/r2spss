@@ -8,8 +8,8 @@ Changes in r2spss version 0.3.1
       can also be partial lines, and the latter can be suppressed globally via
       'r2spss_options'.
 
-    + chisq_test() in case of a test on independence now also returns results
-      of a Mantel-Haenszel test of linear association.
+    + Function chisq_test() in case of a test on independence now also returns
+      results of a Mantel-Haenszel test of linear association.
 
 
 Changes in r2spss version 0.3.0
