@@ -109,7 +109,7 @@ set_header(highlight = "")  # do not use the Sweave.sty package
 
 \section{Introduction} \label{sec:intro}
 
-Many academic programs in the social sciences or economics require to teach
+Many academic programs in the behavioral and social sciences require to teach
 statistics with \proglang{SPSS} \citep{SPSS}.  Preparing teaching materials in
 this case typically involves copying-and-pasting \proglang{SPSS} output into
 documents or slides, which is cumbersome and prone to errors.  Moreover, this
