@@ -6,7 +6,7 @@
 \alias{linesSPSS}
 \alias{boxplotSPSS}
 \alias{histSPSS}
-\title{Deprecated functions in r2spss}
+\title{Deprecated plot functions in r2spss}
 \usage{
 plotSPSS(data, variables, xlab = NULL, ylab = NULL, ...)
 
@@ -74,8 +74,8 @@ plot.
 \code{\link[graphics]{hist}}) and produces a plot.
 }
 \description{
-These functions are deprecated and may be removed as soon as the next
-release of \pkg{r2spss}.  The plot functions \code{plotSPSS},
+These plot functions are deprecated and may be removed as soon as the
+next release of \pkg{r2spss}.  The functions \code{plotSPSS},
 \code{linesSPSS}, \code{boxSPSS}, and \code{histSPSS} are built around
 base \R graphics and have been superseded by functions built on
 \code{\link[ggplot2:ggplot2-package]{ggplot2}}.

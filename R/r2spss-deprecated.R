@@ -4,10 +4,10 @@
 # --------------------------------------
 
 
-#' Deprecated functions in r2spss
+#' Deprecated plot functions in r2spss
 #'
-#' These functions are deprecated and may be removed as soon as the next
-#' release of \pkg{r2spss}.  The plot functions \code{plotSPSS},
+#' These plot functions are deprecated and may be removed as soon as the
+#' next release of \pkg{r2spss}.  The functions \code{plotSPSS},
 #' \code{linesSPSS}, \code{boxSPSS}, and \code{histSPSS} are built around
 #' base \R graphics and have been superseded by functions built on
 #' \code{\link[ggplot2:ggplot2-package]{ggplot2}}.
