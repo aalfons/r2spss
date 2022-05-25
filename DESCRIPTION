@@ -2,7 +2,7 @@ Package: r2spss
 Type: Package
 Title: Format R Output to Look Like SPSS
 Version: 0.3.2
-Date: 2022-03-23
+Date: 2022-05-25
 Description: Create plots and LaTeX tables that look like SPSS output for use in teaching materials.  Rather than copying-and-pasting SPSS output into documents, R code that mocks up SPSS output can be integrated directly into dynamic LaTeX documents with tools such as knitr.  Functionality includes statistical techniques that are typically covered in introductory statistics classes: descriptive statistics, common hypothesis tests, ANOVA, and linear regression, as well as box plots, histograms, scatter plots, and line plots (including profile plots).
 License: GPL (>= 3)
 URL: https://github.com/aalfons/r2spss
@@ -27,4 +27,4 @@ Authors@R:
 Author: Andreas Alfons [aut, cre] (<https://orcid.org/0000-0002-2513-3788>)
 Maintainer: Andreas Alfons <alfons@ese.eur.nl>
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
