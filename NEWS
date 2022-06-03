@@ -1,3 +1,9 @@
+Changes in r2spss version 0.3.3
+
+    + Bugfix in to_SPSS() method for Kruskal-Wallis test rergarding incorrect
+      dimensions when binding rows of the rank statistics.
+
+
 Changes in r2spss version 0.3.2
 
     + Removed non-ASCII characters from Eredivisie data (player names).

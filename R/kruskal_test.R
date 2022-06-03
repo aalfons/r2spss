@@ -133,7 +133,7 @@ to_SPSS.kruskal_test_SPSS <- function(object, statistics = c("test", "ranks"),
     # put table into SPSS format
     p <- ncol(object$statistics)
     N <- sum(object$statistics$N)
-    ranks <- rbind(object$statistics, Total = c(N, rep.int(NA, p)))
+    ranks <- rbind(object$statistics, Total = c(N, rep.int(NA, p-1)))
     # format table nicely
     formatted <- format_SPSS(ranks, digits = digits, ...)
     # define header
